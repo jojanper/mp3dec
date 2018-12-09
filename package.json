@@ -1,0 +1,23 @@
+{
+  "name": "mp3dec",
+  "version": "1.0.0",
+  "description": "MP3 decoder and associated utilities",
+  "main": "index.js",
+  "scripts": {
+    "build": "node-gyp rebuild",
+    "clean": "node-gyp clean"
+  },
+  "keywords": [
+    "MP3",
+    "N-API"
+  ],
+  "author": "Juha Ojanperä <juha.ojanpera@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "node-gyp": "^3.8.0"
+  },
+  "dependencies": {
+    "node-addon-api": "^1.6.2"
+  },
+  "gypfile": true
+}
