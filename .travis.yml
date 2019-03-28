@@ -1,0 +1,39 @@
+os:
+  - linux
+sudo: required
+language: cpp
+dist: trusty
+
+env:
+- TRAVIS_NODE_VERSION="10.15.0"
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gcc
+      - g++
+      - cmake
+
+before_install:
+  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 60
+    --slave /usr/bin/g++ g++ /usr/bin/g++-5
+  - sudo update-alternatives --config gcc
+  - gcc -v
+  - g++ -v
+  - cmake --version
+
+install:
+  # Clear out whatever version of NVM Travis has.
+  # Grab NVM and checkout the latest stable tag.
+  # Install the desired version of Node
+  - rm -rf ~/.nvm && git clone https://github.com/creationix/nvm.git ~/.nvm && (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`) && source ~/.nvm/nvm.sh && nvm install $TRAVIS_NODE_VERSION
+  - node --version
+  - npm --version
+  - npm i
+
+script:
+  - sh ./runbuild.sh Debug build-debug
+  - sh ./runbuild.sh Release build-release
+  - npm run build
