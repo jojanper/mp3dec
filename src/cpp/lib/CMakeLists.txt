@@ -7,6 +7,7 @@ set(HDRS
 
 set(SRCS
    lib_wrapper.cpp
+   #core/bits.cpp
 )
 
 set(EXTRA_LINK_LIBRARIES
