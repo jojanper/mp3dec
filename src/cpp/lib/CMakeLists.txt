@@ -7,6 +7,7 @@ set(HDRS
 
 set(SRCS
    lib_wrapper.cpp
+   core/iobuf.cpp
    #core/bits.cpp
 )
 

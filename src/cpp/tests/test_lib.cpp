@@ -1,11 +1,13 @@
 #include <gtest/gtest.h>
 
-#include "core/bits.h"
+//#include "core/bits.h"
+#include "core/iobuf.h"
 
 
 TEST(TestSuite, Init)
 {
-    Bit_Stream *bs = nullptr;
+    FileBuf *fp = nullptr;
+    //Bit_Stream *bs = nullptr;
     //uint8_t *buf = new uint8_t[10];
     //(void) buf;
 
@@ -13,5 +15,6 @@ TEST(TestSuite, Init)
 
     EXPECT_TRUE(result);
 
-    delete bs;
+    //delete bs;
+    delete fp;
 }

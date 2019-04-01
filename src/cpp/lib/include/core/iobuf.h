@@ -13,70 +13,68 @@
 
 /*-- Project Headers. --*/
 #include "core/defines.h"
-#include "core/throw.h"
 
-/*
-   Purpose:     Indicates how the device should be opened.
-   Explanation: - */
-#define READ_MODE     (1)
-#define WRITE_MODE    (2)
-#define APPEND_MODE   (3)
 
-/*
-   Purpose:     Size of internal buffer for multimedia file I/O routines.
-   Explanation: This is used only when the reading the opened stream. */
-#define IO_BUFFER_SIZE (256000) // 256 kB
+enum {
+    kFileReadMode   = 1,
+    kFileWriteMode  = 2,
+    kFileAppendMode = 3
+};
 
 /*
    Purpose:     Definition for the file handle.
    Explanation: - */
 typedef FILE * FILE_HANDLE;
-#define INVALID_FILE_HANDLE NULL
-
-/*
-   Purpose:     Indicates how the stream should be opened.
-   Explanation: - */
-typedef enum IO_TYPE
-{
-  PORTABLE
-
-} IO_TYPE;
 
 /*
    Purpose:     Stream seeking constants.
    Explanation: - */
-typedef enum File_Pos
+typedef enum FilePos
 {
   CURRENT_POS,
   START_POS,
   END_POS
 
-} File_Pos;
+} FilePos;
 
 
-class IOBuf
+class StreamBuffer
 {
 public:
-    IOBuf(void);
-    ~IOBuf(void);
+    virtual uint32_t GetStreamSize() const = 0;
+    virtual int32_t SeekBuffer(FilePos fpos, int32_t Offset) = 0;
+    virtual uint32_t ReadToBuffer(uint8_t *Buffer, uint32_t bufLen) = 0;
+    virtual uint32_t WriteFromBuffer(uint8_t *Buffer, uint32_t bufLen) = 0;
+    virtual void SetLookAheadMode(bool enable) = 0;
+
+protected:
+    StreamBuffer() {}
+    virtual ~StreamBuffer() {}
+};
+
+
+class FileBuf: public StreamBuffer
+{
+public:
+    FileBuf();
+    virtual ~FileBuf();
 
     /*-- Class public methods. --*/
-    BOOL OpenBuffer(const char *Name, int Mode, IO_TYPE ioType) /* throw (AdvanceExcpt *) */;
+    BOOL OpenBuffer(const char *Name, int Mode);
     void CloseBuffer(void);
-
-    inline char *GetIOBufName(void) { return m_deviceName; }
-    BOOL IsReadOnly(void);
+    const char *GetFileBufName() const { return this->m_deviceName; }
 
     /*-- Access methods of the stream. --*/
-    uint32 GetStreamSize(void);
-    int32 SeekBuffer(File_Pos fpos, int32 Offset);
-    uint32 ReadToBuffer(BYTE *Buffer, uint32 bufLen);
-    uint32 WriteFromBuffer(BYTE *Buffer, uint32 bufLen);
+    virtual uint32_t GetStreamSize() const;
+    virtual int32_t SeekBuffer(FilePos fpos, int32_t Offset);
+    virtual uint32_t ReadToBuffer(uint8_t *Buffer, uint32_t bufLen);
+    virtual uint32_t WriteFromBuffer(uint8_t *Buffer, uint32_t bufLen);
+    virtual void SetLookAheadMode(bool) {}
 
-  private :
+private:
+    int m_mode;              // File mode
     FILE_HANDLE m_hFile;     // File handle.
-    IO_TYPE m_ioType;        // Indicates how the bits are read.
-    char m_deviceName[2048]; // Name of the opened stream.
+    char m_deviceName[2048]; // Name of the file.
 };
 
 #endif /* IOBUF_H_ */

@@ -5,7 +5,7 @@ include(ExternalProject)
 ExternalProject_Add(
   googletest
   GIT_REPOSITORY https://github.com/google/googletest
-  GIT_TAG        master
+  GIT_TAG        release-1.8.1
   CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
   -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG:PATH=DebugLibs
   -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE:PATH=ReleaseLibs
