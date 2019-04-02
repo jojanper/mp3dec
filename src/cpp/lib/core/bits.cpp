@@ -870,3 +870,7 @@ Bit_Stream::FlushStream(void)
   }
 }
 
+int32_t SeekStream(FilePos filePos, int32_t offset)
+{
+  return this->m_ioBuf->SeekBuffer(filePos, offset);
+}

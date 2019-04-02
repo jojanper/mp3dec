@@ -13,6 +13,7 @@
 
 /*-- Project Headers. --*/
 #include "core/defines.h"
+#include "interface/stream.h"
 
 
 enum {
@@ -25,32 +26,6 @@ enum {
    Purpose:     Definition for the file handle.
    Explanation: - */
 typedef FILE * FILE_HANDLE;
-
-/*
-   Purpose:     Stream seeking constants.
-   Explanation: - */
-typedef enum FilePos
-{
-  CURRENT_POS,
-  START_POS,
-  END_POS
-
-} FilePos;
-
-
-class StreamBuffer
-{
-public:
-    virtual uint32_t GetStreamSize() const = 0;
-    virtual int32_t SeekBuffer(FilePos fpos, int32_t Offset) = 0;
-    virtual uint32_t ReadToBuffer(uint8_t *Buffer, uint32_t bufLen) = 0;
-    virtual uint32_t WriteFromBuffer(uint8_t *Buffer, uint32_t bufLen) = 0;
-    virtual void SetLookAheadMode(bool enable) = 0;
-
-protected:
-    StreamBuffer() {}
-    virtual ~StreamBuffer() {}
-};
 
 
 class FileBuf: public StreamBuffer

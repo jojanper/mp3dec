@@ -5,29 +5,14 @@
 
 #include <stdint.h>
 
-/*
-   Purpose:     Enables bitstream writing routines.
-   Explanation: This needs more work, not tested !! */
-//#define BS_WRITE_ROUTINES
-
-/*
-   Purpose:     Bitstream buffer mode.
-   Explanation: - */
-typedef enum BsBufferMode
-{
-  UNKNOWN_BUFFER,
-  FILE_BUFFER,
-  STREAM_BUFFER,
-  SINGLE_BUFFER
-
-} BsBufferMode;
+#include "interface/stream.h"
 
 /*
    Purpose:     Bit_Stream interface.
    Explanation: - */
 class Bit_Stream
 {
-  public:
+public:
     Bit_Stream(void);
     ~Bit_Stream(void);
 
@@ -89,29 +74,24 @@ class Bit_Stream
 
     void FlushStream(void);
 
-  /*
-    int32_t SeekStream(File_Pos filePos, int32_t offset)
+    int32_t SeekStream(FilePos filePos, int32_t offset)
     {
-      return ioBuf.SeekBuffer(filePos, offset);
+      return this->m_ioBuf->SeekBuffer(filePos, offset);
     }
-    */
 
-  private:
+private:
     void ff_buffer(int force_write);
 
     /*-- Private parameters --*/
-    //IOBuf ioBuf;                // Name of file to be opened for bit parsing.
+    StreamBuffer *m_ioBuf;      // Name of file to be opened for bit parsing.
     int device_mode;            // File mode (READ, WRITE, APPEND).
     uint32_t bits_written;      // # bits written.
-    bool eobs;                   // End of bitstream ?
+    bool eobs;                  // End of bitstream.
     uint8_t *bit_buffer;        // Bitstream buffer.
     int buf_len;                // Size of the bit buffer.
     int bit_counter;            // Bit counter within bit slot.
     int buf_index;              // Read/write index within bit buffer.
     int buffer_empty;           // Buffer empty ?
-    uint32_t streamSize;        // Filesize in bytes.
+    uint32_t streamSize;        // Stream size in bytes.
     uint32_t buf_len_old;       // Used for buffer reduction.
-    BsBufferMode bsMode;        // Type of bitstream buffer (file, stream, ...)
-    //StreamBuffer *sBuf;         // Interface for streaming.
-    //BsByteOrder bOrder;         // Byte order used by this machine.
 };
