@@ -1,15 +1,12 @@
 #pragma once
-/**************************************************************************
-  bits.h - Interface for reading bits from the opened stream.
-  *************************************************************************/
 
 #include <stdint.h>
 
 #include "interface/stream.h"
 
-/*
-   Purpose:     Bit_Stream interface.
-   Explanation: - */
+/**
+ * Bit_Stream interface for reading and writing bits from stream.
+ */
 class Bit_Stream
 {
 public:
@@ -23,14 +20,13 @@ public:
     bool endOfStream() const { return eobs; }
 
     uint32_t getBits(int n);
-    void skipBits(int n);
 
-    void byteAlign(void);
+    int byteAlign();
     uint32_t lookAhead(int N);
 
     const uint8_t *getBuffer() const
     {
-      return &bit_buffer[(buf_index << 2) + ((8 - bit_counter) >> 3)];
+      return &bit_buffer[buf_index + ((8 - bit_counter) >> 3)];
     }
 
     int getSlotsLeft() const
@@ -48,15 +44,14 @@ public:
       return streamSize;
     }
 
-    uint32_t GetCurrStreamPos(void) const
+    uint32_t GetCurrStreamPos()
     {
-      uint32_t pos = 0;
-      //if(bsMode == FILE_BUFFER) pos = ioBuf.SeekBuffer(CURRENT_POS, 0);
-      pos += (buf_index << 2) + ((8 - bit_counter) >> 3);
-      return (pos);
+      uint32_t pos = this->m_ioBuf->SeekBuffer(CURRENT_POS, 0);
+      pos += buf_index + ((8 - bit_counter) >> 3);
+      return pos;
     }
 
-    void ReleaseBufferLock(void) { eobs = 0; }
+    void ReleaseBufferLock() { eobs = 0; }
 
     void SetBufferSize(uint32_t newSize)
     {
@@ -64,22 +59,18 @@ public:
       buf_len = newSize;
     }
 
-    void SetDefaultBufferSize(void)
+    void SetDefaultBufferSize()
     {
       buf_len = buf_len_old;
     }
 
     /*-- Public methods related to the seeking of the stream. --*/
-    //IOBuf *GetIOBuf(void) { return (&ioBuf); }
-
-    void FlushStream(void);
-
-    int32_t SeekStream(FilePos filePos, int32_t offset)
-    {
-      return this->m_ioBuf->SeekBuffer(filePos, offset);
-    }
+    void FlushStream();
+    int32_t SeekStream(FilePos filePos, int32_t offset);
 
 private:
+    void skipBits(int n);
+    uint32_t getbits8(int n);
     void ff_buffer(int force_write);
 
     /*-- Private parameters --*/

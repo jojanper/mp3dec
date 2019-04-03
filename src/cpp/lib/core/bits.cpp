@@ -1,11 +1,16 @@
 /*-- Project Headers. --*/
 #include "bits.h"
 
- /*
-   Purpose:     Number of shifts needed to turn multiplication and/or
-                division into shifting operations.
-   Explanation: - */
-#define NATIVE_WORD_SHIFT 1
+/*
+  Purpose:     Number of shifts needed to turn multiplication and/or
+               division into shifting operation.
+  Explanation: - */
+#define NATIVE_WORD_SHIFT 3
+
+/*
+  Purpose:     Number of bits in one buffer item element.
+  Explanation: - */
+#define SLOT_BITS         8
 
 /*
    Purpose:     Global buffer for masking purposes.
@@ -591,6 +596,11 @@ Bit_Stream::putbits(int n, uint32 word)
 
 #endif /* BS_WRITE_ROUTINES */
 
+uint32_t
+Bit_Stream::getbits(int n)
+{
+
+}
 
 /**************************************************************************
   Title        : getbits
@@ -609,17 +619,17 @@ Bit_Stream::putbits(int n, uint32 word)
   Author(s)    : Juha Ojanpera
   *************************************************************************/
 
-uint32 __fastcall
-Bit_Stream::getbits(int n)
+uint32_t
+Bit_Stream::getbits8(int n)
 {
   int idx;
-  uint32 tmp;
+  uint32_t tmp;
 
   /*-- Update the bitstream buffer index. --*/
   if(bit_counter == 0)
   {
     ff_buffer(0);
-    bit_counter = uint32_BIT;
+    bit_counter = SLOT_BITS;
   }
 
   idx = bit_counter - n;
@@ -630,16 +640,16 @@ Bit_Stream::getbits(int n)
 
     /*-- Update the bit stream buffer. --*/
     ff_buffer(0);
-    bit_counter = uint32_BIT + idx;
+    bit_counter = SLOT_BITS + idx;
     tmp |= (bit_buffer[buf_index] >> bit_counter) & mask[-idx];
   }
   else
   {
-    bit_counter = idx; //bit_counter -= n;
+    bit_counter = idx; // bit_counter -= n;
     tmp = (bit_buffer[buf_index] >> bit_counter) & mask[n];
   }
 
-  return (tmp);
+  return tmp;
 }
 
 
@@ -660,7 +670,7 @@ Bit_Stream::getbits(int n)
   Author(s)    : Juha Ojanpera
   *************************************************************************/
 
-void __fastcall
+void
 Bit_Stream::skipbits(int n)
 {
   int idx;
@@ -669,7 +679,7 @@ Bit_Stream::skipbits(int n)
   if(bit_counter == 0)
   {
     ff_buffer(0);
-    bit_counter = uint32_BIT;
+    bit_counter = SLOT_BITS;
   }
 
   idx = bit_counter - n;
@@ -677,7 +687,7 @@ Bit_Stream::skipbits(int n)
   {
     /*-- Update the bit stream buffer. --*/
     ff_buffer(0);
-    bit_counter = uint32_BIT + idx;
+    bit_counter = SLOT_BITS + idx;
   }
   else
     bit_counter = idx; //bit_counter -= n;
@@ -698,17 +708,17 @@ Bit_Stream::skipbits(int n)
   Author(s)    : Juha Ojanpera
   *************************************************************************/
 
-void __fastcall
+void
 Bit_Stream::skipN_bits(int n)
 {
-  int i, dwords, bits_left;
+  int i, bytes, bits_left;
 
   /*-- Shifting is more efficient than division. --*/
-  dwords = (n >> NATIVE_WORD_SHIFT);
-  bits_left = n - (dwords << NATIVE_WORD_SHIFT);
+  bytes = (n >> NATIVE_WORD_SHIFT);
+  bits_left = n - (bytes << NATIVE_WORD_SHIFT);
 
-  for(i = 0; i < dwords; i++)
-    skipbits(uint32_BIT);
+  for(i = 0; i < bytes; i++)
+    skipbits(SLOT_BITS);
 
   if(bits_left)
     skipbits(bits_left);
@@ -727,14 +737,16 @@ Bit_Stream::skipN_bits(int n)
   Author(s)    : Juha Ojanpera
   *************************************************************************/
 
-void __fastcall
+int
 Bit_Stream::byte_align(void)
 {
   int bits_to_byte_align;
 
-  bits_to_byte_align = bit_counter & 7; //% 8;
+  bits_to_byte_align = bit_counter & 7; // % 8;
   if(bits_to_byte_align)
     skipbits(bits_to_byte_align);
+
+  return bits_to_byte_align;
 }
 
 
@@ -753,7 +765,7 @@ Bit_Stream::byte_align(void)
   Author(s)    : Juha Ojanpera
   *************************************************************************/
 
-uint32 __fastcall
+uint32
 Bit_Stream::look_ahead(int N)
 {
   Bit_Stream bs_tmp;
@@ -772,8 +784,7 @@ Bit_Stream::look_ahead(int N)
    * buffer must not be released to receive new data from the stream.
    * Following method provides us this feature.
    */
-  if(bsMode == STREAM_BUFFER)
-    sBuf->SetLookAheadMode(TRUE);
+  this->m_ioBuf->SetLookAheadMode(TRUE);
 
   dword = getbits(N);
 
@@ -783,43 +794,23 @@ Bit_Stream::look_ahead(int N)
    */
   if(buf_index < bs_tmp.buf_index)
   {
-    switch(bsMode)
-    {
-      case FILE_BUFFER:
-        /*
-         * Remember that the stream pointer has to be explicitly
-         * updated. Due to this, the file pointer has been advanced
-         * only by one buffer size. To restore the previous state,
-         * we only have to "cancel" the file pointer update to get
-         * the previous buffer state.
-         */
-        ioBuf.SeekBuffer(CURRENT_POS, -(bs_tmp.buf_len << 2));
-        buf_len = ioBuf.ReadToBuffer(byte_buffer, bs_tmp.buf_len << 2);
-        buf_len >>= 2;
-        break;
-
-      case STREAM_BUFFER:
-        /*
-         * Get the previous streaming buffer. It can be easily obtained
-         * since we are in lookahead mode from the StreamBuffer point of view,
-         * meaning that the previous buffer has not been released for other use.
-         */
-        uint32 nitems = buf_len << 2;
-        byte_buffer = sBuf->GetStreamBuffer(&nitems, TRUE);
-        buf_len = nitems >> 2;
-        break;
-    }
-
-    /*-- Convert byte order to big endian. --*/
-#ifndef X86_ASM
-    if(bOrder == ORDER_LITTLEENDIAN)
-#endif
-      SwapArray((uint32 *)byte_buffer, bit_buffer, buf_len);
+    /*
+     * Remember that the stream pointer has to be explicitly
+     * updated. Due to this, the file pointer has been advanced
+     * only by one buffer size. To restore the previous state,
+     * we only have to "cancel" the file pointer update to get
+     * the previous buffer state.
+     *
+     * Get the previous streaming buffer. It can be easily obtained
+     * since we are in lookahead mode from the StreamBuffer point of view,
+     * meaning that the previous buffer has not been released for other use.
+     */
+    this->m_ioBuf->SeekBuffer(CURRENT_POS, -bs_tmp.buf_len);
+    buf_len = this->m_ioBuf->ReadToBuffer(byte_buffer, bs_tmp.buf_len);
   }
 
   /*-- Back to "normal" mode of operation. --*/
-  if(bsMode == STREAM_BUFFER)
-    sBuf->SetLookAheadMode(FALSE);
+  this->m_ioBuf->SetLookAheadMode(FALSE);
 
   eobs = bs_tmp.eobs;
   buf_len = bs_tmp.buf_len;
@@ -843,31 +834,28 @@ Bit_Stream::look_ahead(int N)
   Author(s)    : Juha Ojanpera
   *************************************************************************/
 
-void __stdcall
+void
 Bit_Stream::FlushStream(void)
 {
-  if(bsMode == FILE_BUFFER)
-  {
-    int byte_offset;
+  int byte_offset;
 
-    byte_align();
+  byte_align();
 
-    /* Calculate how much the stream pointer needs to be updated. */
-    byte_offset = buf_index << 2;
-    byte_offset += (uint32_BIT - bit_counter) >> 3;
-    if(byte_offset)
-      ioBuf.SeekBuffer(CURRENT_POS, byte_offset);
+  /* Calculate how much the stream pointer needs to be updated. */
+  byte_offset = buf_index;
+  byte_offset += (SLOT_BITS - bit_counter) >> 3;
+  if(byte_offset)
+    this->m_ioBuf->SeekBuffer(CURRENT_POS, byte_offset);
 
-    /*
-     * This has the effect that the next time we start to read the bit
-     * stream, the stream pointer is not updated before reading. This is
-     * because if this function is called then it is assumed that the stream
-     * pointer is already in its correct place.
-     */
-    buffer_empty = 1;
-    buf_index = -1;
-    bit_counter = 0;
-  }
+  /*
+    * This has the effect that the next time we start to read the bit
+    * stream, the stream pointer is not updated before reading. This is
+    * because if this function is called then it is assumed that the stream
+    * pointer is already in its correct place.
+    */
+  buffer_empty = 1;
+  buf_index = -1;
+  bit_counter = 0;
 }
 
 int32_t SeekStream(FilePos filePos, int32_t offset)
