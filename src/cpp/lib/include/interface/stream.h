@@ -36,6 +36,9 @@ public:
     // Set stream to lookahead mode
     virtual void SetLookAheadMode(bool enable) = 0;
 
+    // Is stream writable
+    virtual bool CanWrite() const = 0;
+
 protected:
     StreamBuffer() {}
     virtual ~StreamBuffer() {}

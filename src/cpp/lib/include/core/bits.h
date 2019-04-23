@@ -14,12 +14,14 @@ public:
     ~Bit_Stream(void);
 
     /*-- Public methods. --*/
-    bool open(const char *stream, int mode, int size);
+    bool open(StreamBuffer *ioBuf, int size);
     void close(void);
 
     bool endOfStream() const { return eobs; }
 
     uint32_t getBits(int n);
+    void putBits(int n, uint32_t word);
+    void skipBits(int n);
 
     int byteAlign();
     uint32_t lookAhead(int N);
@@ -69,13 +71,14 @@ public:
     int32_t SeekStream(FilePos filePos, int32_t offset);
 
 private:
-    void skipBits(int n);
+    void skipbits8(int n);
     uint32_t getbits8(int n);
+    void putbits8(int n, uint32_t word);
     void ff_buffer(int force_write);
 
     /*-- Private parameters --*/
     StreamBuffer *m_ioBuf;      // Name of file to be opened for bit parsing.
-    int device_mode;            // File mode (READ, WRITE, APPEND).
+    //int device_mode;            // File mode (READ, WRITE, APPEND).
     uint32_t bits_written;      // # bits written.
     bool eobs;                  // End of bitstream.
     uint8_t *bit_buffer;        // Bitstream buffer.

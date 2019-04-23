@@ -46,6 +46,8 @@ public:
     virtual uint32_t WriteFromBuffer(uint8_t *Buffer, uint32_t bufLen);
     virtual void SetLookAheadMode(bool) {}
 
+    virtual bool CanWrite() const;
+
 private:
     int m_mode;              // File mode
     FILE_HANDLE m_hFile;     // File handle.

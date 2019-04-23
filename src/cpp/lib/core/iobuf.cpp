@@ -141,3 +141,9 @@ FileBuf::WriteFromBuffer(uint8_t *Buffer, uint32_t bufLen)
 
   return fwrite(Buffer, sizeof(uint8_t), bufLen, this->m_hFile);
 }
+
+bool
+FileBuf::CanWrite() const
+{
+  return this->m_mode != kFileReadMode;
+}

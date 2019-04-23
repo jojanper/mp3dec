@@ -1,5 +1,10 @@
+#include <stddef.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
 /*-- Project Headers. --*/
-#include "bits.h"
+#include "core/bits.h"
 
 /*
   Purpose:     Number of shifts needed to turn multiplication and/or
@@ -22,85 +27,26 @@ static const uint32_t mask[] = {
  0xFFFFFFFL, 0x1FFFFFFFL, 0x3FFFFFFFL, 0x7FFFFFFFL, 0xFFFFFFFFL
 };
 
-/*
-   Purpose:     Macro for swapping the byte order of a 32-bit word.
-   Explanation: - */
-#ifndef X86_ASM
-#ifndef NATIVE_64_BIT
-#define swap_int32(uint_32) (((uint_32) << 24) |               \
-                            (((uint_32) << 8) & 0x00ff0000L) | \
-                            (((uint_32) >> 8) & 0x0000ff00L) | \
-                            ( (uint_32) >> 24))
-#else
-/*
-   Purpose:     Macro for swapping the byte order of a 64-bit word.
-   Explanation: - */
-#define swap_int64(uint_64) (((uint_64) << 56) |                        \
-                            (((uint_64) << 40) & 0x00ff000000000000L) | \
-                            (((uint_64) << 24) & 0x0000ff0000000000L) | \
-                            (((uint_64) << 8)  & 0x000000ff00000000L) | \
-                            (((uint_64) >> 8)  & 0x00000000ff000000L) | \
-                            (((uint_64) >> 24) & 0x0000000000ff0000L) | \
-                            (((uint_64) >> 40) & 0x000000000000ff00L) | \
-                            ( (uint_64) >> 56))
 
-#endif /* not NATIVE_64_BIT */
-#endif /* not X86_ASM */
-
-/**************************************************************************
-  Title        : Bit_Stream
-
-  Purpose      : Class constructor.
-
-  Usage        : Bit_Stream()
-
-  Author(s)    : Juha Ojanpera
-  *************************************************************************/
-
-__stdcall
 Bit_Stream::Bit_Stream(void)
 {
-#ifdef BS_WRITE_ROUTINES
-  device_mode = READ_MODE;
   bits_written = 0;
-#endif
   bit_buffer = NULL;
-  byte_buffer = NULL;
   buf_len = 0;
   bit_counter = 0;
   buf_index = 0;
   eobs = 1;
   buffer_empty = 0;
   streamSize = 0;
-  sBuf = NULL;
-  bsMode = UNKNOWN_BUFFER;
-  bOrder = ORDER_UNKNOWN;
 }
 
-
-/**************************************************************************
-  Title        : ~Bit_Stream
-
-  Purpose      : Class destructor.
-
-  Usage        : ~Bit_Stream()
-
-  Author(s)    : Juha Ojanpera
-  *************************************************************************/
-
-__stdcall
 Bit_Stream::~Bit_Stream(void)
 {
+  printf("desctructor\n");
   if(bit_buffer)
-    delete [] bit_buffer;
+    free(bit_buffer); //delete [] bit_buffer;
   bit_buffer = NULL;
-
-  if(bsMode == FILE_BUFFER)
-  {
-    if(byte_buffer)
-      delete [] byte_buffer;
-    byte_buffer = NULL;
-  }
+  printf("desctructir done\n");
 
   eobs = 1;
   buf_len = 0;
@@ -108,101 +54,6 @@ Bit_Stream::~Bit_Stream(void)
   buf_index = 0;
   buffer_empty = 0;
   streamSize = 0;
-  sBuf = NULL;
-
-  bsMode = UNKNOWN_BUFFER;
-  bOrder = ORDER_UNKNOWN;
-}
-
-
-/**************************************************************************
-  Title       : SwapArray
-
-  Purpose     : Swaps the byte order of the input array.
-
-  Usage       : SwapArray(in_buffer, out_buffer, len)
-
-  Input       : in_buffer  - bytes to be swapped
-                len        - length of the array
-
-  Output      : out_buffer - swapped bytes
-
-  Author(s)   : Juha Ojanpera
-  *************************************************************************/
-
-void __fastcall
-Bit_Stream::SwapArray(uint32 *in_buffer, uint32 *out_buffer, int len)
-{
-#ifdef X86_ASM
-  __asm {
-        // edx = in_buffer
-        // ecx = out_buffer
-        // dword ptr[ebp + 8] = len
-
-        mov eax, 0                      // i = 0
-        mov edi, dword ptr[ebp + 8]
-        shl edi, 2                      // len
-      .MainLoop :
-        mov esi, dword ptr [edx + eax]
-        bswap esi                       // swap byte order of in_buffer[i]
-        mov dword ptr [ecx + eax], esi  // out_buffer[i] = swapped in_buffer[i]
-
-        add eax, 4                      // i++
-        cmp eax, edi                    // if(i < len)
-        jl .MainLoop                    //   goto .MainLoop
-  }
-#else
-  register uint32 dword, *dwordp;
-
-  /* Swap the bytes. */
-  dwordp = out_buffer;
-  for(int i = 0; i < len; i++)
-  {
-    dword = in_buffer[i];//*dwordp;
-#ifndef NATIVE_64_BIT
-    *dwordp++ = swap_int32 (dword);
-#else
-    *dwordp++ = swap_int64 (dword);
-#endif /* not NATIVE_64_BIT */
-  }
-
-#endif /* X86_ASM */
-}
-
-
-/**************************************************************************
-  Title       : DetermineByteOrder
-
-  Purpose     : Routine to determine byte order.
-
-  Usage       : y = DetermineByteOrder()
-
-  Output      : y - byte order of this machine
-
-  Author(s)   : Juha Ojanpera
-  *************************************************************************/
-
-BsByteOrder __fastcall
-Bit_Stream::DetermineByteOrder(void)
-{
-  char s[sizeof(long) + 1];
-  union
-  {
-    long longval;
-    char charval[sizeof(long)];
-  } probe;
-
-  probe.longval = 0x41424344L;  /* ABCD in ASCII */
-  strncpy(s, probe.charval, sizeof(long));
-  s[ sizeof(long) ] = '\0';
-
-  if(strcmp(s, "ABCD") == 0)
-    return (ORDER_BIGENDIAN);
-  else
-    if(strcmp(s, "DCBA") == 0)
-      return (ORDER_LITTLEENDIAN);
-    else
-      return (ORDER_UNKNOWN);
 }
 
 
@@ -225,135 +76,37 @@ Bit_Stream::DetermineByteOrder(void)
   Explanation : When streaming, the 'stream' and 'size' parameters are ignored.
 
   Author(s)   : Juha Ojanpera
-  *************************************************************************/
+  ************************************************************************/
 
-BOOL __stdcall
-Bit_Stream::Open(HINSTANCE hInst, const char *stream, int mode, int size,
-                 StreamBuffer *sBuf)
+bool
+Bit_Stream::open(StreamBuffer *ioBuf, int size)
 {
   bit_buffer = NULL;
+  this->m_ioBuf = ioBuf;
 
-  /*-- Are we streaming ? --*/
-  this->sBuf = sBuf;
-  bsMode = (sBuf) ? STREAM_BUFFER : FILE_BUFFER;
-  if(FILE_BUFFER && stream == NULL)
-    bsMode = SINGLE_BUFFER;
-
-  /*-- When streaming, the bits are read from the StreamBuffer. --*/
-  switch(bsMode)
-  {
-    case FILE_BUFFER:
-      /*-- Open the file, internal access method uses multimedia file I/O. --*/
-      if(!ioBuf.OpenBuffer(hInst, stream, mode, WINDOWS_IO))
-        return (FALSE);
-      break;
-
-    case STREAM_BUFFER:
-      /*-- What is the maximum size that can be read at a time. --*/
-      size = sBuf->GetStreamBufferLen();
-      break;
-
-    default:
-      break;
+  if (!this->m_ioBuf->CanWrite()) {
+    bit_counter = 0;
+    buf_index = -1;
   }
-
-  switch(mode)
-  {
-    case READ_MODE:
-      bit_counter = 0;
-      break;
-
-    case WRITE_MODE:
-      bit_counter = sizeof(uint32) << 3;
-      break;
-
-    case APPEND_MODE:
-      bit_counter = sizeof(uint32) << 3;
-      break;
+  else {
+    buf_index = 0;
+    bit_counter = SLOT_BITS;
   }
 
   /*-- Allocate the bit buffer. --*/
   buf_len_old = buf_len = size;
-  if(buf_len)
-  {
-    bit_buffer = (uint32 *)Chunk::GetChunk(UINT32_CHUNK, buf_len);
-    switch(bsMode)
-    {
-      case FILE_BUFFER:
-        byte_buffer = (BYTE *)Chunk::GetChunk(BYTE_CHUNK, buf_len << 2);
-        break;
+  bit_buffer = (uint8_t *) calloc(1, size);
+  //new uint8_t[buf_len];
 
-      default:
-        byte_buffer = NULL;
-    }
-  }
-
-#ifdef BS_WRITE_ROUTINES
-  device_mode = mode;
   bits_written = 0;
-#endif
   buffer_empty = 1;
-  buf_index = -1;
   eobs = 0;
 
-  bOrder = DetermineByteOrder();
-
   /*-- The size is needed when calculating the total length of the file. --*/
-  switch(bsMode)
-  {
-    case FILE_BUFFER:
-      streamSize = ioBuf.GetStreamSize();
-      break;
+  streamSize = this->m_ioBuf->GetStreamSize();
 
-    default:
-      streamSize = 0;
-  }
-
-  return (TRUE);
+  return true;
 }
-
-BOOL __stdcall
-Bit_Stream::Open(HINSTANCE hInst, BYTE *bsBuffer, int size)
-{
-  int newBufSize;
-  BOOL result = TRUE;
-
-  newBufSize = (size >> 2);
-  if(bit_buffer == NULL)
-    this->Open(hInst, NULL, READ_MODE, 16384, NULL);
-  buf_len = newBufSize + 2;
-
-  SwapArray((uint32 *)bsBuffer, bit_buffer, newBufSize);
-  int mod = size & 3;
-  if(mod)
-  {
-    size = newBufSize << 2;
-    switch(mod)
-    {
-      case 1:
-        bit_buffer[newBufSize] = ((uint32)bsBuffer[size] << 24);
-        break;
-
-      case 2:
-        bit_buffer[newBufSize] = ((uint32)bsBuffer[size]     << 24) |
-                                 ((uint32)bsBuffer[size + 1] << 16);
-        break;
-
-      case 3:
-        bit_buffer[newBufSize] = ((uint32)bsBuffer[size]     << 24) |
-                                 ((uint32)bsBuffer[size + 1] << 16) |
-                                 ((uint32)bsBuffer[size + 2] << 8);
-        break;
-    }
-  }
-
-  buf_index = 0;
-  buffer_empty = 0;
-  bit_counter = uint32_BIT;
-
-  return (result);
-}
-
 
 /**************************************************************************
   Title       : Close
@@ -365,26 +118,18 @@ Bit_Stream::Open(HINSTANCE hInst, BYTE *bsBuffer, int size)
   Author(s)   : Juha Ojanpera
   *************************************************************************/
 
-void __stdcall
-Bit_Stream::Close(void)
+void
+Bit_Stream::close(void)
 {
-#ifdef BS_WRITE_ROUTINES
-  if(device_mode == WRITE_MODE && ((buf_index | bit_counter) != 0))
+  printf("Close\n");
+  if(this->m_ioBuf->CanWrite() && ((buf_index | bit_counter) != 0))
     ff_buffer(1);
-#endif /* BS_WRITE_ROUTINES */
+  printf("close done %p\n", bit_buffer);
 
   if(bit_buffer)
-    delete [] bit_buffer;
+    free(bit_buffer); //delete [] bit_buffer;
   bit_buffer = NULL;
-
-  if(bsMode == FILE_BUFFER)
-  {
-    if(byte_buffer)
-      delete [] byte_buffer;
-    byte_buffer = NULL;
-
-    ioBuf.CloseBuffer();
-  }
+  printf("close done done\n");
 }
 
 
@@ -409,51 +154,20 @@ Bit_Stream::Close(void)
 void
 Bit_Stream::ff_buffer(int force_write)
 {
-#ifdef BS_WRITE_ROUTINES
-  switch(device_mode)
-  {
-    case READ_MODE:
-#endif
+  if (!this->m_ioBuf->CanWrite()) {
       if(!eobs)
       {
         buf_index++;
         if(buf_index == buf_len || buffer_empty)
         {
-          uint32 nitems;
-
-          switch(bsMode)
-          {
-            case FILE_BUFFER:
-              /*
-               * Update the file pointer before reading new bits to to bit
-               * buffer. If 'buf_index' == 0 we are reading for the first
-               * time so no need to update the pointer.
-               */
-              if(!buffer_empty && buf_index != 0)
-                ioBuf.SeekBuffer(CURRENT_POS, buf_index << 2);
-              nitems = ioBuf.ReadToBuffer(byte_buffer, buf_len << 2);
-              break;
-
-            case STREAM_BUFFER:
-              /*
-               * Read new bits from the StreamBuffer class. If no more data
-               * is available, the execution will be stopped. It is therefore
-               * recommended that bitstream parsing is part of a thread. The
-               * StreamBuffer will then flag when internal buffers are full.
-               * If end-of-stream has been found, buffer size of 0 will be
-               * returned.
-               */
-              nitems = buf_len << 2;
-              byte_buffer = sBuf->GetStreamBuffer(&nitems);
-              break;
-
-            default:
-              eobs = 1;
-              buf_index = 0;
-              memset(bit_buffer, 0, buf_len * sizeof(uint32));
-              return;
-          }
-          nitems >>= 2;
+          /*
+            * Update the file pointer before reading new bits to to bit
+            * buffer. If 'buf_index' == 0 we are reading for the first
+            * time so no need to update the pointer.
+            */
+          if(!buffer_empty && buf_index != 0)
+            this->m_ioBuf->SeekBuffer(CURRENT_POS, buf_index);
+          auto nitems = this->m_ioBuf->ReadToBuffer(bit_buffer, buf_len);
 
           if(nitems == 0)
           {
@@ -463,28 +177,16 @@ Bit_Stream::ff_buffer(int force_write)
              * be no sudden changes at the output.
              */
             eobs = 1;
-            memset(bit_buffer, 0, buf_len * sizeof(uint32));
-            memset(byte_buffer, 0, buf_len * sizeof(uint32));
+            memset(this->bit_buffer, 0, buf_len);
             return;
           }
 
           buf_index = 0;
           buffer_empty = 0;
           buf_len = (int)nitems;
-
-          /*-- Convert byte order to big endian. --*/
-#ifndef X86_ASM
-          if(bOrder == ORDER_LITTLEENDIAN)
-#endif
-            SwapArray((uint32 *)byte_buffer, bit_buffer, buf_len);
         }
       }
-#ifdef BS_WRITE_ROUTINES
-      break;
-#endif
-
-#ifdef BS_WRITE_ROUTINES
-    case WRITE_MODE:
+  } else {
       buf_index++;
 
       /* Check whether the buffer is full. */
@@ -497,29 +199,35 @@ Bit_Stream::ff_buffer(int force_write)
          */
         buf_index = (buf_index == buf_len) ? buf_len : buf_index;
 
-        /* Convert byte order big endian. */
-        if(bOrder == ORDER_LITTLEENDIAN)
-          SwapArray(bit_buffer, buf_len);
-
         /* Write the buffer to output stream. */
-        nitems = ioBuf.WriteFromBuffer(bit_buffer, buf_index << 2);
-        nitems >>= 2;
+        printf("WRITE: %i %i\n", buf_index, buf_len);
+        this->m_ioBuf->WriteFromBuffer(bit_buffer, buf_index);
+        printf("WRITE DONE\n");
 
-        if(nitems != buf_index)
-          ; // Add error handling here if needed.
+        //if(nitems != buf_index)
+        //  ; // Add error handling here if needed.
 
         buf_index = 0;
       }
-      break;
-#endif /* BS_WRITE_ROUTINES */
-
-#ifdef BS_WRITE_ROUTINES
   }
-#endif
 }
 
+void
+Bit_Stream::putBits(int n, uint32_t word)
+{
+  /*-- Mask the unwanted bits to zero, just for safety. --*/
+  word &= mask[n];
 
-#ifdef BS_WRITE_ROUTINES
+  while(n)
+  {
+    auto rbits = (n > SLOT_BITS) ? SLOT_BITS : n;
+    n -= rbits;
+    printf("n = %i %i %i %i\n", rbits, n, bit_counter, buf_index);
+    this->putbits8(rbits, ((word >> n) & mask[rbits]));
+    printf("putbits8 done %i\n", buf_index);
+  }
+}
+
 /**************************************************************************
   Title        : putbits
 
@@ -536,16 +244,16 @@ Bit_Stream::ff_buffer(int force_write)
   Author(s)    : Juha Ojanpera
   *************************************************************************/
 
-void __stdcall
-Bit_Stream::putbits(int n, uint32 word)
+void
+Bit_Stream::putbits8(int n, uint32_t word)
 {
   bits_written += n;
 
   /*-- Update the bitstream buffer index. --*/
   if(bit_counter == 0)
   {
-    ff_buffer(bs, 0);
-    bit_counter = uint32_BIT;
+    ff_buffer(0);
+    bit_counter = SLOT_BITS;
     bit_buffer[buf_index] = 0;
   }
 
@@ -563,29 +271,33 @@ Bit_Stream::putbits(int n, uint32 word)
   if((bit_counter-n) < 0)
   {
     int end;
-    uint32 next;
+    uint32_t next;
+
+    printf("HIP\n");
 
     /*-- Number of bits needed to store the lower part. --*/
     end = n-bit_counter;
 
     /*-- Store the upper part to the bitstream buffer. --*/
-    bit_buffer[buf_index] |= ((uint32)word >> end);
+    bit_buffer[buf_index] |= ((uint32_t)word >> end);
 
     /*-- Mask the upper part from 'word' to zero. --*/
-    next = (uint32)word & mask[end];
+    next = (uint32_t)word & mask[end];
 
     /*-- Update the bitstream buffer index. --*/
-    ff_buffer(bs, 0);
-    bit_counter = uint32_BIT;
+    ff_buffer(0);
+    bit_counter = SLOT_BITS;
     bit_buffer[buf_index] = 0;
 
     bit_counter -= end;
 
     /*-- Store the lower part to the bitstream buffer. --*/
-    bit_buffer[buf_index] |= ((uint32)next << bit_counter);
+    bit_buffer[buf_index] |= ((uint32_t)next << bit_counter);
   }
   else
   {
+    printf("HOP %i\n", buf_index);
+
     bit_counter -= n;
 
     /*-- For safety, mask the unwanted bits to zero. --*/
@@ -594,12 +306,20 @@ Bit_Stream::putbits(int n, uint32 word)
 
 }
 
-#endif /* BS_WRITE_ROUTINES */
-
 uint32_t
-Bit_Stream::getbits(int n)
+Bit_Stream::getBits(int n)
 {
+  uint32_t value = 0;
 
+  while(n)
+  {
+    auto rbits = (n > SLOT_BITS) ? SLOT_BITS : n;
+    value <<= rbits;
+    value |= this->getbits8(rbits);
+    n -= rbits;
+  }
+
+  return value;
 }
 
 /**************************************************************************
@@ -671,7 +391,7 @@ Bit_Stream::getbits8(int n)
   *************************************************************************/
 
 void
-Bit_Stream::skipbits(int n)
+Bit_Stream::skipbits8(int n)
 {
   int idx;
 
@@ -709,7 +429,7 @@ Bit_Stream::skipbits(int n)
   *************************************************************************/
 
 void
-Bit_Stream::skipN_bits(int n)
+Bit_Stream::skipBits(int n)
 {
   int i, bytes, bits_left;
 
@@ -718,10 +438,10 @@ Bit_Stream::skipN_bits(int n)
   bits_left = n - (bytes << NATIVE_WORD_SHIFT);
 
   for(i = 0; i < bytes; i++)
-    skipbits(SLOT_BITS);
+    skipbits8(SLOT_BITS);
 
   if(bits_left)
-    skipbits(bits_left);
+    skipbits8(bits_left);
 }
 
 
@@ -738,13 +458,13 @@ Bit_Stream::skipN_bits(int n)
   *************************************************************************/
 
 int
-Bit_Stream::byte_align(void)
+Bit_Stream::byteAlign(void)
 {
   int bits_to_byte_align;
 
   bits_to_byte_align = bit_counter & 7; // % 8;
   if(bits_to_byte_align)
-    skipbits(bits_to_byte_align);
+    skipbits8(bits_to_byte_align);
 
   return bits_to_byte_align;
 }
@@ -765,11 +485,11 @@ Bit_Stream::byte_align(void)
   Author(s)    : Juha Ojanpera
   *************************************************************************/
 
-uint32
-Bit_Stream::look_ahead(int N)
+uint32_t
+Bit_Stream::lookAhead(int N)
 {
   Bit_Stream bs_tmp;
-  uint32 dword;
+  uint32_t dword;
 
   /*-- Store only the most important variables. --*/
   bs_tmp.eobs = eobs;
@@ -784,9 +504,9 @@ Bit_Stream::look_ahead(int N)
    * buffer must not be released to receive new data from the stream.
    * Following method provides us this feature.
    */
-  this->m_ioBuf->SetLookAheadMode(TRUE);
+  this->m_ioBuf->SetLookAheadMode(true);
 
-  dword = getbits(N);
+  dword = getBits(N);
 
   /*
    * Restore previous state of the bitstream buffer.
@@ -806,11 +526,11 @@ Bit_Stream::look_ahead(int N)
      * meaning that the previous buffer has not been released for other use.
      */
     this->m_ioBuf->SeekBuffer(CURRENT_POS, -bs_tmp.buf_len);
-    buf_len = this->m_ioBuf->ReadToBuffer(byte_buffer, bs_tmp.buf_len);
+    buf_len = this->m_ioBuf->ReadToBuffer(bit_buffer, bs_tmp.buf_len);
   }
 
   /*-- Back to "normal" mode of operation. --*/
-  this->m_ioBuf->SetLookAheadMode(FALSE);
+  this->m_ioBuf->SetLookAheadMode(false);
 
   eobs = bs_tmp.eobs;
   buf_len = bs_tmp.buf_len;
@@ -818,7 +538,7 @@ Bit_Stream::look_ahead(int N)
   buf_index = bs_tmp.buf_index;
   buffer_empty = bs_tmp.buffer_empty;
 
-  return (dword);
+  return dword;
 }
 
 
@@ -839,7 +559,7 @@ Bit_Stream::FlushStream(void)
 {
   int byte_offset;
 
-  byte_align();
+  byteAlign();
 
   /* Calculate how much the stream pointer needs to be updated. */
   byte_offset = buf_index;
@@ -858,7 +578,8 @@ Bit_Stream::FlushStream(void)
   bit_counter = 0;
 }
 
-int32_t SeekStream(FilePos filePos, int32_t offset)
+int32_t
+Bit_Stream::SeekStream(FilePos filePos, int32_t offset)
 {
   return this->m_ioBuf->SeekBuffer(filePos, offset);
 }

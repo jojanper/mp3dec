@@ -5,6 +5,11 @@ include(CheckFunctionExists)
 include(CheckIncludeFiles)
 include(CheckIncludeFileCXX)
 
+option(BUILD_APPS "Build test apps" ON)
+option(BUILD_TESTS "Build gtest unit tests" ON)
+option(HAVE_THREADS "Use pthread in unit tests" ON)
+option(HAVE_COVERAGE "Enable code coverage" ON)
+
 # Load all cmake modules
 file(GLOB cmakeFiles ${CMAKE_SOURCE_DIR}/cmake/*.cmake)
 foreach(cmakeFile ${cmakeFiles})
@@ -15,10 +20,6 @@ endforeach(cmakeFile)
 # Project specific config
 include(${PROJECT_SOURCE_DIR}/projectConfig.cmake)
 
-option(BUILD_APPS "Build test apps" ON)
-option(BUILD_TESTS "Build gtest unit tests" ON)
-option(HAVE_THREADS "Use pthread in unit tests" ON)
-
 set(EXT_PROJECTS_DIR ${PROJECT_SOURCE_DIR}/extProjects)
 
 # Unit testing: gtest as external component
@@ -27,10 +28,12 @@ if(BUILD_TESTS)
     find_package(Threads REQUIRED)
   endif(HAVE_THREADS)
 
-  find_program(MEMORYCHECK_COMMAND valgrind )
-  set(MEMORYCHECK_COMMAND_OPTIONS "--tool=memcheck --show-reachable=yes --undef-value-errors=yes --leak-check=full --track-origins=yes --error-exitcode=1")
-  # --gen-suppressions=all --log-file=valgrind_log.txt --error-limit=no" )
-  set(MEMORYCHECK_SUPPRESSIONS_FILE "${PROJECT_SOURCE_DIR}/valgrind_suppressions.txt" )
+  #find_program(MEMORYCHECK_COMMAND valgrind )
+  #set(MEMORYCHECK_COMMAND_OPTIONS
+  #  "--tool=memcheck --show-reachable=yes --undef-value-errors=yes
+  #  --leak-check=full --track-origins=yes --error-exitcode=1")
+  #set(MEMORYCHECK_SUPPRESSIONS_FILE "${PROJECT_SOURCE_DIR}/valgrind_suppressions.txt" )
+
   #file(TO_CMAKE_PATH "${CMAKE_SOURCE_DIR}/resources/valgrind_supp.xml" MEMORYCHECK_SUPPRESSIONS_FILE)
   #add_custom_target(valgrind
   #      COMMAND "${VALGRIND}" --tool=memcheck --show-reachable=yes --undef-value-errors=yes --leak-check=full --track-origins=yes --error-exitcode=1
@@ -41,9 +44,12 @@ if(BUILD_TESTS)
   #      --force-new-ctest-process --test-action memcheck --output-on-failure
   #  COMMAND cat "${CMAKE_BINARY_DIR}/Testing/Temporary/MemoryChecker.*.log")
 
+  add_subdirectory(${EXT_PROJECTS_DIR}/valgrind)
+
   include(CTest)
   enable_testing()
   add_subdirectory(${EXT_PROJECTS_DIR}/gtest)
+  add_subdirectory(${EXT_PROJECTS_DIR}/gcovr)
   include_directories(${GTEST_INCLUDE_DIRS})
 endif(BUILD_TESTS)
 
