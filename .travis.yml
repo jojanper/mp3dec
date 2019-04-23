@@ -15,6 +15,8 @@ addons:
       - gcc-7
       - g++-7
       - cmake
+      - valgrind
+      - python-pip
 
 before_install:
   - gcc -v
@@ -29,11 +31,12 @@ install:
   - node --version
   - npm --version
   - npm i
+  - pip install gcovr
 
 script:
   # Debug build
   - sh ./runbuild.sh Debug build-debug
-  - cd build-debug && npm run valgrind-tests
+  - cd build-debug && ctest -T memcheck && cat Testing/Temporary/MemoryChecker.*.log"
   - cd build-debug && make coverage
 
   # Release build
