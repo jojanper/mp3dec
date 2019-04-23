@@ -31,6 +31,13 @@ install:
   - npm i
 
 script:
+  # Debug build
   - sh ./runbuild.sh Debug build-debug
+  - cd build-debug && npm run valgrind-tests
+  - cd build-debug && make coverage
+
+  # Release build
   - sh ./runbuild.sh Release build-release
+
+  # Node integration build
   - npm run build
