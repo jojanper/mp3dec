@@ -31,7 +31,8 @@ install:
   - node --version
   - npm --version
   - npm i
-  - pip install gcovr
+  - sudo pip install --upgrade pip
+  - sudo pip install gcovr
 
 script:
   # Debug build
