@@ -37,8 +37,10 @@ install:
 script:
   # Debug build
   - sh ./runbuild.sh Debug build-debug
-  - cd build-debug && ctest -T memcheck && cat Testing/Temporary/MemoryChecker.*.log
-  - cd build-debug && make coverage
+  - cd build-debug
+  - ctest -T memcheck && cat Testing/Temporary/MemoryChecker.*.log
+  - make coverage
+  - cd ..
 
   # Release build
   - sh ./runbuild.sh Release build-release
