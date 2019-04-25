@@ -39,6 +39,7 @@ Cpp11BracedListStyle: true
 IndentCaseLabels: true
 IndentWidth: 4
 PenaltyReturnTypeOnItsOwnLine: 90
+DerivePointerAlignment: false
 PointerAlignment: Right
 SpaceAfterCStyleCast: true
 SpacesBeforeTrailingComments: 1
