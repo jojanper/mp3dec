@@ -8,9 +8,9 @@
  */
 typedef enum FilePos
 {
-  CURRENT_POS,
-  START_POS,
-  END_POS
+    CURRENT_POS,
+    START_POS,
+    END_POS
 
 } FilePos;
 
@@ -28,15 +28,15 @@ public:
     virtual int32_t SeekBuffer(FilePos fpos, int32_t Offset) = 0;
 
     // Read from stream, return number of bytes read
-    virtual uint32_t ReadToBuffer(uint8_t *Buffer, uint32_t bufLen) = 0;
+    virtual uint32_t ReadToBuffer(uint8_t *buffer, uint32_t bufLen) = 0;
 
     // Write to stream, return number of bytes written
-    virtual uint32_t WriteFromBuffer(uint8_t *Buffer, uint32_t bufLen) = 0;
+    virtual uint32_t WriteFromBuffer(uint8_t *buffer, uint32_t bufLen) = 0;
 
     // Set stream to lookahead mode
     virtual void SetLookAheadMode(bool enable) = 0;
 
-    // Is stream writable
+    // Is stream writable?
     virtual bool CanWrite() const = 0;
 
 protected:

@@ -19,8 +19,8 @@ class AdvanceExcpt
 {
 public:
     /*-- Constructor --*/
-    //AdvanceExcpt(Error_Msg *ErrMsg) { emsg = ErrMsg; };
-    AdvanceExcpt() { }
+    // AdvanceExcpt(Error_Msg *ErrMsg) { emsg = ErrMsg; };
+    AdvanceExcpt() {}
 
     /*-- Deconstructor --*/
     ~AdvanceExcpt(void)
@@ -66,7 +66,7 @@ public:
 #endif
 
 private:
-    //Error_Msg *emsg;
+    // Error_Msg *emsg;
 };
 
 #endif /* EXCEPTION_THROW_H_ */
