@@ -19,3 +19,12 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden -ffunction-sections -fdata-sections")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -ffunction-sections -fdata-sections")
 endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+
+# Enable code coverage for debug build
+if (HAVE_COVERAGE AND CMAKE_BUILD_TYPE MATCHES "Debug")
+  set(GCC_COVERAGE_COMPILE_FLAGS "-fprofile-arcs -ftest-coverage")
+  set(GCC_COVERAGE_LINK_FLAGS "-lgcov")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
+endif(HAVE_COVERAGE AND CMAKE_BUILD_TYPE MATCHES "Debug")

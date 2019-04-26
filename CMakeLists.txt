@@ -20,37 +20,17 @@ endforeach(cmakeFile)
 # Project specific config
 include(${PROJECT_SOURCE_DIR}/projectConfig.cmake)
 
-set(EXT_PROJECTS_DIR ${PROJECT_SOURCE_DIR}/extProjects)
-
 # Unit testing: gtest as external component
 if(BUILD_TESTS)
   if(HAVE_THREADS)
     find_package(Threads REQUIRED)
   endif(HAVE_THREADS)
 
-  #find_program(MEMORYCHECK_COMMAND valgrind )
-  #set(MEMORYCHECK_COMMAND_OPTIONS
-  #  "--tool=memcheck --show-reachable=yes --undef-value-errors=yes
-  #  --leak-check=full --track-origins=yes --error-exitcode=1")
-  #set(MEMORYCHECK_SUPPRESSIONS_FILE "${PROJECT_SOURCE_DIR}/valgrind_suppressions.txt" )
-
-  #file(TO_CMAKE_PATH "${CMAKE_SOURCE_DIR}/resources/valgrind_supp.xml" MEMORYCHECK_SUPPRESSIONS_FILE)
-  #add_custom_target(valgrind
-  #      COMMAND "${VALGRIND}" --tool=memcheck --show-reachable=yes --undef-value-errors=yes --leak-check=full --track-origins=yes --error-exitcode=1
-  #)
-
-  #add_custom_target(test_memcheck
-  #  COMMAND ${CMAKE_CTEST_COMMAND}
-  #      --force-new-ctest-process --test-action memcheck --output-on-failure
-  #  COMMAND cat "${CMAKE_BINARY_DIR}/Testing/Temporary/MemoryChecker.*.log")
-
-  add_subdirectory(${EXT_PROJECTS_DIR}/valgrind)
+  add_subdirectory(${PROJECT_SOURCE_DIR}/extProjects)
+  include_directories(${GTEST_INCLUDE_DIRS})
 
   include(CTest)
   enable_testing()
-  add_subdirectory(${EXT_PROJECTS_DIR}/gtest)
-  add_subdirectory(${EXT_PROJECTS_DIR}/gcovr)
-  include_directories(${GTEST_INCLUDE_DIRS})
 endif(BUILD_TESTS)
 
 # Include source codes
