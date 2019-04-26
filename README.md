@@ -5,5 +5,6 @@ MP3 decoder
 
 ### Install dependencies
 ```
+pip install gcovr
 npm install
 ```

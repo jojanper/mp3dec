@@ -5,6 +5,11 @@ include(CheckFunctionExists)
 include(CheckIncludeFiles)
 include(CheckIncludeFileCXX)
 
+option(BUILD_APPS "Build test apps" ON)
+option(BUILD_TESTS "Build gtest unit tests" ON)
+option(HAVE_THREADS "Use pthread in unit tests" ON)
+option(HAVE_COVERAGE "Enable code coverage" ON)
+
 # Load all cmake modules
 file(GLOB cmakeFiles ${CMAKE_SOURCE_DIR}/cmake/*.cmake)
 foreach(cmakeFile ${cmakeFiles})
@@ -15,21 +20,17 @@ endforeach(cmakeFile)
 # Project specific config
 include(${PROJECT_SOURCE_DIR}/projectConfig.cmake)
 
-option(BUILD_APPS "Build test apps" ON)
-option(BUILD_TESTS "Build gtest unit tests" ON)
-option(HAVE_THREADS "Use pthread in unit tests" ON)
-
-set(EXT_PROJECTS_DIR ${PROJECT_SOURCE_DIR}/extProjects)
-
 # Unit testing: gtest as external component
 if(BUILD_TESTS)
   if(HAVE_THREADS)
     find_package(Threads REQUIRED)
   endif(HAVE_THREADS)
 
-  enable_testing()
-  add_subdirectory(${EXT_PROJECTS_DIR}/gtest)
+  add_subdirectory(${PROJECT_SOURCE_DIR}/extProjects)
   include_directories(${GTEST_INCLUDE_DIRS})
+
+  include(CTest)
+  enable_testing()
 endif(BUILD_TESTS)
 
 # Include source codes
