@@ -1,7 +1,8 @@
 #include <stddef.h>
 #include <stdio.h>
 
-void test()
+void
+test()
 {
     return;
 }

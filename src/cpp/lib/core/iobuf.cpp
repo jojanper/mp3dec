@@ -15,8 +15,7 @@
 #define INVALID_FILE_HANDLE NULL
 
 
-FileBuf::FileBuf()
-: StreamBuffer()
+FileBuf::FileBuf() : StreamBuffer()
 {
     this->m_hFile = INVALID_FILE_HANDLE;
     strcpy(this->m_deviceName, "");
@@ -29,7 +28,8 @@ FileBuf::~FileBuf()
 }
 
 
-bool FileBuf::OpenBuffer(const char *name, int mode)
+bool
+FileBuf::OpenBuffer(const char *name, int mode)
 {
     this->m_mode = mode;
     strcpy(this->m_deviceName, name);
@@ -56,7 +56,8 @@ bool FileBuf::OpenBuffer(const char *name, int mode)
 }
 
 
-void FileBuf::CloseBuffer(void)
+void
+FileBuf::CloseBuffer(void)
 {
     if (this->m_hFile) fclose(this->m_hFile);
 
@@ -65,7 +66,8 @@ void FileBuf::CloseBuffer(void)
 }
 
 
-uint32_t FileBuf::GetStreamSize() const
+uint32_t
+FileBuf::GetStreamSize() const
 {
     uint32_t curPos = 0;
     uint32_t TotalSize = 0;
@@ -81,7 +83,8 @@ uint32_t FileBuf::GetStreamSize() const
 }
 
 
-int32_t FileBuf::SeekBuffer(FilePos fpos, int32_t offset)
+int32_t
+FileBuf::SeekBuffer(FilePos fpos, int32_t offset)
 {
     int32_t currentPosition = -1;
 
@@ -109,9 +112,11 @@ int32_t FileBuf::SeekBuffer(FilePos fpos, int32_t offset)
     return currentPosition;
 }
 
-uint32_t FileBuf::ReadToBuffer(uint8_t *buffer, uint32_t bufLen)
+uint32_t
+FileBuf::ReadToBuffer(uint8_t *buffer, uint32_t bufLen)
 {
-    if (this->m_hFile == INVALID_FILE_HANDLE || this->m_mode == kFileWriteMode) return (0L);
+    if (this->m_hFile == INVALID_FILE_HANDLE || this->m_mode == kFileWriteMode)
+        return (0L);
 
     auto bytesRead = fread(buffer, sizeof(char), bufLen, this->m_hFile);
     fseek(this->m_hFile, -(long) bytesRead, SEEK_CUR);
@@ -119,14 +124,17 @@ uint32_t FileBuf::ReadToBuffer(uint8_t *buffer, uint32_t bufLen)
     return bytesRead;
 }
 
-uint32_t FileBuf::WriteFromBuffer(uint8_t *buffer, uint32_t bufLen)
+uint32_t
+FileBuf::WriteFromBuffer(uint8_t *buffer, uint32_t bufLen)
 {
-    if (this->m_hFile == INVALID_FILE_HANDLE || this->m_mode == kFileReadMode) return (0L);
+    if (this->m_hFile == INVALID_FILE_HANDLE || this->m_mode == kFileReadMode)
+        return (0L);
 
     return fwrite(buffer, sizeof(uint8_t), bufLen, this->m_hFile);
 }
 
-bool FileBuf::CanWrite() const
+bool
+FileBuf::CanWrite() const
 {
     return (this->m_mode == kFileWriteMode || this->m_mode == kFileAppendMode);
 }

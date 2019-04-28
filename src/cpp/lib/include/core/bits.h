@@ -26,7 +26,10 @@ public:
     int byteAlign();
     uint32_t lookAhead(int N);
 
-    inline const uint8_t *getBuffer() const { return &bit_buffer[buf_index + ((8 - bit_counter) >> 3)]; }
+    inline const uint8_t *getBuffer() const
+    {
+        return &bit_buffer[buf_index + ((8 - bit_counter) >> 3)];
+    }
 
     int getSlotsLeft() const { return (buf_len - buf_index); }
 
@@ -62,15 +65,15 @@ private:
     void ff_buffer(int force_write);
 
     /*-- Private parameters --*/
-    StreamBuffer *m_ioBuf;  // Name of file to be opened for bit parsing.
+    StreamBuffer *m_ioBuf; // Name of file to be opened for bit parsing.
     // int device_mode;            // File mode (READ, WRITE, APPEND).
-    uint32_t bits_written;  // # bits written.
-    bool eobs;              // End of bitstream.
-    uint8_t *bit_buffer;    // Bitstream buffer.
-    int buf_len;            // Size of the bit buffer.
-    int bit_counter;        // Bit counter within bit slot.
-    int buf_index;          // Read/write index within bit buffer.
-    int buffer_empty;       // Buffer empty ?
-    uint32_t streamSize;    // Stream size in bytes.
-    uint32_t buf_len_old;   // Used for buffer reduction.
+    uint32_t bits_written; // # bits written.
+    bool eobs;             // End of bitstream.
+    uint8_t *bit_buffer;   // Bitstream buffer.
+    int buf_len;           // Size of the bit buffer.
+    int bit_counter;       // Bit counter within bit slot.
+    int buf_index;         // Read/write index within bit buffer.
+    int buffer_empty;      // Buffer empty ?
+    uint32_t streamSize;   // Stream size in bytes.
+    uint32_t buf_len_old;  // Used for buffer reduction.
 };

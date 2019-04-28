@@ -77,7 +77,8 @@ Bit_Stream::~Bit_Stream(void)
   Author(s)   : Juha Ojanpera
   ************************************************************************/
 
-bool Bit_Stream::open(StreamBuffer *ioBuf, int size)
+bool
+Bit_Stream::open(StreamBuffer *ioBuf, int size)
 {
     bit_buffer = NULL;
     this->m_ioBuf = ioBuf;
@@ -116,7 +117,8 @@ bool Bit_Stream::open(StreamBuffer *ioBuf, int size)
   Author(s)   : Juha Ojanpera
   *************************************************************************/
 
-void Bit_Stream::close(void)
+void
+Bit_Stream::close(void)
 {
     printf("Close\n");
     if (this->m_ioBuf->CanWrite() && ((buf_index | bit_counter) != 0)) ff_buffer(1);
@@ -146,7 +148,8 @@ void Bit_Stream::close(void)
   Author(s)   : Juha Ojanpera
   *************************************************************************/
 
-void Bit_Stream::ff_buffer(int force_write)
+void
+Bit_Stream::ff_buffer(int force_write)
 {
     if (!this->m_ioBuf->CanWrite()) {
         if (!eobs) {
@@ -203,7 +206,8 @@ void Bit_Stream::ff_buffer(int force_write)
     }
 }
 
-void Bit_Stream::putBits(int n, uint32_t word)
+void
+Bit_Stream::putBits(int n, uint32_t word)
 {
     /*-- Mask the unwanted bits to zero, just for safety. --*/
     word &= mask[n];
@@ -233,7 +237,8 @@ void Bit_Stream::putBits(int n, uint32_t word)
   Author(s)    : Juha Ojanpera
   *************************************************************************/
 
-void Bit_Stream::putbits8(int n, uint32_t word)
+void
+Bit_Stream::putbits8(int n, uint32_t word)
 {
     bits_written += n;
 
@@ -290,7 +295,8 @@ void Bit_Stream::putbits8(int n, uint32_t word)
     }
 }
 
-uint32_t Bit_Stream::getBits(int n)
+uint32_t
+Bit_Stream::getBits(int n)
 {
     uint32_t value = 0;
 
@@ -321,7 +327,8 @@ uint32_t Bit_Stream::getBits(int n)
   Author(s)    : Juha Ojanpera
   *************************************************************************/
 
-uint32_t Bit_Stream::getbits8(int n)
+uint32_t
+Bit_Stream::getbits8(int n)
 {
     int idx;
     uint32_t tmp;
@@ -368,7 +375,8 @@ uint32_t Bit_Stream::getbits8(int n)
   Author(s)    : Juha Ojanpera
   *************************************************************************/
 
-void Bit_Stream::skipbits8(int n)
+void
+Bit_Stream::skipbits8(int n)
 {
     int idx;
 
@@ -403,7 +411,8 @@ void Bit_Stream::skipbits8(int n)
   Author(s)    : Juha Ojanpera
   *************************************************************************/
 
-void Bit_Stream::skipBits(int n)
+void
+Bit_Stream::skipBits(int n)
 {
     int i, bytes, bits_left;
 
@@ -430,7 +439,8 @@ void Bit_Stream::skipBits(int n)
   Author(s)    : Juha Ojanpera
   *************************************************************************/
 
-int Bit_Stream::byteAlign(void)
+int
+Bit_Stream::byteAlign(void)
 {
     int bits_to_byte_align;
 
@@ -456,7 +466,8 @@ int Bit_Stream::byteAlign(void)
   Author(s)    : Juha Ojanpera
   *************************************************************************/
 
-uint32_t Bit_Stream::lookAhead(int N)
+uint32_t
+Bit_Stream::lookAhead(int N)
 {
     Bit_Stream bs_tmp;
     uint32_t dword;
@@ -523,7 +534,8 @@ uint32_t Bit_Stream::lookAhead(int N)
   Author(s)    : Juha Ojanpera
   *************************************************************************/
 
-void Bit_Stream::FlushStream(void)
+void
+Bit_Stream::FlushStream(void)
 {
     int byte_offset;
 
@@ -545,7 +557,8 @@ void Bit_Stream::FlushStream(void)
     bit_counter = 0;
 }
 
-int32_t Bit_Stream::SeekStream(FilePos filePos, int32_t offset)
+int32_t
+Bit_Stream::SeekStream(FilePos filePos, int32_t offset)
 {
     return this->m_ioBuf->SeekBuffer(filePos, offset);
 }
