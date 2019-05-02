@@ -10,7 +10,7 @@ AlignOperands: true
 AlignTrailingComments: true
 AllowAllParametersOfDeclarationOnNextLine: false
 AllowShortFunctionsOnASingleLine: Inline
-AllowShortIfStatementsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 AlwaysBreakAfterReturnType: TopLevelDefinitions
 BinPackParameters: false
@@ -34,8 +34,8 @@ BreakBeforeBraces: Custom
 BreakConstructorInitializers: AfterColon
 ColumnLimit: 90
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
-ConstructorInitializerIndentWidth: 0
-Cpp11BracedListStyle: true
+ConstructorInitializerIndentWidth: 4
+Cpp11BracedListStyle: false
 IndentCaseLabels: true
 IndentWidth: 4
 PenaltyReturnTypeOnItsOwnLine: 90
