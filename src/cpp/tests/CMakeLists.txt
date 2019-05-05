@@ -1,7 +1,8 @@
 set(TEST_SUITE_NAME libTests)
 
 set(SRCS
-  test_lib.cpp
+  core/test_bits.cpp
+  core/test_filebuf.cpp
   $<TARGET_OBJECTS:mp3dec_obj>
 )
 

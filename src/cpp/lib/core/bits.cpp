@@ -53,9 +53,12 @@ Bit_Stream::Bit_Stream() :
 
 Bit_Stream::~Bit_Stream(void)
 {
+    this->close();
+    /*
     if (m_buffer)
         free(m_buffer);
     m_buffer = NULL;
+    */
 }
 
 bool
@@ -80,8 +83,8 @@ Bit_Stream::open(StreamBuffer *ioBuf, int size)
     // new uint8_t[buf_len];
 
     // bits_written = 0;
-    m_empty = 1;
-    m_eobs = 0;
+    m_empty = true;
+    m_eobs = false;
 
     /*-- The size is needed when calculating the total length of the file. --*/
     m_streamSize = this->m_ioBuf->GetStreamSize();
@@ -102,15 +105,17 @@ Bit_Stream::open(StreamBuffer *ioBuf, int size)
 void
 Bit_Stream::close(void)
 {
-    // printf("Close\n");
-    if (this->m_ioBuf->CanWrite() && ((m_bufIndex | m_bitCounter) != 0))
-        ff_buffer(1);
-    // printf("close done %p\n", m_buffer);
+    if (m_buffer) {
+        // printf("Close\n");
+        if (this->m_ioBuf->CanWrite() && ((m_bufIndex | m_bitCounter) != 0))
+            ff_buffer(1);
+        // printf("close done %p\n", m_buffer);
 
-    if (m_buffer)
-        free(m_buffer); // delete [] m_buffer;
-    m_buffer = NULL;
-    // printf("close done done\n");
+        if (m_buffer)
+            free(m_buffer); // delete [] m_buffer;
+        m_buffer = NULL;
+        // printf("close done done\n");
+    }
 }
 
 
@@ -154,7 +159,7 @@ Bit_Stream::ff_buffer(int force_write)
                      * the bitstream has been reached. This ensures that
                      * there should be no sudden changes at the output.
                      */
-                    m_eobs = 1;
+                    m_eobs = true;
                     memset(this->m_buffer, 0, m_bufLen);
                     return;
                 }

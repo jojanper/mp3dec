@@ -6,7 +6,7 @@
   "scripts": {
     "build": "node-gyp rebuild",
     "clean": "node-gyp clean",
-    "valgrind-tests": "cd build && ctest -T memcheck && cat Testing/Temporary/MemoryChecker.*.log",
+    "valgrind-tests": "cd build && ctest -V -T memcheck && cat Testing/Temporary/MemoryChecker.*.log",
     "valgrind-logs": "cd build && cat Testing/Temporary/MemoryChecker.*.log"
   },
   "keywords": [

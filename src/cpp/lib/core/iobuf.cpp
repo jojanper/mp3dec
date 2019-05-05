@@ -17,19 +17,18 @@
 
 FileBuf::FileBuf() : StreamBuffer()
 {
-    this->m_hFile = INVALID_FILE_HANDLE;
-    strcpy(this->m_deviceName, "");
+    this->reset();
 }
 
 
 FileBuf::~FileBuf()
 {
-    this->CloseBuffer();
+    this->close();
 }
 
 
 bool
-FileBuf::OpenBuffer(const char *name, int mode)
+FileBuf::open(const char *name, int mode)
 {
     this->m_mode = mode;
     strcpy(this->m_deviceName, name);
@@ -55,16 +54,21 @@ FileBuf::OpenBuffer(const char *name, int mode)
     return (this->m_hFile == INVALID_FILE_HANDLE) ? false : true;
 }
 
+void
+FileBuf::close()
+{
+    if (this->m_hFile)
+        fclose(this->m_hFile);
+
+    this->reset();
+}
 
 void
-FileBuf::CloseBuffer(void)
+FileBuf::reset()
 {
-    if (this->m_hFile) fclose(this->m_hFile);
-
     strcpy(this->m_deviceName, "");
     this->m_hFile = INVALID_FILE_HANDLE;
 }
-
 
 uint32_t
 FileBuf::GetStreamSize() const
@@ -72,23 +76,24 @@ FileBuf::GetStreamSize() const
     uint32_t curPos = 0;
     uint32_t TotalSize = 0;
 
-    if (this->m_hFile == INVALID_FILE_HANDLE) return (0L);
+    if (this->m_hFile == INVALID_FILE_HANDLE)
+        return 0L;
 
     curPos = ftell(this->m_hFile);
     fseek(this->m_hFile, 0, SEEK_END);
     TotalSize = ftell(this->m_hFile);
     fseek(this->m_hFile, curPos, SEEK_SET);
 
-    return (TotalSize);
+    return TotalSize;
 }
-
 
 int32_t
 FileBuf::SeekBuffer(FilePos fpos, int32_t offset)
 {
     int32_t currentPosition = -1;
 
-    if (this->m_hFile == INVALID_FILE_HANDLE) return (0L);
+    if (this->m_hFile == INVALID_FILE_HANDLE)
+        return 0L;
 
     switch (fpos) {
         case CURRENT_POS:
@@ -116,9 +121,12 @@ uint32_t
 FileBuf::ReadToBuffer(uint8_t *buffer, uint32_t bufLen)
 {
     if (this->m_hFile == INVALID_FILE_HANDLE || this->m_mode == kFileWriteMode)
-        return (0L);
+        return 0L;
 
     auto bytesRead = fread(buffer, sizeof(char), bufLen, this->m_hFile);
+    if (bytesRead < bufLen)
+        memset(buffer + bytesRead, 0, bufLen - bytesRead);
+
     fseek(this->m_hFile, -(long) bytesRead, SEEK_CUR);
 
     return bytesRead;
@@ -128,7 +136,7 @@ uint32_t
 FileBuf::WriteFromBuffer(uint8_t *buffer, uint32_t bufLen)
 {
     if (this->m_hFile == INVALID_FILE_HANDLE || this->m_mode == kFileReadMode)
-        return (0L);
+        return 0L;
 
     return fwrite(buffer, sizeof(uint8_t), bufLen, this->m_hFile);
 }

@@ -29,27 +29,44 @@ enum
 typedef FILE *FILE_HANDLE;
 
 
+/**
+ * File interface.
+ */
 class FileBuf : public StreamBuffer
 {
 public:
     FileBuf();
     virtual ~FileBuf();
 
-    /*-- Class public methods. --*/
-    bool OpenBuffer(const char *name, int mode);
-    void CloseBuffer(void);
-    const char *GetFileBufName() const { return this->m_deviceName; }
+    /**
+     * Open file.
+     *
+     * @param name File name
+     * @param mode File mode
+     * @return true on succes, false otherwise
+     */
+    bool open(const char *name, int mode);
 
-    /*-- Access methods of the stream. --*/
+    /**
+     * Close file.
+     */
+    void close();
+
+    /**
+     * Return file name.
+     */
+    const char *name() const { return this->m_deviceName; }
+
     virtual uint32_t GetStreamSize() const;
     virtual int32_t SeekBuffer(FilePos fpos, int32_t offset);
     virtual uint32_t ReadToBuffer(uint8_t *buffer, uint32_t bufLen);
     virtual uint32_t WriteFromBuffer(uint8_t *buffer, uint32_t bufLen);
-    virtual void SetLookAheadMode(bool) {} // Not applicable
-
+    virtual void SetLookAheadMode(bool) {} // Not applicable for file stream
     virtual bool CanWrite() const;
 
 private:
+    void reset();
+
     int m_mode;              // File mode
     FILE_HANDLE m_hFile;     // File handle.
     char m_deviceName[2048]; // Name of the file.
