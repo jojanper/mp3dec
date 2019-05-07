@@ -38,104 +38,45 @@ Bit_Stream::Bit_Stream() :
     m_bufIndex(0),
     m_empty(false),
     m_streamSize(0)
-{
-    // bits_written = 0;
-    /*
-    m_buffer = NULL;
-    m_bufLen = 0;
-    m_bitCounter = 0;
-    m_bufIndex = 0;
-    m_eobs = 1;
-    mEmpty = false;
-    m_streamSize = 0;
-    */
-}
+{}
 
 Bit_Stream::~Bit_Stream(void)
 {
     this->close();
-    /*
-    if (m_buffer)
-        free(m_buffer);
-    m_buffer = NULL;
-    */
 }
 
 bool
 Bit_Stream::open(StreamBuffer *ioBuf, int size)
 {
-    m_buffer = NULL;
     this->m_ioBuf = ioBuf;
 
     m_bufIndex = 0;
-    if (!this->m_ioBuf->CanWrite()) {
-        m_bitCounter = 0;
-        // m_bufIndex = -1;
-    }
-    else {
-        // buf_index = 0;
-        m_bitCounter = SLOT_BITS;
-    }
+    m_bitCounter = !this->m_ioBuf->CanWrite() ? 0 : SLOT_BITS;
 
-    /*-- Allocate the bit buffer. --*/
     m_bufLenOrig = m_bufLen = size;
-    m_buffer = (uint8_t *) calloc(1, size);
-    // new uint8_t[buf_len];
-
-    // bits_written = 0;
     m_empty = true;
     m_eobs = false;
 
     /*-- The size is needed when calculating the total length of the file. --*/
     m_streamSize = this->m_ioBuf->GetStreamSize();
 
-    return true;
+    m_buffer = (uint8_t *) calloc(1, size);
+
+    return (m_buffer) ? true : false;
 }
-
-/**************************************************************************
-  Title       : Close
-
-  Purpose     : Closes the opened bitstream.
-
-  Usage       : Close()
-
-  Author(s)   : Juha Ojanpera
-  *************************************************************************/
 
 void
 Bit_Stream::close(void)
 {
     if (m_buffer) {
-        // printf("Close\n");
         if (this->m_ioBuf->CanWrite() && ((m_bufIndex | m_bitCounter) != 0))
             ff_buffer(1);
-        // printf("close done %p\n", m_buffer);
 
         if (m_buffer)
-            free(m_buffer); // delete [] m_buffer;
+            free(m_buffer);
         m_buffer = NULL;
-        // printf("close done done\n");
     }
 }
-
-
-/**************************************************************************
-  Title       : ff_buffer
-
-  Purpose     : Refills the bitstream buffer (in READ_MODE) or writes the
-                bitstream buffer into a device (in WRITE_MODE).
-
-  Usage       : ff_buffer(write_force)
-
-  Input       : force_write - if set, writes the bitstream buffer into the
-                              output device (used only in WRITE_MODE)
-
-  Explanation : This function updates the read/write index of the bitstream
-                buffer. In read-mode the buffer is refilled, if it is empty.
-                In write-mode the buffer, if full, is stored into the device.
-
-  Author(s)   : Juha Ojanpera
-  *************************************************************************/
 
 void
 Bit_Stream::ff_buffer(int force_write)
@@ -183,12 +124,7 @@ Bit_Stream::ff_buffer(int force_write)
             m_bufIndex = (m_bufIndex == m_bufLen) ? m_bufLen : m_bufIndex;
 
             /* Write the buffer to output stream. */
-            // printf("WRITE: %i %i\n", buf_index, buf_len);
             this->m_ioBuf->WriteFromBuffer(m_buffer, m_bufIndex);
-            // printf("WRITE DONE\n");
-
-            // if(nitems != buf_index)
-            //  ; // Add error handling here if needed.
 
             m_bufIndex = 0;
         }
@@ -204,33 +140,13 @@ Bit_Stream::putBits(int n, uint32_t word)
     while (n) {
         auto rbits = (n > SLOT_BITS) ? SLOT_BITS : n;
         n -= rbits;
-        // printf("n = %i %i %i %i\n", rbits, n, m_bitCounter, m_bufIndex);
         this->putbits8(rbits, ((word >> n) & mask[rbits]));
-        // printf("putbits8 done %i\n", buf_index);
     }
 }
-
-/**************************************************************************
-  Title        : putbits
-
-  Purpose      : Writes bits to the bit stream.
-
-  Usage        : putbits(n, word);
-
-  Input:       : n    - how many bits are appended to the bit stream
-                 word - bits to write
-
-  Explanation  : Note that the maximum number of bits that can be appended
-                 is 'uint32_BIT'.
-
-  Author(s)    : Juha Ojanpera
-  *************************************************************************/
 
 void
 Bit_Stream::putbits8(int n, uint32_t word)
 {
-    // bits_written += n;
-
     /*-- Update the bitstream buffer index. --*/
     if (m_bitCounter == 0) {
         ff_buffer(0);
@@ -253,8 +169,6 @@ Bit_Stream::putbits8(int n, uint32_t word)
         int end;
         uint32_t next;
 
-        // printf("HIP\n");
-
         /*-- Number of bits needed to store the lower part. --*/
         end = n - m_bitCounter;
 
@@ -275,8 +189,6 @@ Bit_Stream::putbits8(int n, uint32_t word)
         m_buffer[m_bufIndex] |= ((uint32_t) next << m_bitCounter);
     }
     else {
-        // printf("HOP %i\n", buf_index);
-
         m_bitCounter -= n;
 
         /*-- For safety, mask the unwanted bits to zero. --*/
@@ -298,23 +210,6 @@ Bit_Stream::getBits(int n)
 
     return value;
 }
-
-/**************************************************************************
-  Title        : getbits
-
-  Purpose      : Reads bits from the bitstream.
-
-  Usage        : y = getbits(n);
-
-  Input        : n - number of bits to be read
-
-  Output       : y - bits read
-
-  Explanation  : Note that the maximum number of bits that can be read
-                 from the bitstream buffer is 'uint32_BIT' bits.
-
-  Author(s)    : Juha Ojanpera
-  *************************************************************************/
 
 uint32_t
 Bit_Stream::getbits8(int n)
@@ -346,24 +241,6 @@ Bit_Stream::getbits8(int n)
     return tmp;
 }
 
-
-/**************************************************************************
-  Title        : skipbits
-
-  Purpose      : Flushes bits from the bitstream.
-
-  Usage        : y = skipbits(n);
-
-  Input        : n - number of bits to be flushed
-
-  Output       : y - flushed read
-
-  Explanation  : The upper limit for the number of bits to be flushed is
-                 'uint32_BIT'.
-
-  Author(s)    : Juha Ojanpera
-  *************************************************************************/
-
 void
 Bit_Stream::skipbits8(int n)
 {
@@ -385,21 +262,6 @@ Bit_Stream::skipbits8(int n)
         m_bitCounter = idx; // m_bitCounter -= n;
 }
 
-
-/**************************************************************************
-  Title        : skip_Nbits
-
-  Purpose      : Discard bits from the bitstream.
-
-  Usage        : skipN_bits(n);
-
-  Input        : n - number of bits to be discarded
-
-  Explanation  : No upper limit for the number of bits to be discarded exists.
-
-  Author(s)    : Juha Ojanpera
-  *************************************************************************/
-
 void
 Bit_Stream::skipBits(int n)
 {
@@ -416,19 +278,6 @@ Bit_Stream::skipBits(int n)
         skipbits8(bits_left);
 }
 
-
-/**************************************************************************
-  Title        : byte_align
-
-  Purpose      : Byte aligns the bitstream.
-
-  Usage        : byte_align()
-
-  Explanation  : Use this function only when you are reading the bitstream.
-
-  Author(s)    : Juha Ojanpera
-  *************************************************************************/
-
 int
 Bit_Stream::byteAlign(void)
 {
@@ -440,22 +289,6 @@ Bit_Stream::byteAlign(void)
 
     return bits_to_byte_align;
 }
-
-
-/**************************************************************************
-  Title        : look_ahead
-
-  Purpose      : Looks ahead for the next 'N' bits from the bitstream and
-                 returns the read 'N' bits.
-
-  Usage        : y = look_ahead(N);
-
-  Input        : N - number of bits to be read from the bitstream
-
-  Output       : y - bits read
-
-  Author(s)    : Juha Ojanpera
-  *************************************************************************/
 
 uint32_t
 Bit_Stream::lookAhead(int N)
@@ -512,21 +345,8 @@ Bit_Stream::lookAhead(int N)
     return dword;
 }
 
-
-/**************************************************************************
-  Title        : FlushStream
-
-  Purpose      : Flushes the bitstream. This has the advantage that when
-                 the getbits function is next time called, the reading starts
-                 from the current stream position.
-
-  Usage        : FlushStream()
-
-  Author(s)    : Juha Ojanpera
-  *************************************************************************/
-
 void
-Bit_Stream::flushStream(void)
+Bit_Stream::flushStream()
 {
     byteAlign();
 
@@ -536,6 +356,12 @@ Bit_Stream::flushStream(void)
     if (byte_offset)
         this->m_ioBuf->SeekBuffer(CURRENT_POS, byte_offset);
 
+    this->reset();
+}
+
+void
+Bit_Stream::reset()
+{
     /*
      * This has the effect that the next time we start to read the bit
      * stream, the stream pointer is not updated before reading. This is

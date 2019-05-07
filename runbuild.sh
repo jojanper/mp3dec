@@ -16,4 +16,4 @@ cd ${BUILD_DIR}
 cmake --build . --config ${BUILD_TYPE}
 
 # Execute tests
-ctest --verbose
+GTEST_COLOR=1 ctest --verbose
