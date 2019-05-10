@@ -2,29 +2,10 @@
 
 #include "core/bits.h"
 #include "core/iobuf.h"
+#include "test_utils.h"
 
 static const char *filename = "foo.bs";
 
-static void
-createTestBitstream()
-{
-    Bit_Stream bs;
-    FileBuf fp;
-
-    fp.open(filename, kFileWriteMode);
-
-    // Write some bits to bitstream
-    bs.open(&fp, 32768);
-    bs.putBits(2, 1);
-    bs.putBits(2, 3);
-    bs.putBits(4, 14);
-    bs.putBits(2, 3);
-    bs.putBits(6, 0);
-    bs.putBits(8, 255);
-    bs.putBits(12, 123);
-    bs.close();
-    fp.close();
-}
 
 TEST(BitStreamTestSuite, WriteBits)
 {
@@ -81,7 +62,7 @@ TEST(BitStreamTestSuite, EndOfBitstream)
     Bit_Stream bs;
     auto fp = new FileBuf();
 
-    createTestBitstream();
+    createTestBitstream(filename);
 
     fp->open(filename, kFileReadMode);
 
@@ -112,7 +93,7 @@ TEST(BitStreamTestSuite, SeekAndFlush)
     Bit_Stream bs;
     auto fp = new FileBuf();
 
-    createTestBitstream();
+    createTestBitstream(filename);
 
     fp->open(filename, kFileReadMode);
 
@@ -123,7 +104,7 @@ TEST(BitStreamTestSuite, SeekAndFlush)
     EXPECT_EQ(bs.getBits(4), (uint32_t) 14);
 
     // One byte read so far, 2 bytes to go before buffer runs out of bits
-    EXPECT_EQ(bs.getSlotsLeft(), 2);
+    EXPECT_EQ(bs.getSlotsLeft(), (size_t) 2);
 
     // Read 1 bit which means that current read position is no longer byte-aligned
     EXPECT_EQ(bs.getBits(1), (uint32_t) 1);
@@ -152,7 +133,7 @@ TEST(BitStreamTestSuite, Positions)
     Bit_Stream bs;
     FileBuf fp;
 
-    createTestBitstream();
+    createTestBitstream(filename);
 
     fp.open(filename, kFileReadMode);
 
