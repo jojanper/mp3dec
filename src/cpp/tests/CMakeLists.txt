@@ -5,10 +5,10 @@ set(SRCS
   core/test_filebuf.cpp
   core/test_bitsring.cpp
   core/test_utils.cpp
-  $<TARGET_OBJECTS:mp3dec_obj>
 )
 
 set(EXTRA_LINK_LIBRARIES
+  mp3dec_static
 )
 
 build_unittest(${TEST_SUITE_NAME} "${SRCS}" "${EXTRA_LINK_LIBRARIES}")
