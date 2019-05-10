@@ -7,13 +7,24 @@
 
 /**
  * Bit buffer base class interface implementation.
+ *
+ * The class is partly abstract so this will serve as base for
+ * final implementations. Currently 2 implementions have been derived
+ * from this class.
+ *
+ * class BitStream:
+ *
+ *  - This will read bits from stream. The stream may be file, buffer, etc.
+ *    The bit buffer is internally updated when new data is required.
+ *
+ * class BitBuffer:
+ *
+ * - This will read bits from (ring) buffer. The bit buffer need to be explicitly
+ *   updated by the caller.
  */
-class BitStreamBuffer : public BitBuffer
+class BitStreamBuffer : public IBitBuffer
 {
 public:
-    BitStreamBuffer();
-    virtual ~BitStreamBuffer();
-
     virtual bool open(int size);
 
     virtual void close();
@@ -53,7 +64,10 @@ public:
     void advanceBufferSlot(int offset) { m_bufIndex += offset; }
 
 protected:
-    static const uint32_t mask[33];
+    BitStreamBuffer();
+    virtual ~BitStreamBuffer();
+
+    static const uint32_t BITMASK[33];
 
     enum
     {

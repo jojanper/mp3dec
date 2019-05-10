@@ -15,7 +15,7 @@
 #define INVALID_FILE_HANDLE NULL
 
 
-FileBuf::FileBuf() : StreamBuffer()
+FileBuf::FileBuf()
 {
     this->reset();
 }

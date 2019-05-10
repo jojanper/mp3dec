@@ -7,7 +7,7 @@
 size_t
 createTestBitstream(const char *filename)
 {
-    Bit_Stream bs;
+    BitStream bs;
     FileBuf fp;
 
     fp.open(filename, kFileWriteMode);

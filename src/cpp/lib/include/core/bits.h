@@ -8,11 +8,11 @@
 /**
  * Bit interface for reading and writing bits from stream.
  */
-class Bit_Stream : public BitStreamBuffer
+class BitStream : public BitStreamBuffer
 {
 public:
-    Bit_Stream();
-    virtual ~Bit_Stream();
+    BitStream();
+    virtual ~BitStream();
 
     virtual void close();
 
@@ -26,7 +26,7 @@ public:
      * @param size Bitstream buffer size
      * @return true on success, false otherwise
      */
-    bool open(StreamBuffer *ioBuf, int size);
+    bool open(IStreamBuffer *ioBuf, int size);
 
     /**
      * Return true if end of bitstream found, false otherwise.
@@ -104,8 +104,8 @@ protected:
     void ff_buffer(int force_write);
 
 private:
-    StreamBuffer *m_ioBuf; // Name of file to be opened for bit parsing.
-    bool m_eobs;           // End of bitstream.
-    size_t m_streamSize;   // Stream size in bytes.
-    size_t m_bufLenOrig;   // Used for buffer reduction.
+    IStreamBuffer *m_ioBuf; // Name of file to be opened for bit parsing.
+    bool m_eobs;            // End of bitstream.
+    size_t m_streamSize;    // Stream size in bytes.
+    size_t m_bufLenOrig;    // Used for buffer reduction.
 };

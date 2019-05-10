@@ -18,7 +18,7 @@ typedef enum FilePos
 /**
  * Interface for storing and accessing stream related data.
  */
-class StreamBuffer
+class IStreamBuffer
 {
 public:
     // Get size of stream in bytes
@@ -40,6 +40,6 @@ public:
     virtual bool CanWrite() const = 0;
 
 protected:
-    StreamBuffer() {}
-    virtual ~StreamBuffer() {}
+    IStreamBuffer() {}
+    virtual ~IStreamBuffer() {}
 };

@@ -32,7 +32,7 @@ typedef FILE *FILE_HANDLE;
 /**
  * File interface.
  */
-class FileBuf : public StreamBuffer
+class FileBuf : public IStreamBuffer
 {
 public:
     FileBuf();

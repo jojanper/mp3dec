@@ -7,7 +7,7 @@
 #include "core/bitsring.h"
 
 
-BitsRingBuffer::BitsRingBuffer() :
+BitBuffer::BitBuffer() :
     BitStreamBuffer(),
     m_mask(0),
     m_wbuf_buf_idx(0),
@@ -17,7 +17,7 @@ BitsRingBuffer::BitsRingBuffer() :
 {}
 
 bool
-BitsRingBuffer::open(int size)
+BitBuffer::open(int size)
 {
     auto ret = BitStreamBuffer::open(size);
     if (ret) {
@@ -32,7 +32,7 @@ BitsRingBuffer::open(int size)
 }
 
 void
-BitsRingBuffer::putbits8(int n, uint32_t word)
+BitBuffer::putbits8(int n, uint32_t word)
 {
     if (m_wbuf_bit_idx == 0) {
         m_wbuf_buf_idx++;
@@ -53,12 +53,12 @@ BitsRingBuffer::putbits8(int n, uint32_t word)
     }
     else {
         m_wbuf_bit_idx = idx;
-        m_buffer[m_wbuf_buf_idx & m_mask] |= ((word & mask[n]) << m_wbuf_bit_idx);
+        m_buffer[m_wbuf_buf_idx & m_mask] |= ((word & BITMASK[n]) << m_wbuf_bit_idx);
     }
 }
 
 uint32_t
-BitsRingBuffer::getbits8(int n)
+BitBuffer::getbits8(int n)
 {
     int idx;
     uint32_t tmp;
@@ -70,24 +70,24 @@ BitsRingBuffer::getbits8(int n)
 
     idx = m_rbuf_bit_idx - n;
     if (idx < 0) {
-        tmp = m_buffer[m_rbuf_buf_idx & m_mask] & mask[m_rbuf_bit_idx];
+        tmp = m_buffer[m_rbuf_buf_idx & m_mask] & BITMASK[m_rbuf_bit_idx];
         tmp <<= -idx;
 
         m_rbuf_buf_idx++;
         m_rbuf_bit_idx = SLOT_BITS + idx;
 
-        tmp |= (m_buffer[m_rbuf_buf_idx & m_mask] >> m_rbuf_bit_idx) & mask[-idx];
+        tmp |= (m_buffer[m_rbuf_buf_idx & m_mask] >> m_rbuf_bit_idx) & BITMASK[-idx];
     }
     else {
         m_rbuf_bit_idx = idx;
-        tmp = (m_buffer[m_rbuf_buf_idx & m_mask] >> m_rbuf_bit_idx) & mask[n];
+        tmp = (m_buffer[m_rbuf_buf_idx & m_mask] >> m_rbuf_bit_idx) & BITMASK[n];
     }
 
     return tmp;
 }
 
 void
-BitsRingBuffer::skipbits8(int n)
+BitBuffer::skipbits8(int n)
 {
     if (m_rbuf_bit_idx == 0) {
         m_rbuf_buf_idx++;
@@ -104,7 +104,7 @@ BitsRingBuffer::skipbits8(int n)
 }
 
 uint32_t
-BitsRingBuffer::lookAhead(int N)
+BitBuffer::lookAhead(int N)
 {
     /*-- Store the current state. --*/
     auto rbuf_dword_idx = this->m_rbuf_buf_idx;
@@ -122,7 +122,7 @@ BitsRingBuffer::lookAhead(int N)
 }
 
 void
-BitsRingBuffer::reset()
+BitBuffer::reset()
 {
     /*
      * This has the effect that the next time we start to read the bit
@@ -139,7 +139,7 @@ BitsRingBuffer::reset()
 }
 
 void
-BitsRingBuffer::addBytes(BitStreamBuffer &bs, size_t bytes, bool aligned)
+BitBuffer::addBytes(BitStreamBuffer &bs, size_t bytes, bool aligned)
 {
     if (!aligned) {
         for (size_t i = 0; i < bytes; i++)
@@ -172,7 +172,7 @@ BitsRingBuffer::addBytes(BitStreamBuffer &bs, size_t bytes, bool aligned)
 }
 
 void
-BitsRingBuffer::rewindNbits(int n)
+BitBuffer::rewindNbits(int n)
 {
     /*-- Slot offset within the buffer. --*/
     auto new_buf_idx = n >> NATIVE_WORD_SHIFT;

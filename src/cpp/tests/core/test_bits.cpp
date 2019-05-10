@@ -10,7 +10,7 @@ static const char *filename = "foo.bs";
 TEST(BitStreamTestSuite, WriteBits)
 {
     FileBuf fp;
-    Bit_Stream bs;
+    BitStream bs;
 
     fp.open(filename, kFileWriteMode);
 
@@ -59,7 +59,7 @@ TEST(BitStreamTestSuite, WriteBits)
 
 TEST(BitStreamTestSuite, EndOfBitstream)
 {
-    Bit_Stream bs;
+    BitStream bs;
     auto fp = new FileBuf();
 
     createTestBitstream(filename);
@@ -90,7 +90,7 @@ TEST(BitStreamTestSuite, EndOfBitstream)
 
 TEST(BitStreamTestSuite, SeekAndFlush)
 {
-    Bit_Stream bs;
+    BitStream bs;
     auto fp = new FileBuf();
 
     createTestBitstream(filename);
@@ -130,7 +130,7 @@ TEST(BitStreamTestSuite, SeekAndFlush)
 
 TEST(BitStreamTestSuite, Positions)
 {
-    Bit_Stream bs;
+    BitStream bs;
     FileBuf fp;
 
     createTestBitstream(filename);

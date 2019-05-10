@@ -6,7 +6,7 @@
 /**
  * Bit buffer interface for reading and writing bits.
  */
-class BitBuffer
+class IBitBuffer
 {
 public:
     /**
@@ -51,6 +51,6 @@ public:
     virtual void reset() = 0;
 
 protected:
-    BitBuffer() {}
-    virtual ~BitBuffer() {}
+    IBitBuffer() {}
+    virtual ~IBitBuffer() {}
 };

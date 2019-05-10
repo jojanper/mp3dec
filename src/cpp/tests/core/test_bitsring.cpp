@@ -10,8 +10,8 @@ static const char *filename = "ring.bs";
 class BitsRingBufferTestSuite : public testing::Test
 {
 protected:
-    BitsRingBuffer m_br;
-    Bit_Stream m_bs;
+    BitBuffer m_br;
+    BitStream m_bs;
     FileBuf m_fp;
 
     virtual void SetUp()

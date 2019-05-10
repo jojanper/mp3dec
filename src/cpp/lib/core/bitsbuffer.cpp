@@ -9,7 +9,7 @@
 /*
    Purpose:     Global buffer for masking purposes.
    Explanation: - */
-const uint32_t BitStreamBuffer::mask[33] = {
+const uint32_t BitStreamBuffer::BITMASK[33] = {
     0x0,        0x1,         0x3,         0x7,         0xF,        0x1F,       0x3F,
     0x7F,       0xFF,        0x1FF,       0x3FF,       0x7FF,      0xFFF,      0x1FFFL,
     0x3FFFL,    0x7FFFL,     0xFFFFL,     0x1FFFFL,    0x3FFFFL,   0x7FFFFL,   0xFFFFFL,
@@ -19,7 +19,6 @@ const uint32_t BitStreamBuffer::mask[33] = {
 
 
 BitStreamBuffer::BitStreamBuffer() :
-    BitBuffer(),
     m_buffer(NULL),
     m_bufLen(0),
     m_bitCounter(0),
@@ -53,13 +52,13 @@ BitStreamBuffer::close(void)
 void
 BitStreamBuffer::putBits(int n, uint32_t word)
 {
-    /*-- Mask the unwanted bits to zero, just for safety. --*/
-    word &= mask[n];
+    /*-- BITMASK the unwanted bits to zero, just for safety. --*/
+    word &= BITMASK[n];
 
     while (n) {
         auto rbits = (n > SLOT_BITS) ? SLOT_BITS : n;
         n -= rbits;
-        this->putbits8(rbits, ((word >> n) & mask[rbits]));
+        this->putbits8(rbits, ((word >> n) & BITMASK[rbits]));
     }
 }
 

@@ -8,10 +8,10 @@
 /**
  * Bit interface for reading and writing bits from ring buffer.
  */
-class BitsRingBuffer : public BitStreamBuffer
+class BitBuffer : public BitStreamBuffer
 {
 public:
-    BitsRingBuffer();
+    BitBuffer();
 
     virtual bool open(int size);
 

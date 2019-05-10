@@ -7,16 +7,16 @@
 #include "core/bits.h"
 
 
-Bit_Stream::Bit_Stream() : BitStreamBuffer(), m_ioBuf(NULL), m_eobs(true), m_streamSize(0)
+BitStream::BitStream() : BitStreamBuffer(), m_ioBuf(NULL), m_eobs(true), m_streamSize(0)
 {}
 
-Bit_Stream::~Bit_Stream()
+BitStream::~BitStream()
 {
     this->close();
 }
 
 bool
-Bit_Stream::open(StreamBuffer *ioBuf, int size)
+BitStream::open(IStreamBuffer *ioBuf, int size)
 {
     auto ret = BitStreamBuffer::open(size);
     if (ret) {
@@ -33,7 +33,7 @@ Bit_Stream::open(StreamBuffer *ioBuf, int size)
 }
 
 void
-Bit_Stream::close(void)
+BitStream::close(void)
 {
     if (m_buffer) {
         if (this->m_ioBuf->CanWrite() && ((m_bufIndex | m_bitCounter) != 0))
@@ -44,7 +44,7 @@ Bit_Stream::close(void)
 }
 
 void
-Bit_Stream::ff_buffer(int force_write)
+BitStream::ff_buffer(int force_write)
 {
     if (!this->m_ioBuf->CanWrite()) {
         if (!m_eobs) {
@@ -97,7 +97,7 @@ Bit_Stream::ff_buffer(int force_write)
 }
 
 void
-Bit_Stream::putbits8(int n, uint32_t word)
+BitStream::putbits8(int n, uint32_t word)
 {
     /*-- Update the bitstream buffer index. --*/
     if (m_bitCounter == 0) {
@@ -127,8 +127,8 @@ Bit_Stream::putbits8(int n, uint32_t word)
         /*-- Store the upper part to the bitstream buffer. --*/
         m_buffer[m_bufIndex] |= ((uint32_t) word >> end);
 
-        /*-- Mask the upper part from 'word' to zero. --*/
-        next = (uint32_t) word & mask[end];
+        /*-- BITMASK the upper part from 'word' to zero. --*/
+        next = (uint32_t) word & BITMASK[end];
 
         /*-- Update the bitstream buffer index. --*/
         ff_buffer(0);
@@ -143,13 +143,13 @@ Bit_Stream::putbits8(int n, uint32_t word)
     else {
         m_bitCounter -= n;
 
-        /*-- For safety, mask the unwanted bits to zero. --*/
-        m_buffer[m_bufIndex] |= ((word & mask[n]) << m_bitCounter);
+        /*-- For safety, BITMASK the unwanted bits to zero. --*/
+        m_buffer[m_bufIndex] |= ((word & BITMASK[n]) << m_bitCounter);
     }
 }
 
 uint32_t
-Bit_Stream::getbits8(int n)
+BitStream::getbits8(int n)
 {
     int idx;
     uint32_t tmp;
@@ -162,24 +162,24 @@ Bit_Stream::getbits8(int n)
 
     idx = m_bitCounter - n;
     if (idx < 0) {
-        /*-- Mask the unwanted bits to zero. --*/
-        tmp = (m_buffer[m_bufIndex] & mask[m_bitCounter]) << -idx;
+        /*-- BITMASK the unwanted bits to zero. --*/
+        tmp = (m_buffer[m_bufIndex] & BITMASK[m_bitCounter]) << -idx;
 
         /*-- Update the bit stream buffer. --*/
         ff_buffer(0);
         m_bitCounter = SLOT_BITS + idx;
-        tmp |= (m_buffer[m_bufIndex] >> m_bitCounter) & mask[-idx];
+        tmp |= (m_buffer[m_bufIndex] >> m_bitCounter) & BITMASK[-idx];
     }
     else {
         m_bitCounter = idx; // m_bitCounter -= n;
-        tmp = (m_buffer[m_bufIndex] >> m_bitCounter) & mask[n];
+        tmp = (m_buffer[m_bufIndex] >> m_bitCounter) & BITMASK[n];
     }
 
     return tmp;
 }
 
 void
-Bit_Stream::skipbits8(int n)
+BitStream::skipbits8(int n)
 {
     int idx;
 
@@ -200,9 +200,9 @@ Bit_Stream::skipbits8(int n)
 }
 
 uint32_t
-Bit_Stream::lookAhead(int N)
+BitStream::lookAhead(int N)
 {
-    Bit_Stream bs_tmp;
+    BitStream bs_tmp;
     uint32_t dword;
 
     /*-- Store only the most important variables. --*/
@@ -257,7 +257,7 @@ Bit_Stream::lookAhead(int N)
 }
 
 void
-Bit_Stream::flushStream()
+BitStream::flushStream()
 {
     byteAlign();
 
@@ -271,7 +271,7 @@ Bit_Stream::flushStream()
 }
 
 int32_t
-Bit_Stream::seekStream(FilePos filePos, int32_t offset)
+BitStream::seekStream(FilePos filePos, int32_t offset)
 {
     return this->m_ioBuf->SeekBuffer(filePos, offset);
 }
