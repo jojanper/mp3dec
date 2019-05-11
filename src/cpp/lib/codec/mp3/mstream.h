@@ -13,6 +13,7 @@
   *************************************************************************/
 
 /*-- Project Headers. --*/
+#include "codec/common/huftree.h"
 #include "core/bits.h"
 #include "core/bitsring.h"
 #include "core/defines.h"
@@ -21,10 +22,6 @@
 #include "param.h"
 #include "sfb.h"
 #include "side.h"
-#if 0
-#include "huftree.h"
-#include "sbuffer.h"
-#endif
 
 /*
    Purpose:     Frame detection status.
@@ -145,8 +142,8 @@ public:
     FLOAT *dbScale;
 
     BitBuffer *br;
-    // HufNode **huftree;
-    // MP3_Huffman *huffman;
+    HufNode **huftree;
+    MP3_Huffman *huffman;
     III_Side_Info *side_info;
 
     int blc[2];

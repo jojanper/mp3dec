@@ -1,13 +1,14 @@
-set(LIBNAME "mp3codec")
+set(LIBNAME "commoncodec")
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../include)
 
 set(HDRS
-  mstream.h
+  hufinfo.h
+  huftree.h
 )
 
 set(SRCS
-  common.cpp
-  mstream.cpp
-  sfb.cpp
+  huftree.cpp
 )
 
 set(DEFINES)

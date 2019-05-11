@@ -16,7 +16,8 @@
   "author": "Juha Ojanperä <juha.ojanpera@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "node-gyp": "^3.8.0"
+    "node-gyp": "^3.8.0",
+    "tar": ">=4.4.2"
   },
   "dependencies": {
     "node-addon-api": "^1.6.2"

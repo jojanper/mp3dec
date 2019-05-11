@@ -1,5 +1,6 @@
 set(APPNAME "mp3decapp")
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../lib)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../lib/codec/mp3)
 
 set(SRCS

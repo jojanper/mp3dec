@@ -21,6 +21,7 @@ build_object_library("${LIBNAME}" "${OBJECT_SRCS}" "${DEFINES}")
 set(LIB_SRCS
   ${HDRS}
   $<TARGET_OBJECTS:${LIBNAME}>
+  $<TARGET_OBJECTS:commoncodec>
   $<TARGET_OBJECTS:mp3codec>
   $<TARGET_OBJECTS:coreutils>
 )
