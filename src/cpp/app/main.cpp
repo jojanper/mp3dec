@@ -7,9 +7,9 @@
 int
 main(int /*argc*/, char ** /*argv*/)
 {
-    MP_Stream *stream;
+    MP_Stream *stream = new MP_Stream();
 
-    (void) stream;
+    delete stream;
 
     return EXIT_SUCCESS;
 }

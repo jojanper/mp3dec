@@ -11,13 +11,13 @@
 
 /*-- Project Headers. --*/
 #include "mstream.h"
-#include "applicat.h"
-#include "def.h"
-#include "diagassert.h"
-#include "huftree.h"
-#include "layer.h"
-#include "mp3.h"
-#include "mp3chunk.h"
+//#include "applicat.h"
+//#include "def.h"
+//#include "diagassert.h"
+//#include "huftree.h"
+//#include "layer.h"
+//#include "mp3.h"
+//#include "mp3chunk.h"
 
 /**************************************************************************
   Title        : MP_Stream

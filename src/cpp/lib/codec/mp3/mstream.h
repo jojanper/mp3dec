@@ -16,14 +16,14 @@
 #include "core/bits.h"
 #include "core/bitsring.h"
 #include "core/defines.h"
-#if 0
-#include "huftree.h"
 #include "mp3def.h"
 #include "mpheader.h"
 #include "param.h"
-#include "sbuffer.h"
 #include "sfb.h"
 #include "side.h"
+#if 0
+#include "huftree.h"
+#include "sbuffer.h"
 #endif
 
 /*
@@ -95,6 +95,7 @@ public:
 
     // Payload size of layer III frame.
     int __fastcall main_data_slots(void);
+#endif
 
     // Checks whether window switching is used in layer III.
     inline BOOL win_switch(Granule_Info *gr_info)
@@ -124,11 +125,9 @@ public:
     }
 
     /*-- Public parameters. --*/
-#endif
 
     /*-- Common to all layers. --*/
     BitStream *bs;
-#if 0
     MP_Frame *frame;
     MP_Buffer *buffer;
     MP_Header *header;
@@ -145,9 +144,9 @@ public:
 
     FLOAT *dbScale;
 
-    Bit_Reservoir *br;
-    HufNode **huftree;
-    MP3_Huffman *huffman;
+    BitBuffer *br;
+    // HufNode **huftree;
+    // MP3_Huffman *huffman;
     III_Side_Info *side_info;
 
     int blc[2];
@@ -158,7 +157,6 @@ public:
     /*-- Common complexity reduction and output stream parameters. --*/
     Out_Param *out_param;
     Out_Complexity *complex;
-#endif
 
 private:
     /*-- Private methods. --*/

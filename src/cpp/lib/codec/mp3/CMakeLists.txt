@@ -6,11 +6,10 @@ set(HDRS
   mstream.h
 )
 
-set(SRC
-  mstreamp.cpp
-)
-
-set(EXTRA_LINK_LIBRARIES
+set(SRCS
+  common.cpp
+  mstream.cpp
+  sfb.cpp
 )
 
 set(DEFINES)

@@ -8,7 +8,10 @@ set(SRCS
 
 set(EXE_SRCS
   main.cpp
-  $<TARGET_OBJECTS:mp3dec_obj>
 )
 
-build_exe("${APPNAME}" "${EXE_SRCS}" "" "")
+set(EXTRA_LINK_LIBRARIES
+  mp3dec_static
+)
+
+build_exe("${APPNAME}" "${EXE_SRCS}" "${EXTRA_LINK_LIBRARIES}" "")
