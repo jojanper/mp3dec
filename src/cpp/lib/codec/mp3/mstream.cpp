@@ -228,30 +228,7 @@ MP_Stream::main_data_slots(void)
     int nSlots;
 
     if (header->bit_rate()) {
-#if 0
-    nSlots = (int)(144 * header->bit_rate()) / (header->frequency() / 1000.);
-
-    if(header->version() != MPEG_PHASE2_LSF)
-    {
-      if(header->channels() == 1)
-        nSlots -= 17;
-      else
-        nSlots -=32;
-    }
-    else
-    {
-      nSlots >>= 1;
-      if(header->channels() == 1)
-        nSlots -= 9;
-      else
-        nSlots -=17;
-    }
-
-    nSlots -= 4;
-
-#else
         nSlots = SlotTable[header->bit_rate_idx()];
-#endif
 
         if (header->padding())
             nSlots++;
