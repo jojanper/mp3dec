@@ -57,6 +57,7 @@ public:
      */
     const char *name() const { return this->m_deviceName; }
 
+    virtual const char *GetStreamName() const;
     virtual uint32_t GetStreamSize() const;
     virtual int32_t SeekBuffer(FilePos fpos, int32_t offset);
     virtual uint32_t ReadToBuffer(uint8_t *buffer, uint32_t bufLen);

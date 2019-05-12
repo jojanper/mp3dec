@@ -26,7 +26,7 @@ public:
     // Rewinds the bit buffer 'n' bits back.
     void rewindNbits(int n);
 
-    inline uint32_t bitsRead() const { return this->m_totalBits; }
+    inline void setBitsRead(int bits) { this->m_totalBits = bits; }
     inline void resetCounter() { this->m_totalBits = 0; }
 
 protected:

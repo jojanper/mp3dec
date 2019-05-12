@@ -146,3 +146,9 @@ FileBuf::CanWrite() const
 {
     return (this->m_mode == kFileWriteMode || this->m_mode == kFileAppendMode);
 }
+
+const char *
+FileBuf::GetStreamName() const
+{
+    return this->m_deviceName;
+}

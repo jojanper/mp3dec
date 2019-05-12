@@ -80,6 +80,10 @@ public:
      */
     int32_t seekStream(FilePos filePos, int32_t offset);
 
+    IStreamBuffer *getIOHandle() const { return this->m_ioBuf; }
+
+    inline void releaseBufferLock() { m_eobs = false; }
+
 protected:
     // Skip at maximum 8 bits
     virtual void skipbits8(int n);

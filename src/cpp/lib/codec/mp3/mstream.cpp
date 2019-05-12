@@ -9,118 +9,47 @@
   External Objects Needed
   *************************************************************************/
 
+/*-- System Headers. --*/
+#include <string.h>
+
 /*-- Project Headers. --*/
+#include "codec/common/huftree.h"
+#include "layer.h"
+#include "mp3.h"
 #include "mstream.h"
-//#include "applicat.h"
-//#include "def.h"
-//#include "diagassert.h"
-//#include "huftree.h"
-//#include "layer.h"
-//#include "mp3.h"
-//#include "mp3chunk.h"
 
-/**************************************************************************
-  Title        : MP_Stream
 
-  Purpose      : Constructor.
-
-  Usage        : MP_Stream()
-
-  Author(s)    : Juha Ojanpera
-  *************************************************************************/
-
-MP_Stream::MP_Stream() : bs(NULL)
+MP_Stream::MP_Stream() :
+    bs(NULL),
+    frame(new MP_Frame()),
+    buffer(new MP_Buffer()),
+    header(new MP_Header()),
+    idx_increment(0),
+    prev_header(new MP_Header()),
+    br(NULL),
+    huftree(new HufNode *[34]),
+    huffman(new MP3_Huffman[34]),
+    side_info(new III_Side_Info()),
+    initialized(FALSE),
+    reduced_class(FALSE)
 {
-#if 0
-    try {
-        initialized = FALSE;
-        reduced_class = FALSE;
-        streamName[0] = '\0';
-        bs = NULL;
-        header = NULL;
-        prev_header = NULL;
-        frame = NULL;
-        buffer = NULL;
-        br = NULL;
-        side_info = NULL;
-        huffman = NULL;
-        huftree = NULL;
+    streamName[0] = '\0';
 
-        bs = (Bit_Stream *) MP3_Chunk::MP3_GetChunk(BITBUFFER_CHUNK);
-        header = (MP_Header *) MP3_Chunk::MP3_GetChunk(MPHEADER_CHUNK);
-        prev_header = (MP_Header *) MP3_Chunk::MP3_GetChunk(MPHEADER_CHUNK);
-        frame = (MP_Frame *) MP3_Chunk::MP3_GetChunk(MPFRAME_CHUNK);
-        buffer = (MP_Buffer *) MP3_Chunk::MP3_GetChunk(MPBUFFER_CHUNK);
-        side_info = (III_Side_Info *) MP3_Chunk::MP3_GetChunk(SIDE_INFO_CHUNK);
+    /*-- Initialize the Huffman decoding module. --*/
+    InitMP3Huffman(huffman);
 
-        /*-- Initialize the Huffman decoding module. --*/
-        huffman = (MP3_Huffman *) MP3_Chunk::MP3_GetChunk(HUFFMAN_CHUNK, 34);
-        InitMP3Huffman(huffman);
+    /*-- Build Huffman tree. --*/
+    for (int i = 0; i < 34; i++) {
+        if (huffman[i].tree_len == 0)
+            continue;
 
-        /*-- Build Huffman tree. --*/
-        huftree = (HufNode **) MP3_Chunk::MP3_GetChunk2(HUFNODE_CHUNK, 34);
-        for (int i = 0; i < 34; i++) {
-            if (huffman[i].tree_len == 0)
-                continue;
-
-            huftree[i] = CreateMP3HuffmanTree(&huffman[i]);
-        }
-        /*-- End of Huffman decoding module initialization. --*/
-
-        idx_increment = 0;
-    } catch (AdvanceExcpt *e) {
-        initialized = FALSE;
-        ASSERTCONSTRUCTOR(_DLL_BUILD_);
+        huftree[i] = CreateMP3HuffmanTree(&huffman[i]);
     }
-
-    initialized = TRUE;
-#endif
+    /*-- End of Huffman decoding module initialization. --*/
 }
 
-MP_Stream::MP_Stream(BitStream *input) : bs(input)
+MP_Stream::~MP_Stream()
 {
-#if 0
-    try {
-        initialized = FALSE;
-        reduced_class = TRUE;
-        streamName[0] = '\0';
-        this->bs = NULL;
-        header = NULL;
-        prev_header = NULL;
-        frame = NULL;
-        buffer = NULL;
-        br = NULL;
-        side_info = NULL;
-        huffman = NULL;
-        huftree = NULL;
-
-        this->bs = bs;
-        header = (MP_Header *) MP3_Chunk::MP3_GetChunk(MPHEADER_CHUNK);
-        prev_header = (MP_Header *) MP3_Chunk::MP3_GetChunk(MPHEADER_CHUNK);
-        side_info = (III_Side_Info *) MP3_Chunk::MP3_GetChunk(SIDE_INFO_CHUNK);
-    } catch (AdvanceExcpt *e) {
-        initialized = FALSE;
-        ASSERTCONSTRUCTOR(_DLL_BUILD_);
-    }
-
-    initialized = TRUE;
-#endif
-}
-
-
-/**************************************************************************
-  Title        : ~MP_Stream
-
-  Purpose      : Destructor.
-
-  Usage        : ~MP_Stream()
-
-  Author(s)    : Juha Ojanpera
-  *************************************************************************/
-
-MP_Stream::~MP_Stream(void)
-{
-#if 0
     if (!reduced_class)
         this->ReleaseDecoder();
 
@@ -167,7 +96,6 @@ MP_Stream::~MP_Stream(void)
     huffman = NULL;
 
     initialized = FALSE;
-#endif
 }
 
 /**************************************************************************
@@ -347,7 +275,6 @@ MP_Stream::ReleaseDecoder(void)
     }
 }
 
-#if 0
 
 /**************************************************************************
   Title        : InitLayerIIICommonObjects
@@ -377,34 +304,31 @@ MP_Stream::InitLayerIIICommonObjects(void)
     FillDataSlotTable();
 
     /*-- Bit reservoir. --*/
-    br = (Bit_Reservoir *) MP3_Chunk::MP3_GetChunk(BITRESER_CHUNK);
-    br->OpenBr();
+    br = new BitBuffer();
+    br->open(4096);
 
     /*-- Get scalefactor band related parameters. --*/
     III_SfbDataInit(&side_info->sfbData, header);
 
     /*-- Initialize sideinfo. --*/
     for (i = 0; i < header->channels(); i++) {
-        side_info->ch_info[i] =
-            (III_Channel_Info *) MP3_Chunk::MP3_GetChunk(III_CHANNEL_CHUNK);
+        side_info->ch_info[i] = new III_Channel_Info();
 
         ch_info = side_info->ch_info[i];
-        ch_info->gr_info[0] = (Granule_Info *) MP3_Chunk::MP3_GetChunk(GRANULE_CHUNK);
+        ch_info->gr_info[0] = new Granule_Info();
 
         if (header->version() == MPEG_AUDIO_ID) // MPEG-1 only
-            ch_info->gr_info[1] = (Granule_Info *) MP3_Chunk::MP3_GetChunk(GRANULE_CHUNK);
+            ch_info->gr_info[1] = new Granule_Info();
     }
 
     /*-- Stereo modes. --*/
-    side_info->s_mode_long = (StereoMode *) MP3_Chunk::MP3_GetChunk(STEREOMODE_CHUNK, 22);
+    side_info->s_mode_long = new StereoMode[22];
     for (i = 0; i < 3; i++)
-        side_info->s_mode_short[i] =
-            (StereoMode *) MP3_Chunk::MP3_GetChunk(STEREOMODE_CHUNK, 13);
+        side_info->s_mode_short[i] = new StereoMode[13];
 
     /*-- Initialize scalefactor pointers. --*/
     for (i = j = 0; i < header->channels(); i++) {
-        side_info->ch_info[i]->scale_fac =
-            (III_Scale_Factors *) MP3_Chunk::MP3_GetChunk(III_SCALEFAC_CHUNK);
+        side_info->ch_info[i]->scale_fac = new III_Scale_Factors();
 
         scale_fac = side_info->ch_info[i]->scale_fac;
         scale_fac->scalefac_long = frame->scale_factors + idx[j++];
@@ -423,7 +347,6 @@ MP_Stream::InitLayerIIICommonObjects(void)
     return (TRUE);
 }
 
-
 /*
  * Retrieves the MPEG layer of the specified input stream. The
  * layer is guessed based on the file extension. Default is layer 3.
@@ -433,14 +356,14 @@ MP_Stream::GuessLayer(const char *stream)
 {
     SYNC_STATUS layer;
 
-    if ((lstrcmp(stream + lstrlen(stream) - 3, "MP1") == 0) ||
-        (lstrcmp(stream + lstrlen(stream) - 3, "mp1") == 0))
+    if ((strcmp(stream + strlen(stream) - 3, "MP1") == 0) ||
+        (strcmp(stream + strlen(stream) - 3, "mp1") == 0))
         layer = FIRST_FRAME_WITH_LAYER1;
-    else if ((lstrcmp(stream + lstrlen(stream) - 3, "MP2") == 0) ||
-             (lstrcmp(stream + lstrlen(stream) - 3, "mp2") == 0))
+    else if ((strcmp(stream + strlen(stream) - 3, "MP2") == 0) ||
+             (strcmp(stream + strlen(stream) - 3, "mp2") == 0))
         layer = FIRST_FRAME_WITH_LAYER2;
-    else if ((lstrcmp(stream + lstrlen(stream) - 3, "MP3") == 0) ||
-             (lstrcmp(stream + lstrlen(stream) - 3, "mp3") == 0))
+    else if ((strcmp(stream + strlen(stream) - 3, "MP3") == 0) ||
+             (strcmp(stream + strlen(stream) - 3, "mp3") == 0))
         layer = FIRST_FRAME_WITH_LAYER3;
     else
         layer = LAYER_UNDEFINED;
@@ -448,76 +371,15 @@ MP_Stream::GuessLayer(const char *stream)
     return (layer);
 }
 
-
-/*
- * Displays a dialog box for the user indicating that the layer of the
- * specified input stream could not be determined. The selection of the
- * correct layer is then up to the user.
- */
-static BOOL CALLBACK
-LayerSelectionDlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
-{
-    switch (iMessage) {
-        case WM_INITDIALOG:
-            SetForegroundWindow(hDlg);
-            return (TRUE);
-
-        case WM_COMMAND:
-            switch (GET_WM_COMMAND_ID(wParam, lParam)) {
-                case IDOK:
-                    /*-- Layer I was selected. --*/
-                    EndDialog(hDlg, FIRST_FRAME_WITH_LAYER1);
-                    break;
-
-                case IDCANCEL:
-                    /*-- Layer II was selected. --*/
-                    EndDialog(hDlg, FIRST_FRAME_WITH_LAYER2);
-                    break;
-
-                case IDNO:
-                    /*-- Layer III was selected. --*/
-                    EndDialog(hDlg, FIRST_FRAME_WITH_LAYER3);
-                    break;
-
-                default:
-                    return (FALSE);
-            }
-            break;
-
-        default:
-            return (FALSE);
-    }
-
-    return (TRUE);
-}
-
-
-/*
- * Interface function to invoke the layer selection dialog box.
- */
-SYNC_STATUS
-MP_Stream::LayerSelection(HINSTANCE hInst, HWND hWnd)
-{
-    int layer;
-
-    layer = DialogBox(hInst, MAKEINTRESOURCE(LAYERSELECTION), hWnd,
-                      (DLGPROC) LayerSelectionDlgProc);
-    if (layer == -1)
-        layer = LAYER_UNDEFINED;
-
-    return ((SYNC_STATUS) layer);
-}
-
 /*
  * Initializes the sync related parameters and searches the start of first
  * frame within the specified input stream. Returns SYNC_FOUND on success,
  * on failure SYNC_LOST is returned indicating that the start of first
  * frame could not be found. Possible reasons for this are invalid file
- * and/or the initial MPEG layer was not correct. The 'use_assert' parameter
- * invokes a error message on failure if set to TRUE.
+ * and/or the initial MPEG layer was not correct.
  */
 SEEK_STATUS
-MP_Stream::Init_Sync(SYNC_STATUS layer, BOOL use_assert) throw(AdvanceExcpt *)
+MP_Stream::Init_Sync(SYNC_STATUS layer)
 {
     int32 hdr;
 
@@ -531,20 +393,14 @@ MP_Stream::Init_Sync(SYNC_STATUS layer, BOOL use_assert) throw(AdvanceExcpt *)
     syncInfo.sync_status = layer;
 
     /*-- Find the start of the stream. --*/
-    if (SeekSync(this) != SYNC_FOUND) {
-        if (use_assert) {
-            char buf[64];
-            wsprintf(buf, "%s - Decoder Error", _DLL_BUILD_);
-            ASSERT2(sync != SYNC_FOUND, "Unable to find syncword.", buf, NULL);
-        }
-        else
-            return (SYNC_LOST);
-    }
-    syncInfo.sync_status -= (SYNC_STATUS) 3;
+    if (SeekSync(this) != SYNC_FOUND)
+        return SYNC_LOST;
+
+    syncInfo.sync_status = (SYNC_STATUS)(syncInfo.sync_status - (SYNC_STATUS) 3);
 
     /*-- Check what layer we are about to be decoding. --*/
     hdr = (!side_info->sfbData.mpeg25) << HEADER_BITS;
-    header->SetHeader(hdr | bs->look_ahead(HEADER_BITS));
+    header->SetHeader(hdr | bs->lookAhead(HEADER_BITS));
 
     return (SYNC_FOUND);
 }
@@ -570,61 +426,41 @@ MP_Stream::Init_Sync(SYNC_STATUS layer, BOOL use_assert) throw(AdvanceExcpt *)
   *************************************************************************/
 
 BOOL
-MP_Stream::InitDecoder(HINSTANCE hInst,
-                       HWND hWnd,
-                       const char *mp_stream,
-                       Out_Param *out_param,
-                       Out_Complexity *complex,
-                       StreamBuffer *sBuf) throw(AdvanceExcpt *)
+MP_Stream::InitDecoder(BitStream *input, Out_Param *out_param, Out_Complexity *complex)
 {
     BOOL result = TRUE;
     SYNC_STATUS initLayer;
     int i, j, groups = 1, extra = 1;
 
-    if (initialized == FALSE) {
-        ASSERTCONSTRUCTOR(_DLL_BUILD_);
-    }
-
+    this->bs = input;
     this->complex = complex;
     this->out_param = out_param;
-
-/*-- Open the bitstream. --*/
-#define MAX_SLOTS ((MAX_FRAME_SLOTS << 1) + 1)
-    result = bs->Open(hInst, mp_stream, READ_MODE, MAX_SLOTS, sBuf);
-    if (result == FALSE)
-        return (result);
 
     /*
      * Check whether this stream is the same than the previous stream.
      */
-    if (sBuf == NULL && lstrcmp(streamName, mp_stream)) {
-        initLayer = GuessLayer(mp_stream);
-
-        /*
-         * We cannot determine the layer based on the file extension.
-         * Let the user select the layer.
-         */
-        if (initLayer == LAYER_UNDEFINED)
-            initLayer = LayerSelection(hInst, hWnd);
+    auto stream_name = this->bs->getIOHandle()->GetStreamName();
+    if (stream_name && strcmp(streamName, stream_name)) {
+        initLayer = GuessLayer(stream_name);
 
         /*-- An error occured while processing dialog box. --*/
         if (initLayer == LAYER_UNDEFINED)
             initLayer = FIRST_FRAME_WITH_LAYER3;
     }
-    else if (sBuf)
+    else if (stream_name)
         initLayer = FIRST_FRAME_WITH_LAYER3;
     else
         initLayer = streamSync;
 
     /*-- Find the start of first frame. --*/
-    Init_Sync(initLayer, TRUE);
+    Init_Sync(initLayer);
 
     /*
      * Store the filename and layer. These are needed if we have playback loop.
      * Why to ask from user every time what is the layer, if we already know it !
      */
     streamSync = initLayer;
-    lstrcpy(streamName, mp_stream);
+    strcpy(streamName, stream_name);
 
     /*-- Size of memory chunks to be allocated. --*/
     groups = header->channels() * SBLIMIT;
@@ -641,7 +477,7 @@ MP_Stream::InitDecoder(HINSTANCE hInst,
      * are using variable length bit allocation (= Huffman coded).
      */
     if (header->layer_number() != 3)
-        frame->bit_alloc = (BYTE *) MP3_Chunk::MP3_GetChunk(BYTE_CHUNK, groups);
+        frame->bit_alloc = new BYTE[groups];
 
     if (header->layer_number() != 1)
         groups *= 3;
@@ -650,7 +486,7 @@ MP_Stream::InitDecoder(HINSTANCE hInst,
      * Scale factors for each group. This is also used in layer III, but we
      * access this array through the 'side_info' structure.
      */
-    frame->scale_factors = (BYTE *) MP3_Chunk::MP3_GetChunk(BYTE_CHUNK, groups);
+    frame->scale_factors = new BYTE[groups];
 
     /*-- Layer III initialization. --*/
     if (header->layer_number() == 3) {
@@ -658,8 +494,7 @@ MP_Stream::InitDecoder(HINSTANCE hInst,
 
         /*-- Re-calculate the needed amount of memory. --*/
         groups = MAX_MONO_SAMPLES * header->channels();
-
-    } /* if(layer_number() == 3) */
+    }
 
     /*
      * Quantized spectral coefficients.
@@ -667,10 +502,10 @@ MP_Stream::InitDecoder(HINSTANCE hInst,
      * that we access this array beyond 'groups'-samples. At maximum, this offset
      * is 4 samples. So the extra 10 samples should quarantee safe execution.
      */
-    frame->quant = (int16 *) MP3_Chunk::MP3_GetChunk(INT16_CHUNK, groups + 10);
+    frame->quant = new int16[groups + 10];
 
     /*-- Reconstructed spectral coefficients. --*/
-    buffer->reconstructed = (FLOAT *) MP3_Chunk::MP3_GetChunk(FLOAT_CHUNK, groups);
+    buffer->reconstructed = new FLOAT[groups];
 
     /*-- Channel pointers for quantized and reconstructed data. --*/
     if (header->layer_number() == 3)
@@ -691,44 +526,37 @@ MP_Stream::InitDecoder(HINSTANCE hInst,
         extra = side_info->sfbData.max_gr;
 
     /*-- Reconstructed time domain samples. --*/
-    buffer->pcm_sample = (int16 *) MP3_Chunk::MP3_GetChunk(INT16_CHUNK, groups * extra);
+    buffer->pcm_sample = new int16[groups * extra];
 
     /*-- Synthesis buffer of the channel(s). --*/
     for (i = 0; i < header->channels(); i++) {
         buffer->buf_idx[i] = 0;
 
         /*-- For floating point arithmetic. --*/
-        buffer->synthesis_buffer[i] =
-            (FLOAT *) MP3_Chunk::MP3_GetChunk(FLOAT_CHUNK, HAN_SIZE << 1);
+        buffer->synthesis_buffer[i] = new FLOAT[HAN_SIZE << 1];
 
         /*-- For fixed point arithmetic. --*/
-        buffer->Fixsynthesis_buffer[i] =
-            (int16 *) MP3_Chunk::MP3_GetChunk(INT16_CHUNK, HAN_SIZE << 1);
+        buffer->Fixsynthesis_buffer[i] = new int16[HAN_SIZE << 1];
     }
 
     /*-- If free format stream, determine the bit rate. --*/
     if (header->bit_rate() == 0) {
         FreeFormatSlots = FindFreeFormatSlotCount(this);
-        if (FreeFormatSlots < 0) {
-            char buf[64];
-            wsprintf(buf, "%s - Decoder Error", _DLL_BUILD_);
-            ASSERT2(FreeFormatSlots < 0,
-                    "Unable to determine bit rate of the opened stream.", buf, NULL);
-        }
+        if (FreeFormatSlots < 0)
+            return FALSE;
 
         /*-- Rewind the stream back to the beginning. --*/
-        bs->FlushStream();
-        bs->SeekStream(START_POS, 0);
+        bs->flushStream();
+        bs->seekStream(START_POS, 0);
 
         /*
          * Find the start of the first frame again. This should not
          * cause any problems.
          */
-        syncInfo.sync_status += (SYNC_STATUS) 3;
+        syncInfo.sync_status = (SYNC_STATUS)(syncInfo.sync_status + (SYNC_STATUS) 3);
         SeekSync(this);
-        syncInfo.sync_status -= (SYNC_STATUS) 3;
+        syncInfo.sync_status = (SYNC_STATUS)(syncInfo.sync_status - (SYNC_STATUS) 3);
     }
 
     return (result);
 }
-#endif

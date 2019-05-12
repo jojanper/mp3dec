@@ -71,25 +71,16 @@ class MP_Stream
 public:
     /*-- Constructor. --*/
     MP_Stream();
-    MP_Stream(BitStream *input);
 
     /*-- Destructor. --*/
     ~MP_Stream();
 
-#if 0
     /*-- Public methods. --*/
-    BOOL InitDecoder(HINSTANCE hInst,
-                     HWND hWnd,
-                     const char *mp_stream,
-                     Out_Param *out_param,
-                     Out_Complexity *complex,
-                     StreamBuffer *sBuf = NULL) throw(AdvanceExcpt *);
-#endif
+    BOOL InitDecoder(BitStream *input, Out_Param *out_param, Out_Complexity *complex);
 
     void ReleaseDecoder(void);
 
-    // SEEK_STATUS Init_Sync(SYNC_STATUS layer,
-    //                    BOOL use_assert = FALSE) throw(AdvanceExcpt *);
+    SEEK_STATUS Init_Sync(SYNC_STATUS layer);
 
     // Payload size of layer III frame.
     int main_data_slots(void);

@@ -21,6 +21,9 @@ typedef enum FilePos
 class IStreamBuffer
 {
 public:
+    // Get stream name
+    virtual const char *GetStreamName() const = 0;
+
     // Get size of stream in bytes
     virtual uint32_t GetStreamSize() const = 0;
 

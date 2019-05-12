@@ -39,7 +39,7 @@ public:
 
     virtual void reset();
 
-    size_t totalBits() const { return this->m_totalBits; }
+    inline size_t bitsRead() const { return this->m_totalBits; }
 
     /**
      * Return bitstream buffer handle. Handle is byte-aligned so any bits read

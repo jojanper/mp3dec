@@ -5,10 +5,21 @@ set(HDRS
 )
 
 set(SRCS
+  brate.cpp
   common.cpp
+  huffman.cpp
+  imdct2.cpp
+  layer1.cpp
+  layer2.cpp
+  layer3.cpp
+  mp3.cpp
+  mp3_q.cpp
+  mp3wind.cpp
   mpheader.cpp
   mstream.cpp
   sfb.cpp
+  stereo.cpp
+  synfilt.cpp
 )
 
 set(DEFINES)

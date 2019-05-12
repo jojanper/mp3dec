@@ -42,7 +42,7 @@ TEST_F(BitsRingBufferTestSuite, Parse)
     // The 1st 4 bits should return this value
     EXPECT_EQ(m_br.getBits(4), (uint32_t) 7);
     // 4 bits read so far
-    EXPECT_EQ(m_br.totalBits(), (uint32_t) 4);
+    EXPECT_EQ(m_br.bitsRead(), (uint32_t) 4);
     // The next 4 bits should return this value
     EXPECT_EQ(m_br.lookAhead(4), (uint32_t) 14);
 
@@ -54,13 +54,13 @@ TEST_F(BitsRingBufferTestSuite, Parse)
     // Skip value 255 (8 bits) and 123 (12-bits)
     m_br.skipBits(20);
     // Amount of bits read so far
-    EXPECT_EQ(m_br.totalBits(), (uint32_t) 36);
+    EXPECT_EQ(m_br.bitsRead(), (uint32_t) 36);
 
     // Rewind back to the start
     m_br.rewindNbits(6);
-    m_br.rewindNbits(40);                      // 10 bits too much
-    m_br.skipBits(10);                         // Compensate the extra 10 bits rewinded
-    EXPECT_EQ(m_br.totalBits(), (uint32_t) 0); // No bits read so far
+    m_br.rewindNbits(40);                     // 10 bits too much
+    m_br.skipBits(10);                        // Compensate the extra 10 bits rewinded
+    EXPECT_EQ(m_br.bitsRead(), (uint32_t) 0); // No bits read so far
 
     // First 10 bits from buffer
     EXPECT_EQ(m_br.getBits(10), (uint32_t) 507); // 01 11 1110 11
@@ -76,13 +76,13 @@ TEST_F(BitsRingBufferTestSuite, Parse)
     m_br.skipBits(4);
 
     // Expected amount of bits read
-    EXPECT_EQ(m_br.totalBits(), (uint32_t) 40);
+    EXPECT_EQ(m_br.bitsRead(), (uint32_t) 40);
 
     // Read the appeded data (added at the start of this function)
     EXPECT_EQ(m_br.getBits(5), (uint32_t) 4);
     EXPECT_EQ(m_br.getBits(4), (uint32_t) 1);
     EXPECT_EQ(m_br.getBits(7), (uint32_t) 0);
-    EXPECT_EQ(m_br.totalBits(), (uint32_t) 56);
+    EXPECT_EQ(m_br.bitsRead(), (uint32_t) 56);
 
     // Seek to the start of the file
     m_bs.reset();
@@ -98,5 +98,5 @@ TEST_F(BitsRingBufferTestSuite, Parse)
     EXPECT_EQ(m_br.getBits(8), (uint32_t) 255);
 
     m_br.reset();
-    EXPECT_EQ(m_br.totalBits(), (uint32_t) 0);
+    EXPECT_EQ(m_br.bitsRead(), (uint32_t) 0);
 }
