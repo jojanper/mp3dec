@@ -82,7 +82,7 @@ public:
     inline int layer_number(void) { return (int) ((4 - ((header >> 17) & 3))); }
 
     // Layer number as a string (I, II or III)
-    char *layer_string(void);
+    const char *layer_string(void);
 
     // Error protection bit.
     inline BOOL error_protection(void) { return (!((header >> 16) & 1)); }
@@ -112,7 +112,7 @@ public:
     inline int mode(void) { return (int) ((header >> 6) & 3); }
 
     // Type of stream (mono, stereo, joint or dual).
-    char *mode_string(void);
+    const char *mode_string(void);
 
     // Value of mode extension.
     inline int mode_extension(void) { return (int) ((header >> 4) & 3); }
@@ -124,7 +124,7 @@ public:
     inline BOOL original(void) { return (BOOL)((header >> 2) & 1); }
 
     // Name of de-emphasis used.
-    char *de_emphasis(void);
+    const char *de_emphasis(void);
 
     /*-- Methods to interprete header parameters. --*/
 

@@ -6,6 +6,7 @@ set(HDRS
 
 set(SRCS
   common.cpp
+  mpheader.cpp
   mstream.cpp
   sfb.cpp
 )

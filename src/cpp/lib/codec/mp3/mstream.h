@@ -84,15 +84,15 @@ public:
                      Out_Param *out_param,
                      Out_Complexity *complex,
                      StreamBuffer *sBuf = NULL) throw(AdvanceExcpt *);
+#endif
 
-    void __fastcall ReleaseDecoder(void);
+    void ReleaseDecoder(void);
 
-    SEEK_STATUS Init_Sync(SYNC_STATUS layer,
-                          BOOL use_assert = FALSE) throw(AdvanceExcpt *);
+    // SEEK_STATUS Init_Sync(SYNC_STATUS layer,
+    //                    BOOL use_assert = FALSE) throw(AdvanceExcpt *);
 
     // Payload size of layer III frame.
-    int __fastcall main_data_slots(void);
-#endif
+    int main_data_slots(void);
 
     // Checks whether window switching is used in layer III.
     inline BOOL win_switch(Granule_Info *gr_info)

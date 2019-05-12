@@ -170,8 +170,6 @@ MP_Stream::~MP_Stream(void)
 #endif
 }
 
-#if 0
-
 /**************************************************************************
   Title        : FillDataSlotTable
 
@@ -224,7 +222,8 @@ MP_Stream::FillDataSlotTable(void)
   Author(s)    : Juha Ojanpera
   *************************************************************************/
 
-int __fastcall MP_Stream::main_data_slots(void)
+int
+MP_Stream::main_data_slots(void)
 {
     int nSlots;
 
@@ -281,11 +280,12 @@ int __fastcall MP_Stream::main_data_slots(void)
   Author(s)    : Juha Ojanpera
   *************************************************************************/
 
-void __fastcall MP_Stream::ReleaseDecoder(void)
+void
+MP_Stream::ReleaseDecoder(void)
 {
     if (initialized) {
         /*-- Close the stream. --*/
-        bs->Close();
+        bs->close();
 
         /*-- Layers I and II use fixed bit allocation. --*/
         if (header->layer_number() != 3) {
@@ -370,6 +370,7 @@ void __fastcall MP_Stream::ReleaseDecoder(void)
     }
 }
 
+#if 0
 
 /**************************************************************************
   Title        : InitLayerIIICommonObjects
