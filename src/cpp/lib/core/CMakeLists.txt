@@ -8,6 +8,7 @@ set(SRCS
    bitsbuffer.cpp
    bits.cpp
    bitsring.cpp
+   log.cpp
 )
 
 set(EXTRA_LINK_LIBRARIES
