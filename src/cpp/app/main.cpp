@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "core/iobuf.h"
+#include "core/throw.h"
 #include "mp3.h"
 #include "mp3info.h"
 #include "mstream.h"

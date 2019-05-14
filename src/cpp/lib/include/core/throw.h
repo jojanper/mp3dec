@@ -8,65 +8,25 @@
 #ifndef EXCEPTION_THROW_H_
 #define EXCEPTION_THROW_H_
 
-/*-- System Headers. --*/
-#include <stdlib.h>
-#include <string.h>
-
 /*-- Project Headers. --*/
-#include "core/defines.h"
+#include "core/errmsg.h"
 
 class AdvanceExcpt
 {
 public:
-    /*-- Constructor --*/
-    // AdvanceExcpt(Error_Msg *ErrMsg) { emsg = ErrMsg; };
-    AdvanceExcpt() {}
+    AdvanceExcpt(ErrorMsg *err) : m_err(err) {}
 
-    /*-- Deconstructor --*/
-    ~AdvanceExcpt(void)
+    ~AdvanceExcpt()
     {
-#if 0
-      if(emsg != NULL)
-        delete emsg;
-      emsg = NULL;
-#endif
+        if (m_err != NULL)
+            delete m_err;
+        m_err = NULL;
     }
 
-#if 0
-    inline Error_Msg *GetErrorMSG(void) { return (emsg); }
-
-    void __EXPORT_TYPE __stdcall ShowMessage(char *LastMsgStr = NULL)
-    {
-      if(GetErrorMSG()->UseAssertMessage())
-        MessageBox(GetActiveWindow(), GetErrorMSG()->GetAssertMessage(),
-                   GetErrorMSG()->GetTitleErrorMessage(),
-                   MB_OK | MB_ICONEXCLAMATION | MB_SETFOREGROUND);
-      else
-      {
-        MessageBox(GetActiveWindow(), GetErrorMSG()->GetMessage(),
-                   GetErrorMSG()->GetTitleErrorMessage(),
-                   MB_OK | MB_ICONEXCLAMATION | MB_SETFOREGROUND);
-        if(GetErrorMSG()->HasExtensionMessage())
-          MessageBox(GetActiveWindow(), GetErrorMSG()->GetExtendedMessage(),
-                     "Additional information about the error",
-                     MB_OK | MB_ICONEXCLAMATION | MB_SETFOREGROUND);
-      }
-
-      char buf[1024];
-      wsprintf(buf, _T("Message from Error Handler"));
-      if(LastMsgStr)
-        MessageBox(GetActiveWindow(), LastMsgStr, buf,
-                   MB_OK | MB_ICONEXCLAMATION | MB_SETFOREGROUND);
-#if 0
-      else
-        MessageBox(GetActiveWindow(), "Unable to initialize the decoder.",
-                   buf, MB_OK | MB_ICONEXCLAMATION | MB_SETFOREGROUND);
-#endif
-    }
-#endif
+    const ErrorMsg *getError() const { return m_err; }
 
 private:
-    // Error_Msg *emsg;
+    ErrorMsg *m_err;
 };
 
 #endif /* EXCEPTION_THROW_H_ */
