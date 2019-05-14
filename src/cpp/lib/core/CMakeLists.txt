@@ -9,6 +9,7 @@ set(SRCS
    bits.cpp
    bitsring.cpp
    log.cpp
+   wave.cpp
 )
 
 set(EXTRA_LINK_LIBRARIES
