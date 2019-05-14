@@ -280,6 +280,7 @@ III_get_LSF_scale_data(MP_Stream *mp, int gr, int ch)
             break;
 
         default:
+            blocktypenumber = 0;
             break;
     }
 

@@ -294,7 +294,7 @@ dequantize_cpe(MP_Stream *mp, int gr)
     int16 shift[MAX_CHANNELS];
     Granule_Info *gr_info[MAX_CHANNELS];
     III_Scale_Factors *scale_fac[MAX_CHANNELS];
-    FLOAT *g_gain[MAX_CHANNELS << 1], *glob_gain, *dbS;
+    FLOAT *g_gain[MAX_CHANNELS << 1] = { 0 }, *glob_gain, *dbS;
 
     dbS = mp->dbScale;
 
@@ -470,8 +470,8 @@ dequantize_cpe(MP_Stream *mp, int gr)
             pre_tbl[0] += ms_bands;
             pre_tbl[1] += ms_bands;
 
-            int16 sfbIdxSave, sfbBandSave;
-            register int16 *sfb_;
+            int16 sfbIdxSave = 0, sfbBandSave;
+            int16 *sfb_ = NULL;
             if (sfbData->sbHybrid < sfbData->bandLimit) {
                 sfbBandSave = sfbData->sfbLongSfbIdx[sfbData->sbHybrid];
                 sfb_ = &sfbData->sfbLong[sfbBandSave];
@@ -584,7 +584,7 @@ dequantize_sce(MP_Stream *mp, III_SfbData *sfbData, int gr, int ch)
     Granule_Info *gr_info;
     III_Scale_Factors *scale_fac;
     FLOAT *dequant, *glob_gain, *dbS;
-    register int16 *quant, *pretabTbl;
+    int16 *quant, *pretabTbl;
 
     dbS = mp->dbScale;
 
@@ -613,16 +613,16 @@ dequantize_sce(MP_Stream *mp, III_SfbData *sfbData, int gr, int ch)
 
         case LONG_BLOCK_MODE:
             if (gr_info->zero_part_start < sfbData->bandLimit) {
-                register int16 *sfb_;
+                int16 *sfb;
                 int16 sfbIdxSave, sfbBandSave;
 
                 sfbBandSave = sfbData->sfbLongSfbIdx[gr_info->zero_part_start];
-                sfb_ = &sfbData->sfbLong[sfbBandSave];
-                sfbIdxSave = *sfb_;
-                *sfb_ = gr_info->zero_part_start;
+                sfb = &sfbData->sfbLong[sfbBandSave];
+                sfbIdxSave = *sfb;
+                *sfb = gr_info->zero_part_start;
                 do_long_quant(glob_gain, quant, dequant, scale_fac->scalefac_long,
                               sfbBandSave, sfbData->sfbLong, gain_shift, pretabTbl, dbS);
-                *sfb_ = sfbIdxSave;
+                *sfb = sfbIdxSave;
             }
             else
                 do_long_quant(glob_gain, quant, dequant, scale_fac->scalefac_long,
