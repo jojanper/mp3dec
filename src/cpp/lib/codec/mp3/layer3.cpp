@@ -127,7 +127,7 @@ III_get_side_info(MP_Stream *mp)
             mp->side_info->private_bits = mp->bs->getBits(2);
 
         for (i = 0; i < mp->header->channels(); i++) {
-            register Granule_Info *gr_info = mp->side_info->ch_info[i]->gr_info[0];
+            Granule_Info *gr_info = mp->side_info->ch_info[i]->gr_info[0];
 
             gr_info->part2_3_length = mp->bs->getBits(12);
             gr_info->big_values = mp->bs->getBits(9) << 1;
@@ -185,12 +185,12 @@ III_get_side_info(MP_Stream *mp)
     }
 
     /* MS stereo. */
-    mp->side_info->sfbData.ms_stereo = ((mp->header->mode() == MPG_MD_JOINT_STEREO) &&
-                                        (mp->header->mode_extension() & 0x2));
+    mp->side_info->sfbData.ms_stereo =
+        ((mp->header->mode() == MPG_MD_JOINT_STEREO) && (mp->header->mode_extension() & 0x2));
 
     /* IS stereo. */
-    mp->side_info->sfbData.is_stereo = ((mp->header->mode() == MPG_MD_JOINT_STEREO) &&
-                                        (mp->header->mode_extension() & 0x1));
+    mp->side_info->sfbData.is_stereo =
+        ((mp->header->mode() == MPG_MD_JOINT_STEREO) && (mp->header->mode_extension() & 0x1));
 }
 
 /*
@@ -634,10 +634,8 @@ init_III_reorder(int16 *sfb_table, int16 *sfb_width_table)
             for (int freq = 0; freq < sfb_width_table[sfb]; freq++) {
                 int src_line = sfb_start * 3 + window * sfb_width_table[sfb] + freq;
                 int des_line = (sfb_start * 3) + window + (freq * 3);
-                reorder_idx[0][i] =
-                    ((des_line / SSLIMIT) * SSLIMIT) + (des_line % SSLIMIT);
-                reorder_idx[1][i++] =
-                    ((src_line / SSLIMIT) * SSLIMIT) + (src_line % SSLIMIT);
+                reorder_idx[0][i] = ((des_line / SSLIMIT) * SSLIMIT) + (des_line % SSLIMIT);
+                reorder_idx[1][i++] = ((src_line / SSLIMIT) * SSLIMIT) + (src_line % SSLIMIT);
             }
     }
 

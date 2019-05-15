@@ -2,7 +2,7 @@ BasedOnStyle: Google
 Language: Cpp
 Standard: Cpp11
 AccessModifierOffset: -4
-AlignAfterOpenBracket: Align
+AlignAfterOpenBracket: AlwaysBreak
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
 AlignEscapedNewlinesLeft: true

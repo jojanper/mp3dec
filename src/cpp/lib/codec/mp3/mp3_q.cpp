@@ -31,10 +31,10 @@
    Purpose:     Pre-emphasis tables.
    Explanation: The first table is used when 'pre_flag' is TRUE, otherwise
                 the second table is selected. */
-static int16 pretab[22] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                            1, 1, 1, 1, 2, 2, 3, 3, 3, 2, 0 };
-static int16 pretab0[22] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+static int16 pretab[22] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 3, 3, 3, 2, 0 };
+static int16 pretab0[22] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
 
 /*
    Purpose:     Scaling table to obtain values for dequantization of
@@ -126,15 +126,16 @@ scaled_sample(FLOAT gain, int16 quant)
   *************************************************************************/
 
 inline void
-do_long_quant(FLOAT *ggain,
-              int16 *quant,
-              FLOAT *dequant,
-              BYTE *sfac,
-              int sfbs,
-              int16 *sfb_offset,
-              int gain_shift,
-              int16 *pretabTbl,
-              FLOAT *dbS)
+do_long_quant(
+    FLOAT *ggain,
+    int16 *quant,
+    FLOAT *dequant,
+    BYTE *sfac,
+    int sfbs,
+    int16 *sfb_offset,
+    int gain_shift,
+    int16 *pretabTbl,
+    FLOAT *dbS)
 {
     for (int i = 0, j = sfb_offset[0]; i < sfbs; i++) {
 #ifdef EQUALIZER
@@ -177,17 +178,18 @@ do_long_quant(FLOAT *ggain,
   *************************************************************************/
 
 inline void
-do_short_quant(FLOAT *ggain,
-               int16 *quant,
-               FLOAT *dequant,
-               BYTE *sfac[3],
-               BYTE subblock_gain[3],
-               int16 sfb_start,
-               int16 sfb_end,
-               int16 *sfb_width,
-               int max_bins,
-               int gain_shift,
-               FLOAT *dbS)
+do_short_quant(
+    FLOAT *ggain,
+    int16 *quant,
+    FLOAT *dequant,
+    BYTE *sfac[3],
+    BYTE subblock_gain[3],
+    int16 sfb_start,
+    int16 sfb_end,
+    int16 *sfb_width,
+    int max_bins,
+    int gain_shift,
+    FLOAT *dbS)
 {
     int cum_sfb_bin = 0;
     int16 *sfb_tbl = sfb_width;
@@ -338,22 +340,22 @@ dequantize_cpe(MP_Stream *mp, int gr)
 
                     switch (mp->side_info->s_mode_short[j][i]) {
                         case ONLY_STEREO:
-                            SHORT_QUANT_IS(g_gain[0], g_gain[2], 1.0f, 1.0f,
-                                           scale_fac[0]->scalefac_short[j][i],
-                                           scale_fac[1]->scalefac_short[j][i],
-                                           gr_info[0]->subblock_gain[j],
-                                           gr_info[1]->subblock_gain[j], shift[0],
-                                           shift[1], *width, dbS);
+                            SHORT_QUANT_IS(
+                                g_gain[0], g_gain[2], 1.0f, 1.0f,
+                                scale_fac[0]->scalefac_short[j][i],
+                                scale_fac[1]->scalefac_short[j][i],
+                                gr_info[0]->subblock_gain[j], gr_info[1]->subblock_gain[j],
+                                shift[0], shift[1], *width, dbS);
                             break;
 
                         case MS_STEREO: {
                             FLOAT *tmp[2] = { dqs[0], dqs[1] };
-                            SHORT_QUANT_IS(g_gain[1], g_gain[3], 1.0f, 1.0f,
-                                           scale_fac[0]->scalefac_short[j][i],
-                                           scale_fac[1]->scalefac_short[j][i],
-                                           gr_info[0]->subblock_gain[j],
-                                           gr_info[1]->subblock_gain[j], shift[0],
-                                           shift[1], *width, dbS);
+                            SHORT_QUANT_IS(
+                                g_gain[1], g_gain[3], 1.0f, 1.0f,
+                                scale_fac[0]->scalefac_short[j][i],
+                                scale_fac[1]->scalefac_short[j][i],
+                                gr_info[0]->subblock_gain[j], gr_info[1]->subblock_gain[j],
+                                shift[0], shift[1], *width, dbS);
                             do_ms_matrix(tmp[0], tmp[1], 0, *width);
                         } break;
 
@@ -379,8 +381,7 @@ dequantize_cpe(MP_Stream *mp, int gr)
                                     int16 *q = qs[1];
                                     qs[1] = qs[0];
                                     gain =
-                                        is_ratio_lsf[scale_fac[1]->scalefac_short[j][i]]
-                                                    [io];
+                                        is_ratio_lsf[scale_fac[1]->scalefac_short[j][i]][io];
                                     SHORT_QUANT_IS_LEFT(
                                         g_gain[0], g_gain[2], gain, 1.0f,
                                         scale_fac[0]->scalefac_short[j][i],
@@ -394,8 +395,7 @@ dequantize_cpe(MP_Stream *mp, int gr)
                                     int16 *q = qs[1];
                                     qs[1] = qs[0];
                                     gain =
-                                        is_ratio_lsf[scale_fac[1]->scalefac_short[j][i]]
-                                                    [io];
+                                        is_ratio_lsf[scale_fac[1]->scalefac_short[j][i]][io];
                                     SHORT_QUANT_IS_RIGHT(
                                         g_gain[0], g_gain[2], 1.0f, gain,
                                         scale_fac[0]->scalefac_short[j][i],
@@ -434,8 +434,9 @@ dequantize_cpe(MP_Stream *mp, int gr)
                 glob_gain = (sfbData->ms_stereo) ? g_gain[1] : g_gain[0];
                 gain_shift = shift[0];
                 pretabTbl = (mp->pre_flag(gr_info[0])) ? pretab : pretab0;
-                do_long_quant(glob_gain, qs[0], dqs[0], scale_fac[0]->scalefac_long,
-                              ms_bands, sfbData->sfbLong, gain_shift, pretabTbl, dbS);
+                do_long_quant(
+                    glob_gain, qs[0], dqs[0], scale_fac[0]->scalefac_long, ms_bands,
+                    sfbData->sfbLong, gain_shift, pretabTbl, dbS);
 
                 dbS = mp->dbScale;
 
@@ -443,13 +444,15 @@ dequantize_cpe(MP_Stream *mp, int gr)
                 glob_gain = (sfbData->ms_stereo) ? g_gain[3] : g_gain[2];
                 gain_shift = shift[1];
                 pretabTbl = (mp->pre_flag(gr_info[1])) ? pretab : pretab0;
-                do_long_quant(glob_gain, qs[1], dqs[1], scale_fac[1]->scalefac_long,
-                              ms_bands, sfbData->sfbLong, gain_shift, pretabTbl, dbS);
+                do_long_quant(
+                    glob_gain, qs[1], dqs[1], scale_fac[1]->scalefac_long, ms_bands,
+                    sfbData->sfbLong, gain_shift, pretabTbl, dbS);
 
                 if (sfbData->ms_stereo)
-                    do_ms_matrix(mp->buffer->ch_reconstructed[LEFT_CHANNEL],
-                                 mp->buffer->ch_reconstructed[RIGHT_CHANNEL], 0,
-                                 sfbData->sfbLong[ms_bands]);
+                    do_ms_matrix(
+                        mp->buffer->ch_reconstructed[LEFT_CHANNEL],
+                        mp->buffer->ch_reconstructed[RIGHT_CHANNEL], 0,
+                        sfbData->sfbLong[ms_bands]);
 
                 qs[0] += sfbData->sfbLong[ms_bands];
                 qs[1] += sfbData->sfbLong[ms_bands];
@@ -485,16 +488,16 @@ dequantize_cpe(MP_Stream *mp, int gr)
                  i++, st++, width++, sf[0]++, sf[1]++, pre_tbl[0]++, pre_tbl[1]++) {
                 switch (*st) {
                     case ONLY_STEREO:
-                        LONG_QUANT_IS(g_gain[0], g_gain[2], 1.0f, 1.0f, *sf[0], *sf[1],
-                                      *pre_tbl[0], *pre_tbl[1], shift[0], shift[1],
-                                      *width, dbS);
+                        LONG_QUANT_IS(
+                            g_gain[0], g_gain[2], 1.0f, 1.0f, *sf[0], *sf[1], *pre_tbl[0],
+                            *pre_tbl[1], shift[0], shift[1], *width, dbS);
                         break;
 
                     case MS_STEREO: {
                         FLOAT *tmp[2] = { dqs[0], dqs[1] };
-                        LONG_QUANT_IS(g_gain[1], g_gain[3], 1.0f, 1.0f, *sf[0], *sf[1],
-                                      *pre_tbl[0], *pre_tbl[1], shift[0], shift[1],
-                                      *width, dbS);
+                        LONG_QUANT_IS(
+                            g_gain[1], g_gain[3], 1.0f, 1.0f, *sf[0], *sf[1], *pre_tbl[0],
+                            *pre_tbl[1], shift[0], shift[1], *width, dbS);
                         do_ms_matrix(tmp[0], tmp[1], 0, *width);
                     } break;
 
@@ -503,8 +506,8 @@ dequantize_cpe(MP_Stream *mp, int gr)
                         FLOAT gainr = is_ratio[*sf[1]][1];
                         FLOAT *dql = dqs[0];
                         FLOAT *dqr = dqs[1];
-                        LONG_QUANT_IS_LEFT1(g_gain[0], gainl, *sf[0], *pre_tbl[0],
-                                            shift[0], *width, dbS);
+                        LONG_QUANT_IS_LEFT1(
+                            g_gain[0], gainl, *sf[0], *pre_tbl[0], shift[0], *width, dbS);
                         /*-- Dequantize right channel. --*/
                         for (int k = 0; k < *width; ++k)
                             *dqr++ = *dql++ * gainr;
@@ -515,26 +518,26 @@ dequantize_cpe(MP_Stream *mp, int gr)
                             if (*sf[1] & 1) {
                                 int16 *q = qs[1];
                                 qs[1] = qs[0];
-                                LONG_QUANT_IS_LEFT(g_gain[0], g_gain[2],
-                                                   is_ratio_lsf[*sf[1]][io], 1.0f, *sf[0],
-                                                   *sf[0], *pre_tbl[0], *pre_tbl[0],
-                                                   shift[0], shift[0], *width, dbS);
+                                LONG_QUANT_IS_LEFT(
+                                    g_gain[0], g_gain[2], is_ratio_lsf[*sf[1]][io], 1.0f,
+                                    *sf[0], *sf[0], *pre_tbl[0], *pre_tbl[0], shift[0],
+                                    shift[0], *width, dbS);
                                 qs[1] = q + *width;
                             }
                             else {
                                 int16 *q = qs[1];
                                 qs[1] = qs[0];
-                                LONG_QUANT_IS_RIGHT(g_gain[0], g_gain[2], 1.0f,
-                                                    is_ratio_lsf[*sf[1]][io], *sf[0],
-                                                    *sf[0], *pre_tbl[0], *pre_tbl[0],
-                                                    shift[0], shift[0], *width, dbS);
+                                LONG_QUANT_IS_RIGHT(
+                                    g_gain[0], g_gain[2], 1.0f, is_ratio_lsf[*sf[1]][io],
+                                    *sf[0], *sf[0], *pre_tbl[0], *pre_tbl[0], shift[0],
+                                    shift[0], *width, dbS);
                                 qs[1] = q + *width;
                             }
                         }
                         else {
                             FLOAT *q[2] = { dqs[0], dqs[1] };
-                            LONG_QUANT_IS_LEFT0(g_gain[0], *sf[0], *pre_tbl[0], shift[0],
-                                                *width, dbS);
+                            LONG_QUANT_IS_LEFT0(
+                                g_gain[0], *sf[0], *pre_tbl[0], shift[0], *width, dbS);
                             memcpy(q[1], q[0], *width << 2);
                         }
                         break;
@@ -605,10 +608,10 @@ dequantize_sce(MP_Stream *mp, III_SfbData *sfbData, int gr, int ch)
 
     switch (gr_info->block_mode) {
         case SHORT_BLOCK_MODE:
-            do_short_quant(glob_gain, quant, dequant, scale_fac->scalefac_short,
-                           gr_info->subblock_gain, 0, sfbData->max_sfb_short,
-                           sfbData->sfbWidthCumShort, gr_info->zero_part_start,
-                           gain_shift, dbS);
+            do_short_quant(
+                glob_gain, quant, dequant, scale_fac->scalefac_short, gr_info->subblock_gain,
+                0, sfbData->max_sfb_short, sfbData->sfbWidthCumShort, gr_info->zero_part_start,
+                gain_shift, dbS);
             break;
 
         case LONG_BLOCK_MODE:
@@ -620,14 +623,15 @@ dequantize_sce(MP_Stream *mp, III_SfbData *sfbData, int gr, int ch)
                 sfb = &sfbData->sfbLong[sfbBandSave];
                 sfbIdxSave = *sfb;
                 *sfb = gr_info->zero_part_start;
-                do_long_quant(glob_gain, quant, dequant, scale_fac->scalefac_long,
-                              sfbBandSave, sfbData->sfbLong, gain_shift, pretabTbl, dbS);
+                do_long_quant(
+                    glob_gain, quant, dequant, scale_fac->scalefac_long, sfbBandSave,
+                    sfbData->sfbLong, gain_shift, pretabTbl, dbS);
                 *sfb = sfbIdxSave;
             }
             else
-                do_long_quant(glob_gain, quant, dequant, scale_fac->scalefac_long,
-                              sfbData->max_sfb_long, sfbData->sfbLong, gain_shift,
-                              pretabTbl, dbS);
+                do_long_quant(
+                    glob_gain, quant, dequant, scale_fac->scalefac_long, sfbData->max_sfb_long,
+                    sfbData->sfbLong, gain_shift, pretabTbl, dbS);
             break;
 
         default:
@@ -710,8 +714,9 @@ III_dequantize(MP_Stream *mp, int gr)
         /*
          * Dequantize right channel.
          */
-        BOOL downMix = (mp->header->channels() == 2 &&
-                        mp->out_param->num_out_channels == 1 && !sfbData->ms_stereo);
+        BOOL downMix =
+            (mp->header->channels() == 2 && mp->out_param->num_out_channels == 1 &&
+             !sfbData->ms_stereo);
         if (downMix || mp->out_param->num_out_channels == 2) {
             gr_info = mp->side_info->ch_info[RIGHT_CHANNEL]->gr_info[gr];
             sfbData->sbHybrid = MAX(sfbData->sbHybrid, gr_info->zero_part_start);
@@ -725,8 +730,9 @@ III_dequantize(MP_Stream *mp, int gr)
         }
 
         if (downMix)
-            StereoMono(mp->buffer->ch_reconstructed[LEFT_CHANNEL],
-                       mp->buffer->ch_reconstructed[RIGHT_CHANNEL], min_spec);
+            StereoMono(
+                mp->buffer->ch_reconstructed[LEFT_CHANNEL],
+                mp->buffer->ch_reconstructed[RIGHT_CHANNEL], min_spec);
     }
     else {
         /*
@@ -735,7 +741,7 @@ III_dequantize(MP_Stream *mp, int gr)
          * - only IS stereo
          * - mixture of only stereo, MS stereo and IS stereo
          */
-        register Granule_Info *gr_info_r;
+        Granule_Info *gr_info_r;
         gr_info = mp->side_info->ch_info[LEFT_CHANNEL]->gr_info[gr];
         gr_info_r = mp->side_info->ch_info[RIGHT_CHANNEL]->gr_info[gr];
         sfbData->sbHybrid = MAX(gr_info->zero_part_start, gr_info_r->zero_part_start);
@@ -743,8 +749,9 @@ III_dequantize(MP_Stream *mp, int gr)
         dequantize_cpe(mp, gr);
 
         if (mp->out_param->num_out_channels == 1)
-            StereoMono(mp->buffer->ch_reconstructed[LEFT_CHANNEL],
-                       mp->buffer->ch_reconstructed[RIGHT_CHANNEL],
-                       MIN(sfbData->sbHybrid, sfbData->bandLimit));
+            StereoMono(
+                mp->buffer->ch_reconstructed[LEFT_CHANNEL],
+                mp->buffer->ch_reconstructed[RIGHT_CHANNEL],
+                MIN(sfbData->sbHybrid, sfbData->bandLimit));
     }
 }
