@@ -30,8 +30,7 @@ MP_Stream::MP_Stream() :
     huftree(new HufNode *[34]),
     huffman(new MP3_Huffman[34]),
     side_info(new III_Side_Info()),
-    initialized(FALSE),
-    reduced_class(FALSE)
+    initialized(FALSE)
 {
     streamName[0] = '\0';
 
@@ -50,11 +49,8 @@ MP_Stream::MP_Stream() :
 
 MP_Stream::~MP_Stream()
 {
-    if (!reduced_class)
-        this->ReleaseDecoder();
+    this->ReleaseDecoder();
 
-    if (bs && !reduced_class)
-        delete bs;
     bs = NULL;
 
     if (header)
@@ -453,7 +449,7 @@ MP_Stream::InitDecoder(BitStream *input, Out_Param *out_param, Out_Complexity *c
         initLayer = streamSync;
 
     /*-- Find the start of first frame. --*/
-    Init_Sync(initLayer);
+    this->Init_Sync(initLayer);
 
     /*
      * Store the filename and layer. These are needed if we have playback loop.

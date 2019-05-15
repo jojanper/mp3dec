@@ -154,7 +154,6 @@ private:
 
     /*-- Private properties. --*/
     BOOL initialized;
-    BOOL reduced_class;
     int16 SlotTable[15];
     char streamName[512];
     SYNC_STATUS streamSync;
