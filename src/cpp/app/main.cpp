@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "core/eqband.h"
+#include "core/io/console.h"
 #include "core/io/iobuf.h"
 #include "core/io/uci.h"
 #include "core/throw.h"
@@ -251,8 +252,11 @@ ParseMPCommandLine(char *InStream,
             strcpy(OutFileName, txt);
 
         /*-- End of command line parsing. --*/
+        printf("VALIDATE\n");
         ValidateUCI(uci);
+        printf("VALIDATE DONE\n");
         DeleteUCI(uci);
+        printf("DELETE\n");
         uci = NULL;
     }
 #if 0
@@ -268,11 +272,15 @@ ParseMPCommandLine(char *InStream,
 int
 main(int argc, char **argv)
 {
+    InitMP3DecoderData();
+
     FileBuf fp;
     EQ_Band *eq_band = new EQ_Band();
     CodecInitParam initParam;
     BitStream *bs = new BitStream();
     MP_Stream *stream = new MP_Stream();
+
+    Console *console = new Console();
 
     auto out_param = new Out_Param();
     auto out_complex = new Out_Complexity();
@@ -282,15 +290,28 @@ main(int argc, char **argv)
     BOOL waveOut = FALSE;
     char inStream[1024], outStream[1024];
 
-    if (ParseMPCommandLine(inStream, eq_band, outStream, &waveOut, argc, argv, &initParam))
+    if (!ParseMPCommandLine(inStream, eq_band, outStream, &waveOut, argc, argv, &initParam))
         return EXIT_FAILURE;
 
-        /*-- Open the file. --*/
+    printf("PARSE DONE\n");
+    fflush(stdout);
+    // return EXIT_SUCCESS;
+
+    /*-- Open the file. --*/
 #define MAX_SLOTS ((MAX_FRAME_SLOTS << 1) + 1)
-    fp.open(argv[1], kFileWriteMode);
+    if (!fp.open(inStream, kFileReadMode)) {
+        fprintf(stderr, "Unable to open file %s\n", inStream);
+        return EXIT_FAILURE;
+    }
     bs->open(&fp, MAX_SLOTS);
 
+    printf("CREATE BITSTREAM\n");
+    fflush(stdout);
+
     stream->InitDecoder(bs, out_param, out_complex);
+
+    printf("DECODER INITIALIZED\n");
+    fflush(stdout);
 
     /*-- This will determine the output quality. --*/
     SetAnyQualityParam(stream, &initParam);
@@ -299,23 +320,55 @@ main(int argc, char **argv)
     /*-- Next, according to the output quality, modify the sfb tables. --*/
     III_BandLimit(&stream->side_info->sfbData, out_param->decim_factor);
 
+    if (!console->open(outStream, 44100 /*out_param->sampling_frequency*/,
+                       2 /*out_param->num_out_channels*/, waveOut))
+        return EXIT_FAILURE;
+
     /*-- Store the equalizer settings into the dequantizer module. --*/
     stream->dbScale = eq_band->getdBScale();
 
+    /*
+    for (size_t i = 0; i < 51; i++)
+        printf("%zu: %f\n", i, stream->dbScale[i]);
+    */
+
+    fprintf(stdout, "\nStream parameters for %s :\n", inStream);
+    fprintf(stdout, "Version : %s\n",
+            (stream->header->version())
+                ? "Mpeg-1"
+                : ((stream->header->mp25version()) ? "Mpeg-2.5" : "Mpeg-2 LSF"));
+    fprintf(stdout, "Layer : %s\n", stream->header->layer_string());
+    fprintf(stdout, "Checksums? : %s\n", (stream->header->error_protection() ? "Yes" : "No"));
+    fprintf(stdout, "Bitrate: %i kbps\n", stream->header->bit_rate());
+    fprintf(stdout, "Sampling Frequency : %i kHz\n", stream->header->frequency());
+    fprintf(stdout, "Padding bit ? : %s\n", (stream->header->padding() ? "Yes" : "No"));
+    fprintf(stdout, "Private bit ? : %s\n", (stream->header->private_bit() ? "Yes" : "No"));
+    fprintf(stdout, "Mode String : %s\n", stream->header->mode_string());
+    fprintf(stdout, "Copyright : %s\n", (stream->header->copyright() ? "Yes" : "No"));
+    fprintf(stdout, "Original : %s\n", (stream->header->original() ? "Yes" : "No"));
+    fprintf(stdout, "De-emphasis : %s\n\n", stream->header->de_emphasis());
+
     SEEK_STATUS sync = SYNC_FOUND;
 
+    size_t frames = 0;
     do {
         /*-- Get the output samples. --*/
         if (!DecodeFrame(stream, stream->buffer->pcm_sample))
             goto exit;
 
         /*-- Write to file. --*/
-        // console->WriteBuffer(mp->buffer->pcm_sample, mp->out_param->num_out_samples);
+        // printf("SAMPLES TO WRITE: %i\n", stream->out_param->num_out_samples);
+        console->writeBuffer(stream->buffer->pcm_sample, stream->out_param->num_out_samples);
 
         /*-- Find the start of the next frame. --*/
         sync = SeekSync(stream);
 
+        fprintf(stdout, "Frames decoded: %zu\r", frames++);
+        fflush(stdout);
+
     } while (sync == SYNC_FOUND);
+
+    console->close();
 
 exit:
     delete stream;
