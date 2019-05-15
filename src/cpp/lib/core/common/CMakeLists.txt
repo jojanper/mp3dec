@@ -7,6 +7,7 @@ set(SRCS
    bitsbuffer.cpp
    bits.cpp
    bitsring.cpp
+   eqband.cpp
 )
 
 set(EXTRA_LINK_LIBRARIES
