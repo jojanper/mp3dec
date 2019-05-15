@@ -5,6 +5,7 @@ set(HDRS
 
 set(SRCS
    iobuf.cpp
+   console.cpp
    log.cpp
    uci.cpp
    wave.cpp
