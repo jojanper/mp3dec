@@ -14,7 +14,8 @@
 class LogFile
 {
 public:
-    LogFile(const char *szLogFileArg = "draal.log");
+    LogFile();
+    LogFile(const char *szLogFileArg);
     ~LogFile();
 
     // Open logger for writing
@@ -24,7 +25,7 @@ public:
     bool close();
 
     // Writes messages to logfile
-    void write(char *Format, ...);
+    void write(const char *format, ...);
 
     // Number of entities using the logger
     inline int getOpenCount() const { return m_openCount; }

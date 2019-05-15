@@ -9,7 +9,7 @@
 #include <stddef.h>
 
 /*-- Project Headers. --*/
-#include "core/wave.h"
+#include "core/io/wave.h"
 
 /**************************************************************************
   Internal Objects

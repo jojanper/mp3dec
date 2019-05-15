@@ -66,7 +66,7 @@ typedef float FLOAT;
 typedef uint32_t uint32;
 typedef int32_t int32;
 typedef int32_t DWORD;
-typedef bool BOOL;
+typedef int BOOL;
 typedef uint8_t BYTE;
 
 #define TRUE true

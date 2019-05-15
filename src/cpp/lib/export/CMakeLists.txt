@@ -24,6 +24,7 @@ set(LIB_SRCS
   $<TARGET_OBJECTS:commoncodec>
   $<TARGET_OBJECTS:mp3codec>
   $<TARGET_OBJECTS:coreutils>
+  $<TARGET_OBJECTS:io>
 )
 
 # Shared library is installed to shared package

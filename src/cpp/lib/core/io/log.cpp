@@ -12,7 +12,7 @@
 #include <string.h>
 
 /*-- Project Headers. --*/
-#include "core/log.h"
+#include "core/io/log.h"
 #include "core/throw.h"
 
 /*
@@ -20,6 +20,8 @@
    Explanation: - */
 const int MAXLOGLINELEN = 2048;
 
+
+LogFile::LogFile() : m_fpLog(stdout), m_szLogFile(NULL), m_openCount(0) {}
 
 LogFile::LogFile(const char *m_szLogFileArg) :
     m_fpLog(NULL),
@@ -61,14 +63,15 @@ LogFile::close()
     if (m_fpLog == NULL)
         return false;
 
-    fclose(m_fpLog);
+    if (m_szLogFile)
+        fclose(m_fpLog);
     m_fpLog = NULL;
 
     return true;
 }
 
 void
-LogFile::write(char *format, ...)
+LogFile::write(const char *format, ...)
 {
     va_list argptr;
 

@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "core/bits.h"
-#include "core/iobuf.h"
+#include "core/io/iobuf.h"
 #include "test_utils.h"
 
 static const char *filename = "foo.bs";

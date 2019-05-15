@@ -10,7 +10,7 @@
 
 /*-- Project Headers. --*/
 #include "core/defines.h"
-#include "core/iobuf.h"
+#include "core/io/iobuf.h"
 
 BOOL Write_WAVE_Header(int32 sample_rate, int channels, FILE_HANDLE hFile);
 
