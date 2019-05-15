@@ -65,8 +65,8 @@ III_huffman_decode(MP_Stream *mp, int gr, int ch, int part2)
 
     // Find region boundaries.
     region1Start = mp->side_info->sfbData.sfbLong[gr_info->region0_count + 1];
-    region2Start = mp->side_info->sfbData
-                       .sfbLong[gr_info->region0_count + gr_info->region1_count + 2];
+    region2Start =
+        mp->side_info->sfbData.sfbLong[gr_info->region0_count + gr_info->region1_count + 2];
 
     /*
      * How many samples actually need to be Huffman decoded.
@@ -117,5 +117,5 @@ III_huffman_decode(MP_Stream *mp, int gr, int ch, int part2)
     if (mp->br->bitsRead() < (uint32) part2)
         mp->br->skipBits(part2 - mp->br->bitsRead());
 
-    gr_info->zero_part_start = (i < limit) ? i : limit;
+    gr_info->zero_part_start = (i < limit) ? (i >= 0) ? i : 0 : limit;
 }
