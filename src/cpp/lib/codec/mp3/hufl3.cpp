@@ -30,13 +30,13 @@
 static void
 pairtable(MP_Stream *mp, int section_length, int table_num, int16 *quant)
 {
-    register MP3_Huffman *h = &mp->huffman[table_num];
+    MP3_Huffman *h = &mp->huffman[table_num];
 
     if (h->tree_len == 0)
         memset(quant, 0, section_length << 1);
     else {
         tbl_idx = -1;
-        register int16 *q = quant;
+        int16 *q = quant;
         if (h->linbits) {
             for (int i = 0; i < section_length; i += 2, q += 2) {
 #ifndef HUFFMAN_TREE_DECODER
@@ -129,17 +129,12 @@ pairtable(MP_Stream *mp, int section_length, int table_num, int16 *quant)
   *************************************************************************/
 
 static int
-quadtable(MP_Stream *mp,
-          int start,
-          int part2,
-          int table_num,
-          int16 *quant,
-          int max_sfb_bins)
+quadtable(MP_Stream *mp, int start, int part2, int table_num, int16 *quant, int max_sfb_bins)
 {
     int i;
-    register int16 *q = quant;
+    int16 *q = quant;
 #ifndef HUFFMAN_TREE_DECODER
-    register MP3_Huffman *h = &mp->huffman[table_num];
+    MP3_Huffman *h = &mp->huffman[table_num];
 #endif
 
     tbl_idx = -1;

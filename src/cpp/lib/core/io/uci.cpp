@@ -69,7 +69,7 @@ vspf(const char *fmt, ...)
 UCI *
 InitUCI(int argc, char **argv, BOOL show_options)
 {
-    UCI *uci;
+    UCI *uci = NULL;
 
     try {
         uci = new UCI();
@@ -238,10 +238,11 @@ SwitchEnabled(UCI *uci, const char *cswitch, const char *switch_explanation, BOO
 
 
 static inline void
-ShowCmdLineOption(UCI *uci,
-                  const char *cswitch,
-                  const char *param_,
-                  const char *switch_explanation)
+ShowCmdLineOption(
+    UCI *uci,
+    const char *cswitch,
+    const char *param_,
+    const char *switch_explanation)
 {
     buf = buffer_tmp;
     vspf("%s %s", cswitch, param_);
@@ -282,11 +283,12 @@ ShowCmdLineOption(UCI *uci,
   *************************************************************************/
 
 BOOL
-GetSwitchParam(UCI *uci,
-               const char *cswitch,
-               const char *param_,
-               const char *switch_explanation,
-               int16 *value)
+GetSwitchParam(
+    UCI *uci,
+    const char *cswitch,
+    const char *param_,
+    const char *switch_explanation,
+    int16 *value)
 {
     int16 address;
 
@@ -310,11 +312,12 @@ GetSwitchParam(UCI *uci,
 }
 
 BOOL
-GetSwitchParam(UCI *uci,
-               const char *cswitch,
-               const char *param_,
-               const char *switch_explanation,
-               int32 *value)
+GetSwitchParam(
+    UCI *uci,
+    const char *cswitch,
+    const char *param_,
+    const char *switch_explanation,
+    int32 *value)
 {
     int16 address;
 
@@ -338,11 +341,12 @@ GetSwitchParam(UCI *uci,
 }
 
 BOOL
-GetSwitchString(UCI *uci,
-                const char *cswitch,
-                const char *string_,
-                const char *switch_explanation,
-                char **text)
+GetSwitchString(
+    UCI *uci,
+    const char *cswitch,
+    const char *string_,
+    const char *switch_explanation,
+    char **text)
 {
     int16 address;
 
@@ -366,11 +370,12 @@ GetSwitchString(UCI *uci,
 }
 
 BOOL
-GetSwitchString(UCI *uci,
-                const char *cswitch,
-                const char *string_,
-                const char *switch_explanation,
-                FLOAT *value)
+GetSwitchString(
+    UCI *uci,
+    const char *cswitch,
+    const char *string_,
+    const char *switch_explanation,
+    FLOAT *value)
 {
     int16 address;
 

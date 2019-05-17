@@ -252,8 +252,8 @@ void
 do_ms_matrix(FLOAT *left_ch, FLOAT *right_ch, int16 sfb_start, int16 sfb_end)
 {
     int16 i;
-    register FLOAT *left, *right;
-    register FLOAT tmp;
+    FLOAT *left, *right;
+    FLOAT tmp;
 
     left = left_ch;
     right = right_ch;
@@ -663,8 +663,8 @@ dequantize_sce(MP_Stream *mp, III_SfbData *sfbData, int gr, int ch)
 void
 StereoMono(FLOAT *left, FLOAT *right, int len)
 {
-    register FLOAT *l = left;
-    register FLOAT *r = right;
+    FLOAT *l = left;
+    FLOAT *r = right;
 
     for (int i = 0; i < len; ++i, l++)
         *l = (*l + *r++) * 0.5f;

@@ -53,8 +53,7 @@ Cosine_Synthesis(FLOAT *sb_transform, FLOAT *y)
     if (init == 0) {
         for (i = 0; i < (SBLIMIT << 1); i++) {
             for (k = 0; k < SBLIMIT; k++)
-                cos_table[i][k] =
-                    cos((J_PI / (SBLIMIT << 1) * i + J_PI / 4) * (2 * k + 1));
+                cos_table[i][k] = cos((J_PI / (SBLIMIT << 1) * i + J_PI / 4) * (2 * k + 1));
         }
         init++;
     }
@@ -150,7 +149,7 @@ static void inline
 DctChen_32_sub6(FLOAT *x, FLOAT *y)
 {
   FLOAT x0, x1, x2, x3, x4, x5, x6, x7;
-  register FLOAT *a0, *a1, *a2;
+  FLOAT *a0, *a1, *a2;
 
   // Stage 1.
   a0 = tmp;
@@ -321,10 +320,9 @@ static const FLOAT cos1_4 = 1.0 / (2.0 * cos(MY_PI / 4.0));
 static void inline DctLee_32(FLOAT *sb_transform, FLOAT *y)
 {
     FLOAT new_v[32]; // new V[0-15] and V[33-48] of Figure 3-A.2 in ISO DIS 11172-3
-    register FLOAT *x1, *x2, tmp;
+    FLOAT *x1, *x2, tmp;
     FLOAT p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15;
-    FLOAT pp0, pp1, pp2, pp3, pp4, pp5, pp6, pp7, pp8, pp9, pp10, pp11, pp12, pp13, pp14,
-        pp15;
+    FLOAT pp0, pp1, pp2, pp3, pp4, pp5, pp6, pp7, pp8, pp9, pp10, pp11, pp12, pp13, pp14, pp15;
 
     // compute new values via a fast cosine transform:
     x1 = sb_transform;
@@ -669,10 +667,11 @@ static DCT_FUNCTION DCTFunc[5] = { NULL, (DCT_FUNCTION) DctChen_32,
 /*
    Purpose:     Typedef of windowing functions.
    Explanation: - */
-typedef void (*WINDOW_FUNCTION)(FLOAT *synthesis_buffer,
-                                int16 *out_samples,
-                                int *buf_idx,
-                                Out_Param *out_param);
+typedef void (*WINDOW_FUNCTION)(
+    FLOAT *synthesis_buffer,
+    int16 *out_samples,
+    int *buf_idx,
+    Out_Param *out_param);
 
 /*
    Purpose:     Array to hold windowing routines.
@@ -704,11 +703,12 @@ static WINDOW_FUNCTION WinFunc[5] = { NULL, (WINDOW_FUNCTION) Window_Full,
   *************************************************************************/
 
 static void
-Synthesis(FLOAT *synthesis_buffer,
-          FLOAT *sb_samples,
-          int16 *out_samples,
-          int *buf_idx,
-          Out_Param *out_param)
+Synthesis(
+    FLOAT *synthesis_buffer,
+    FLOAT *sb_samples,
+    int16 *out_samples,
+    int *buf_idx,
+    Out_Param *out_param)
 {
     static int16 buf_idx00[] = { 0,   960, 896, 832, 768, 704, 640, 576,
                                  512, 448, 384, 320, 256, 192, 128, 64 };
@@ -747,16 +747,16 @@ Synthesis(FLOAT *synthesis_buffer,
   *************************************************************************/
 
 void
-PolyPhaseFIR(MP_Stream *mp,
-             FLOAT *sb_samples,
-             int16 *out_samples,
-             int *buf_idx,
-             Out_Param *out_param,
-             int ch)
+PolyPhaseFIR(
+    MP_Stream *mp,
+    FLOAT *sb_samples,
+    int16 *out_samples,
+    int *buf_idx,
+    Out_Param *out_param,
+    int ch)
 {
     /*-- Floating point synthesis filterbank. --*/
-    Synthesis(mp->buffer->synthesis_buffer[ch], sb_samples, out_samples, buf_idx,
-              out_param);
+    Synthesis(mp->buffer->synthesis_buffer[ch], sb_samples, out_samples, buf_idx, out_param);
 }
 
 
@@ -767,7 +767,7 @@ Synthesis(FLOAT *synthesis_buffer, FLOAT *sb_samples, int16 *out_samples,
 {
   int i;
   static FLOAT r[SBLIMIT];
-  register int16 *buf_idx0;
+  int16 *buf_idx0;
 
   {
     static int16 buf_idx00[] = {0, 960, 896, 832, 768, 704, 640, 576, 512, 448,
@@ -800,7 +800,7 @@ Synthesis(FLOAT *synthesis_buffer, FLOAT *sb_samples, int16 *out_samples,
    * Keep only the windows coefficients W[64],...,W[447] (default).
    */
   buf_idx0 = &buf_idx_offset[*buf_idx][out_param->window_pruning_idx];
-  register FLOAT *w = dewindow + out_param->window_offset;
+  FLOAT *w = dewindow + out_param->window_offset;
 
   switch(out_param->decim_factor)
   {
@@ -812,7 +812,7 @@ Synthesis(FLOAT *synthesis_buffer, FLOAT *sb_samples, int16 *out_samples,
 
       for(i = 0; i < out_param->num_subwindows; i++, w += 32)
       {
-        register FLOAT *u, *v;
+        FLOAT *u, *v;
 
         u = r;
         v = &synthesis_buffer[*buf_idx0++];
@@ -863,7 +863,7 @@ Synthesis(FLOAT *synthesis_buffer, FLOAT *sb_samples, int16 *out_samples,
 
       for(i = 0; i < out_param->num_subwindows; i++)
       {
-        register FLOAT *u, *v;
+        FLOAT *u, *v;
 
         u = r;
         v = &synthesis_buffer[*buf_idx0++];
@@ -888,7 +888,7 @@ Synthesis(FLOAT *synthesis_buffer, FLOAT *sb_samples, int16 *out_samples,
 
       for(i = 0; i < out_param->num_subwindows; i++)
       {
-        register FLOAT *u, *v;
+        FLOAT *u, *v;
 
         u = r;
         v = &synthesis_buffer[*buf_idx0++];
@@ -909,7 +909,7 @@ Synthesis(FLOAT *synthesis_buffer, FLOAT *sb_samples, int16 *out_samples,
   *buf_idx &= 15;
 
   /*-- Convert the decoded samples to 16-bit integer. --*/
-  register int16 *samples = out_samples;
+  int16 *samples = out_samples;
   for(i = 0; i < out_param->num_samples; i++)
   {
 #if 0

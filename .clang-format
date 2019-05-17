@@ -13,6 +13,7 @@ AllowShortFunctionsOnASingleLine: Inline
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 AlwaysBreakAfterReturnType: TopLevelDefinitions
+BinPackArguments: false
 BinPackParameters: false
 BraceWrapping:
   AfterClass:      true

@@ -165,13 +165,14 @@ InitEQBandFromCommandLine(EQ_Band *eqband, UCI *uci)
   *************************************************************************/
 
 static bool
-ParseMPCommandLine(char *InStream,
-                   EQ_Band * /*eq_band*/,
-                   char *OutFileName,
-                   BOOL *waveOut,
-                   int argc,
-                   char **argv,
-                   CodecInitParam *initParam)
+ParseMPCommandLine(
+    char *InStream,
+    EQ_Band * /*eq_band*/,
+    char *OutFileName,
+    BOOL *waveOut,
+    int argc,
+    char **argv,
+    CodecInitParam *initParam)
 {
     UCI *uci;
     BOOL retValue = TRUE;
@@ -184,57 +185,79 @@ ParseMPCommandLine(char *InStream,
         retValue = !uci->show_options;
 
         strcpy(InStream, "");
-        if (GetSwitchString(uci, "-stream", "<MPEG_audio_stream>", "Bitstream to be decoded",
-                            &txt))
+        if (GetSwitchString(
+                uci, "-stream", "<MPEG_audio_stream>", "Bitstream to be decoded", &txt))
             strcpy(InStream, txt);
 
         initParam->channels = MAX_CHANNELS;
-        GetSwitchParam(uci, "-out_channels", "<num_channels>",
-                       "Number of output channels (1 or 2) (default : same as input)",
-                       &initParam->channels);
+        GetSwitchParam(
+            uci,
+            "-out_channels",
+            "<num_channels>",
+            "Number of output channels (1 or 2) (default : same as input)",
+            &initParam->channels);
 
         initParam->decim_factor = 1;
-        GetSwitchParam(uci, "-decim_factor", "<decimation_factor>",
-                       "Decimation factor for the synthesis filterbank "
-                       "(default : 1)",
-                       &initParam->decim_factor);
+        GetSwitchParam(
+            uci,
+            "-decim_factor",
+            "<decimation_factor>",
+            "Decimation factor for the synthesis filterbank "
+            "(default : 1)",
+            &initParam->decim_factor);
 
         initParam->window_pruning = WINDOW_PRUNING_START_IDX;
-        GetSwitchParam(uci, "-window_pruning", "<subband_index>",
-                       "Number of subwindows (0...15) discarded at the windowing "
-                       "stage (default : 2)",
-                       &initParam->window_pruning);
+        GetSwitchParam(
+            uci,
+            "-window_pruning",
+            "<subband_index>",
+            "Number of subwindows (0...15) discarded at the windowing "
+            "stage (default : 2)",
+            &initParam->window_pruning);
 
         initParam->alias_bands = SBLIMIT - 1;
-        GetSwitchParam(uci, "-alias_subbands", "<subband_pairs>",
-                       "Number of subband pairs (1..31) for alias-reduction "
-                       "(default : 31 [all pairs])",
-                       &initParam->alias_bands);
+        GetSwitchParam(
+            uci,
+            "-alias_subbands",
+            "<subband_pairs>",
+            "Number of subband pairs (1..31) for alias-reduction "
+            "(default : 31 [all pairs])",
+            &initParam->alias_bands);
 
         initParam->imdct_sbs = SBLIMIT;
-        GetSwitchParam(uci, "-imdct_subbands", "<num_subbands>",
-                       "Number of "
-                       "subbands pairs (1..32) using IMDCT (default : all "
-                       "subbands)",
-                       &initParam->imdct_sbs);
+        GetSwitchParam(
+            uci,
+            "-imdct_subbands",
+            "<num_subbands>",
+            "Number of "
+            "subbands pairs (1..32) using IMDCT (default : all "
+            "subbands)",
+            &initParam->imdct_sbs);
 
         initParam->fix_window = FALSE;
-        SwitchEnabled(uci, "-fix_window",
-                      "Performs the windowing part using fixed "
-                      "point arithmetic",
-                      &initParam->fix_window);
+        SwitchEnabled(
+            uci,
+            "-fix_window",
+            "Performs the windowing part using fixed "
+            "point arithmetic",
+            &initParam->fix_window);
 
         *waveOut = FALSE;
-        SwitchEnabled(uci, "-wave_out",
-                      "Write the output to a wave file (default "
-                      ": pcm/raw file)",
-                      waveOut);
+        SwitchEnabled(
+            uci,
+            "-wave_out",
+            "Write the output to a wave file (default "
+            ": pcm/raw file)",
+            waveOut);
 
         initParam->bandLimit = MAX_MONO_SAMPLES;
-        GetSwitchParam(uci, "-band_limit", "<sfb_bin>",
-                       "max # of bins to be decoded "
-                       "(default : all bins)",
-                       &initParam->bandLimit);
+        GetSwitchParam(
+            uci,
+            "-band_limit",
+            "<sfb_bin>",
+            "max # of bins to be decoded "
+            "(default : all bins)",
+            &initParam->bandLimit);
 
 #if 0
         /*-- Get the equalizer settings from the command line. --*/
@@ -305,7 +328,7 @@ main(int argc, char **argv)
     }
     bs->open(&fp, MAX_SLOTS);
 
-    printf("CREATE BITSTREAM\n");
+    printf("CREATE BITSTREAM: %i\n", out_param->decim_factor);
     fflush(stdout);
 
     stream->InitDecoder(bs, out_param, out_complex);
@@ -320,12 +343,14 @@ main(int argc, char **argv)
     /*-- Next, according to the output quality, modify the sfb tables. --*/
     III_BandLimit(&stream->side_info->sfbData, out_param->decim_factor);
 
-    if (!console->open(outStream, 44100 /*out_param->sampling_frequency*/,
-                       2 /*out_param->num_out_channels*/, waveOut))
+    if (!console->open(
+            outStream, out_param->sampling_frequency, out_param->num_out_channels, waveOut))
         return EXIT_FAILURE;
 
     /*-- Store the equalizer settings into the dequantizer module. --*/
     stream->dbScale = eq_band->getdBScale();
+
+    printf("DECIM FACTOR: %i %i\n", out_param->decim_factor, out_param->sampling_frequency);
 
     /*
     for (size_t i = 0; i < 51; i++)
@@ -333,10 +358,12 @@ main(int argc, char **argv)
     */
 
     fprintf(stdout, "\nStream parameters for %s :\n", inStream);
-    fprintf(stdout, "Version : %s\n",
-            (stream->header->version())
-                ? "Mpeg-1"
-                : ((stream->header->mp25version()) ? "Mpeg-2.5" : "Mpeg-2 LSF"));
+    fprintf(
+        stdout,
+        "Version : %s\n",
+        (stream->header->version())
+            ? "Mpeg-1"
+            : ((stream->header->mp25version()) ? "Mpeg-2.5" : "Mpeg-2 LSF"));
     fprintf(stdout, "Layer : %s\n", stream->header->layer_string());
     fprintf(stdout, "Checksums? : %s\n", (stream->header->error_protection() ? "Yes" : "No"));
     fprintf(stdout, "Bitrate: %i kbps\n", stream->header->bit_rate());

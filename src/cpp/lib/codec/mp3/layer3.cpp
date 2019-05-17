@@ -63,7 +63,7 @@ III_get_side_info(MP_Stream *mp)
 
         for (i = 0; i < 2; i++) {
             for (j = 0; j < mp->header->channels(); j++) {
-                register Granule_Info *gr_info = mp->side_info->ch_info[j]->gr_info[i];
+                Granule_Info *gr_info = mp->side_info->ch_info[j]->gr_info[i];
 
                 gr_info->part2_3_length = mp->bs->getBits(12);
                 gr_info->big_values = mp->bs->getBits(9) << 1;
@@ -673,9 +673,9 @@ III_reorder(MP_Stream *mp, int ch, int gr)
     if (mp->side_info->ch_info[ch]->gr_info[gr]->block_mode == MIXED_BLOCK_MODE)
         sb_start = 36; // no re-order for the 1st two subbands
 
-    register int16 *id1, *id2;
+    int16 *id1, *id2;
     FLOAT xr[MAX_MONO_SAMPLES];
-    register FLOAT *src, *dst;
+    FLOAT *src, *dst;
 
     id1 = &reorder_idx[0][sb_start];
     id2 = &reorder_idx[1][sb_start];

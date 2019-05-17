@@ -49,7 +49,7 @@ DctChen_32(FLOAT *x, FLOAT *y)
 {
   FLOAT x0, x1, x2, x3, x4, x5, x6, x7;
   FLOAT tmp[SBLIMIT], rec_samples[SBLIMIT];
-  register FLOAT *a0, *a1, *a2;
+  FLOAT *a0, *a1, *a2;
 
   // Stage 1.
   a0 = tmp;
@@ -360,7 +360,7 @@ static void inline DctChen_32(FLOAT *x, FLOAT *y)
 {
     // Stage 1.
     {
-        register FLOAT *a0, *a1, *a2;
+        FLOAT *a0, *a1, *a2;
 
         a0 = tmp;
         a1 = x;
@@ -401,7 +401,7 @@ static void inline DctChen_32(FLOAT *x, FLOAT *y)
 
     // Stage 2, upper part.
     {
-        register FLOAT *a0, *a1, *a2;
+        FLOAT *a0, *a1, *a2;
 
         a0 = rec_samples;
         a1 = tmp;
@@ -427,7 +427,7 @@ static void inline DctChen_32(FLOAT *x, FLOAT *y)
     // Stage 3, upper, upper part.
     {
         FLOAT x0, x1, x2, x3, x4, x5, x6, x7;
-        register FLOAT *a0, *a1, *a2;
+        FLOAT *a0, *a1, *a2;
 
         a0 = tmp;
         a1 = rec_samples;
@@ -729,26 +729,23 @@ static void inline DctChen_32(FLOAT *x, FLOAT *y)
 
 
 static void
-Window_Full(FLOAT *synthesis_buffer,
-            int16 *out_samples,
-            int16 *buf_idx,
-            Out_Param *out_param)
+Window_Full(FLOAT *synthesis_buffer, int16 *out_samples, int16 *buf_idx, Out_Param *out_param)
 {
     static FLOAT r[SBLIMIT];
-    register int16 *buf_idx0;
+    int16 *buf_idx0;
 
     /*
      * Perform windowing. Truncate the synthesis window length.
      * Keep only the windows coefficients W[64],...,W[447] (default).
      */
     buf_idx0 = &buf_idx_offset[*buf_idx][out_param->window_pruning_idx];
-    register FLOAT *w = dewindow + out_param->window_offset;
-    register FLOAT *u = r;
+    FLOAT *w = dewindow + out_param->window_offset;
+    FLOAT *u = r;
 
     memset(r, 0, SBLIMIT * sizeof(FLOAT));
 
     for (int i = 0; i < out_param->num_subwindows; i++, w += 32) {
-        register FLOAT *v;
+        FLOAT *v;
 
         v = &synthesis_buffer[*buf_idx0++];
 
@@ -790,7 +787,7 @@ Window_Full(FLOAT *synthesis_buffer,
     *buf_idx &= 15;
 
     /*-- Convert the decoded samples to 16-bit integer. --*/
-    register int16 *samples = out_samples;
+    int16 *samples = out_samples;
 #ifndef ROUND_OUTPUT
     *samples = (int16) r[0];
     samples += out_param->num_out_channels;

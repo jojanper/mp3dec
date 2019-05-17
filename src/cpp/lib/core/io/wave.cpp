@@ -77,7 +77,7 @@ static int cvt_flag;
 
 static void inline SwapBytes(int16 *data)
 {
-    register uint16 dat = *data;
+    uint16 dat = *data;
 
     *data = (dat >> 8) & 0xff;
     *data |= (dat << 8);
@@ -157,8 +157,9 @@ Write_WAVE_Header(int32 sample_rate, int channels, FILE_HANDLE hFile)
     SetWAVE(wave.size, sizeof(wave.size), sizeof(wave) - 8);
     SetWAVE(wave.nChannels, sizeof(wave.nChannels), channels);
     SetWAVE(wave.nSamplesPerSec, sizeof(wave.nSamplesPerSec), sample_rate);
-    SetWAVE(wave.nAvgBytesPerSec, sizeof(wave.nAvgBytesPerSec),
-            (channels * sample_rate * bits + 7) / 8);
+    SetWAVE(
+        wave.nAvgBytesPerSec, sizeof(wave.nAvgBytesPerSec),
+        (channels * sample_rate * bits + 7) / 8);
 
     SetWAVE(wave.nBlockAlign, sizeof(wave.nBlockAlign), (channels * bits + 7) / 8);
     SetWAVE(wave.nBitsPerSample, sizeof(wave.nBitsPerSample), bits);

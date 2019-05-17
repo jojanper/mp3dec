@@ -154,10 +154,10 @@ III_antialias(MP_Stream *mp, int ch, int gr)
      * 'sblim' alias-reduction operations between each pair of subbands
      * with 8 butterflies between each pair.
      */
-    register FLOAT **spectrum = mp->spectrum[ch];
+    FLOAT **spectrum = mp->spectrum[ch];
     for (int sb = 0; sb < sblim; sb++) {
-        register FLOAT *ca_p, *cs_p;
-        register FLOAT bu, bd;
+        FLOAT *ca_p, *cs_p;
+        FLOAT bu, bd;
 
         ca_p = ca;
         cs_p = cs;
@@ -252,7 +252,7 @@ III_antialias(MP_Stream *mp, int ch, int gr)
 static inline void
 dct36(FLOAT *inbuf, FLOAT *o1, FLOAT *o2, FLOAT *wintab, FLOAT *tsbuf)
 {
-    register FLOAT *in = inbuf;
+    FLOAT *in = inbuf;
 
     in[17] += in[16];
     in[16] += in[15];
@@ -307,11 +307,11 @@ dct36(FLOAT *inbuf, FLOAT *o1, FLOAT *o2, FLOAT *wintab, FLOAT *tsbuf)
         MACRO0(v);                             \
     }
 
-        register const FLOAT *c = COS9;
-        register FLOAT *out2 = o2;
-        register FLOAT *w = wintab;
-        register FLOAT *out1 = o1;
-        register FLOAT *ts = tsbuf;
+        const FLOAT *c = COS9;
+        FLOAT *out2 = o2;
+        FLOAT *w = wintab;
+        FLOAT *out1 = o1;
+        FLOAT *ts = tsbuf;
 
         FLOAT ta33, ta66, tb33, tb66;
 
@@ -380,7 +380,7 @@ dct36(FLOAT *inbuf, FLOAT *o1, FLOAT *o2, FLOAT *wintab, FLOAT *tsbuf)
 }
 
 static inline void
-dct12(FLOAT *in, FLOAT *rawout1, FLOAT *rawout2, register FLOAT *wi, register FLOAT *ts)
+dct12(FLOAT *in, FLOAT *rawout1, FLOAT *rawout2, FLOAT *wi, FLOAT *ts)
 {
 #define DCT12_PART1           \
     in5 = in[5 * 3];          \
@@ -416,7 +416,7 @@ dct12(FLOAT *in, FLOAT *rawout1, FLOAT *rawout2, register FLOAT *wi, register FL
 
     {
         FLOAT in0, in1, in2, in3, in4, in5;
-        register FLOAT *out1 = rawout1;
+        FLOAT *out1 = rawout1;
 
         ts[SBLIMIT * 0] = out1[0];
         ts[SBLIMIT * 1] = out1[1];
@@ -457,7 +457,7 @@ dct12(FLOAT *in, FLOAT *rawout1, FLOAT *rawout2, register FLOAT *wi, register FL
 
     {
         FLOAT in0, in1, in2, in3, in4, in5;
-        register FLOAT *out2 = rawout2;
+        FLOAT *out2 = rawout2;
 
         DCT12_PART1
 
@@ -491,7 +491,7 @@ dct12(FLOAT *in, FLOAT *rawout1, FLOAT *rawout2, register FLOAT *wi, register FL
 
     {
         FLOAT in0, in1, in2, in3, in4, in5;
-        register FLOAT *out2 = rawout2;
+        FLOAT *out2 = rawout2;
         out2[12] = out2[13] = out2[14] = out2[15] = out2[16] = out2[17] = 0.0;
 
         DCT12_PART1
@@ -600,7 +600,7 @@ III_hybridmix(FLOAT *dstSpec, FLOAT *srcSpec, int mixBins)
     int subbands = (int) ((mixBins * 0.05555555555f) + 0.5);
 
     for (int i = 0; i < subbands; i++, dstSpec++, srcSpec++) {
-        register FLOAT *a0, *b0;
+        FLOAT *a0, *b0;
         a0 = dstSpec;
         b0 = srcSpec;
         for (int j = 0; j < SSLIMIT; j++, a0 += SBLIMIT, b0 += SBLIMIT)
