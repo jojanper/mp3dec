@@ -309,12 +309,16 @@ MP_Stream::InitLayerIIICommonObjects(void)
     /*-- Initialize sideinfo. --*/
     for (i = 0; i < header->channels(); i++) {
         side_info->ch_info[i] = new III_Channel_Info();
+        memset(side_info->ch_info[i], 0, sizeof(III_Channel_Info));
 
         ch_info = side_info->ch_info[i];
         ch_info->gr_info[0] = new Granule_Info();
+        memset(ch_info->gr_info[0], 0, sizeof(Granule_Info));
 
-        if (header->version() == MPEG_AUDIO_ID) // MPEG-1 only
+        if (header->version() == MPEG_AUDIO_ID) { // MPEG-1 only
             ch_info->gr_info[1] = new Granule_Info();
+            memset(ch_info->gr_info[1], 0, sizeof(Granule_Info));
+        }
     }
 
     /*-- Stereo modes. --*/
@@ -355,11 +359,13 @@ MP_Stream::GuessLayer(const char *stream)
     if ((strcmp(stream + strlen(stream) - 3, "MP1") == 0) ||
         (strcmp(stream + strlen(stream) - 3, "mp1") == 0))
         layer = FIRST_FRAME_WITH_LAYER1;
-    else if ((strcmp(stream + strlen(stream) - 3, "MP2") == 0) ||
-             (strcmp(stream + strlen(stream) - 3, "mp2") == 0))
+    else if (
+        (strcmp(stream + strlen(stream) - 3, "MP2") == 0) ||
+        (strcmp(stream + strlen(stream) - 3, "mp2") == 0))
         layer = FIRST_FRAME_WITH_LAYER2;
-    else if ((strcmp(stream + strlen(stream) - 3, "MP3") == 0) ||
-             (strcmp(stream + strlen(stream) - 3, "mp3") == 0))
+    else if (
+        (strcmp(stream + strlen(stream) - 3, "MP3") == 0) ||
+        (strcmp(stream + strlen(stream) - 3, "mp3") == 0))
         layer = FIRST_FRAME_WITH_LAYER3;
     else
         layer = LAYER_UNDEFINED;
@@ -482,7 +488,7 @@ MP_Stream::InitDecoder(BitStream *input, Out_Param *out_param, Out_Complexity *c
      * Scale factors for each group. This is also used in layer III, but we
      * access this array through the 'side_info' structure.
      */
-    frame->scale_factors = new BYTE[groups];
+    frame->scale_factors = new BYTE[groups]();
 
     /*-- Layer III initialization. --*/
     if (header->layer_number() == 3) {
@@ -498,10 +504,10 @@ MP_Stream::InitDecoder(BitStream *input, Out_Param *out_param, Out_Complexity *c
      * that we access this array beyond 'groups'-samples. At maximum, this offset
      * is 4 samples. So the extra 10 samples should quarantee safe execution.
      */
-    frame->quant = new int16[groups + 10];
+    frame->quant = new int16[groups + 10]();
 
     /*-- Reconstructed spectral coefficients. --*/
-    buffer->reconstructed = new FLOAT[groups];
+    buffer->reconstructed = new FLOAT[groups]();
 
     /*-- Channel pointers for quantized and reconstructed data. --*/
     if (header->layer_number() == 3)
@@ -522,17 +528,17 @@ MP_Stream::InitDecoder(BitStream *input, Out_Param *out_param, Out_Complexity *c
         extra = side_info->sfbData.max_gr;
 
     /*-- Reconstructed time domain samples. --*/
-    buffer->pcm_sample = new int16[groups * extra];
+    buffer->pcm_sample = new int16[groups * extra]();
 
     /*-- Synthesis buffer of the channel(s). --*/
     for (i = 0; i < header->channels(); i++) {
         buffer->buf_idx[i] = 0;
 
         /*-- For floating point arithmetic. --*/
-        buffer->synthesis_buffer[i] = new FLOAT[HAN_SIZE << 1];
+        buffer->synthesis_buffer[i] = new FLOAT[HAN_SIZE << 1]();
 
         /*-- For fixed point arithmetic. --*/
-        buffer->Fixsynthesis_buffer[i] = new int16[HAN_SIZE << 1];
+        buffer->Fixsynthesis_buffer[i] = new int16[HAN_SIZE << 1]();
     }
 
     /*-- If free format stream, determine the bit rate. --*/
@@ -553,6 +559,8 @@ MP_Stream::InitDecoder(BitStream *input, Out_Param *out_param, Out_Complexity *c
         SeekSync(this);
         syncInfo.sync_status = (SYNC_STATUS)(syncInfo.sync_status - (SYNC_STATUS) 3);
     }
+
+    initialized = true;
 
     return (result);
 }

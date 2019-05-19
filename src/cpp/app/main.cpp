@@ -341,7 +341,7 @@ main(int argc, char **argv)
     ReInitEngine(stream);
 
     /*-- Next, according to the output quality, modify the sfb tables. --*/
-    III_BandLimit(&stream->side_info->sfbData, out_param->decim_factor);
+    /// III_BandLimit(&stream->side_info->sfbData, out_param->decim_factor);
 
     if (!console->open(
             outStream, out_param->sampling_frequency, out_param->num_out_channels, waveOut))
@@ -393,13 +393,24 @@ main(int argc, char **argv)
         fprintf(stdout, "Frames decoded: %zu\r", frames++);
         fflush(stdout);
 
+        // if (frames > 2)
+        //  break;
+
     } while (sync == SYNC_FOUND);
 
     console->close();
 
 exit:
+    delete out_param;
+    delete out_complex;
+
+    printf("DELETE\n");
     delete stream;
     delete bs;
+
+    delete eq_band;
+
+    delete console;
 
     return EXIT_SUCCESS;
 }

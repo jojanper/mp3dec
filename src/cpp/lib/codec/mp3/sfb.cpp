@@ -33,9 +33,7 @@ static int16 *III_sfbOffsetLong(MP_Header *header);
 
 static int16 *III_sfbOffsetLongLimit(int16 *sfb_offset, int16 *max_sfb, int16 sfb_lines);
 
-static int16 *III_sfbWidthShortTblLimit(int16 *sfb_width,
-                                        int16 *max_sfb,
-                                        int16 sfb_lines);
+static int16 *III_sfbWidthShortTblLimit(int16 *sfb_width, int16 *max_sfb, int16 sfb_lines);
 
 static int16 *III_sfbOffsetShort(MP_Header *header);
 
@@ -73,8 +71,10 @@ III_SfbDataInit(III_SfbData *sfbData, MP_Header *header)
     sfbData->ms_stereo = FALSE;
     sfbData->is_stereo = FALSE;
 
-    memcpy(sfbData->sfbOffsetLong, III_sfbOffsetLong(header),
-           (MAX_LONG_SFB_BANDS + 1) * sizeof(int16));
+    memcpy(
+        sfbData->sfbOffsetLong,
+        III_sfbOffsetLong(header),
+        (MAX_LONG_SFB_BANDS + 1) * sizeof(int16));
     sfbData->sfbLong = sfbData->sfbOffsetLong;
 
     for (int i = 0; i < MAX_LONG_SFB_BANDS; i++) {
@@ -84,12 +84,16 @@ III_SfbDataInit(III_SfbData *sfbData, MP_Header *header)
     }
     sfbData->sfbLongSfbIdx[MAX_MONO_SAMPLES] = MAX_LONG_SFB_BANDS;
 
-    memcpy(sfbData->sfbOffsetShort, III_sfbOffsetShort(header),
-           (MAX_SHORT_SFB_BANDS + 1) * sizeof(int16));
+    memcpy(
+        sfbData->sfbOffsetShort,
+        III_sfbOffsetShort(header),
+        (MAX_SHORT_SFB_BANDS + 1) * sizeof(int16));
     sfbData->sfbShort = sfbData->sfbOffsetShort;
 
-    memcpy(sfbData->sfbWidthShort, III_sfbWidthTblShort(header),
-           (MAX_SHORT_SFB_BANDS + 1) * sizeof(int16));
+    memcpy(
+        sfbData->sfbWidthShort,
+        III_sfbWidthTblShort(header),
+        (MAX_SHORT_SFB_BANDS + 1) * sizeof(int16));
     sfbData->sfbWidth = sfbData->sfbWidthShort;
 
     for (int i = 0, j = 0; i < MAX_SHORT_SFB_BANDS; i++) {
@@ -149,8 +153,7 @@ III_BandLimit(III_SfbData *sfbData, int decim_factor)
          * artifacts appear in the output signal.
          */
         int limit = (decim_factor == 2) ? 310 : 160;
-        III_sfbWidthShortTblLimit(sfbData->sfbWidthCumShort, &sfbData->max_sfb_short,
-                                  limit);
+        III_sfbWidthShortTblLimit(sfbData->sfbWidthCumShort, &sfbData->max_sfb_short, limit);
     }
 }
 

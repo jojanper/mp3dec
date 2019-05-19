@@ -90,15 +90,24 @@ start:
                 I_dequantize_sample(mp);
 
                 // Synthesis filter for left and right channel.
-                PolyPhaseFIR(mp, mp->buffer->reconstructed, pcm[0], mp->buffer->buf_idx,
-                             mp->out_param, LEFT_CHANNEL);
+                PolyPhaseFIR(
+                    mp,
+                    mp->buffer->reconstructed,
+                    pcm[0],
+                    mp->buffer->buf_idx,
+                    mp->out_param,
+                    LEFT_CHANNEL);
 
                 pcm[0] += idx_increment;
 
                 if (mp->out_param->num_out_channels == 2) {
-                    PolyPhaseFIR(mp, mp->buffer->reconstructed + SBLIMIT, pcm[1],
-                                 mp->buffer->buf_idx + RIGHT_CHANNEL, mp->out_param,
-                                 RIGHT_CHANNEL);
+                    PolyPhaseFIR(
+                        mp,
+                        mp->buffer->reconstructed + SBLIMIT,
+                        pcm[1],
+                        mp->buffer->buf_idx + RIGHT_CHANNEL,
+                        mp->out_param,
+                        RIGHT_CHANNEL);
 
                     pcm[1] += idx_increment;
                 }
@@ -125,8 +134,13 @@ start:
 
                 // Synthesis filterbank for left and right channel.
                 for (j = offset = 0; j < 3; j++) {
-                    PolyPhaseFIR(mp, mp->buffer->reconstructed + offset, pcm[0],
-                                 mp->buffer->buf_idx, mp->out_param, LEFT_CHANNEL);
+                    PolyPhaseFIR(
+                        mp,
+                        mp->buffer->reconstructed + offset,
+                        pcm[0],
+                        mp->buffer->buf_idx,
+                        mp->out_param,
+                        LEFT_CHANNEL);
 
                     pcm[0] += idx_increment;
 
@@ -136,9 +150,13 @@ start:
                         offset += SBLIMIT;
 
                     if (mp->out_param->num_out_channels == 2) {
-                        PolyPhaseFIR(mp, mp->buffer->reconstructed + offset, pcm[1],
-                                     mp->buffer->buf_idx + RIGHT_CHANNEL, mp->out_param,
-                                     RIGHT_CHANNEL);
+                        PolyPhaseFIR(
+                            mp,
+                            mp->buffer->reconstructed + offset,
+                            pcm[1],
+                            mp->buffer->buf_idx + RIGHT_CHANNEL,
+                            mp->out_param,
+                            RIGHT_CHANNEL);
 
                         offset = sample_offset[offset_idx++];
 
@@ -205,8 +223,13 @@ start:
 
                     // Apply polyphase synthesis filter to each subband.
                     for (ss = 0; ss < SSLIMIT; ss++, pcm[ch] += idx_increment)
-                        PolyPhaseFIR(mp, mp->tsOut[ss], pcm[ch], mp->buffer->buf_idx + ch,
-                                     mp->out_param, ch);
+                        PolyPhaseFIR(
+                            mp,
+                            mp->tsOut[ss],
+                            pcm[ch],
+                            mp->buffer->buf_idx + ch,
+                            mp->out_param,
+                            ch);
                 }
             }
             break;
@@ -549,24 +572,21 @@ SeekSync(MP_Stream *mp)
                     break;
 
                 case FIRST_FRAME_WITH_LAYER1:
-                    if (mp->header->sfreq() != 3 &&
-                        LAYER_MASK(mp->header->header) == 0x3) {
+                    if (mp->header->sfreq() != 3 && LAYER_MASK(mp->header->header) == 0x3) {
                         mp->prev_header->SetHeader(mp->header->header);
                         exitCheck = FALSE;
                     }
                     break;
 
                 case FIRST_FRAME_WITH_LAYER2:
-                    if (mp->header->sfreq() != 3 &&
-                        LAYER_MASK(mp->header->header) == 0x2) {
+                    if (mp->header->sfreq() != 3 && LAYER_MASK(mp->header->header) == 0x2) {
                         mp->prev_header->SetHeader(mp->header->header);
                         exitCheck = FALSE;
                     }
                     break;
 
                 case FIRST_FRAME_WITH_LAYER3:
-                    if (mp->header->sfreq() != 3 &&
-                        LAYER_MASK(mp->header->header) == 0x1 &&
+                    if (mp->header->sfreq() != 3 && LAYER_MASK(mp->header->header) == 0x1 &&
                         (strcmp(mp->header->de_emphasis(), "none") == 0) &&
                         mp->header->bit_rate_idx() != 15) {
                         mp->prev_header->SetHeader(mp->header->header);
