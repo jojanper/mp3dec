@@ -72,47 +72,42 @@ SetAnyQualityParam(MP_Stream *mp, CodecInitParam *initParam)
     SetRestParam(out_param);
 }
 
-#if 0
 bool
 InitEQBandFromCommandLine(EQ_Band *eqband, UCI *uci)
 {
-    int16 num_bands = 0;
-
-    if (GetSwitchParam(uci, "-eq_level", "<level_amp>",
-                       "Equalizer level "
-                       "amplification (default : 0 dB)",
-                       &EqualizerLevel)) {
-        if (EqualizerLevel < -20 || EqualizerLevel > 20) {
-            char buf[64];
-
-            wsprintf(buf, "%s - Equalizer Settings Error", _DLL_BUILD_);
-            MessageBox(GetActiveWindow(),
-                       "The Valid Range for the Level "
-                       "Amplification Is -20...20 dB.",
-                       buf, flags);
+    int16 equalizerLevel = 0;
+    if (GetSwitchParam(
+            uci,
+            "-eq-level",
+            "<level-amp>",
+            "Equalizer level amplification (default: 0 dB)",
+            &equalizerLevel)) {
+        if (equalizerLevel < -20 || equalizerLevel > 20) {
+            fprintf(
+                stderr, "%s\n", "The valid range for the level amplification is -20...20 dB");
+            return FALSE;
         }
         else
-            dBLevelScale = ConvertdBScale(EqualizerLevel);
+            eqband->setEQLevelAmp(equalizerLevel);
     }
 
-    if (GetSwitchParam(uci, "-eq", "<num_bands> band_0 band_1 band_2 ... ",
-                       "Number of bands and corresponding settings for the "
-                       "equalizer (default : 0 dB on all bands)",
-                       &num_bands)) {
-        int16 addr = GetSwitchAddress(uci, "-eq");
+    int16 num_bands = 0;
+    if (GetSwitchParam(
+            uci,
+            "-eq",
+            "<num-bands> band-0 band-1 band-2 ... ",
+            "Number of bands and corresponding settings for the equalizer (default: 0 dB on "
+            "all bands)",
+            &num_bands)) {
+        auto addr = GetSwitchAddress(uci, "-eq");
 
         if (addr == -1)
-            return (FALSE);
+            return FALSE;
 
         addr++;
 
         if (num_bands > MAX_SFB_BANDS) {
-            char buf[64], buf2[64];
-
-            wsprintf(buf, "%s - Equalizer Settings Warning", _DLL_BUILD_);
-            wsprintf(buf2, "The Maximum # of Bands for the Equalizer is %i.",
-                     MAX_SFB_BANDS);
-            MessageBox(GetActiveWindow(), buf2, buf, flags);
+            fprintf(stderr, "The maximum # of bands for the equalizer is %i", MAX_SFB_BANDS);
             num_bands = MAX_SFB_BANDS;
         }
 
@@ -120,29 +115,22 @@ InitEQBandFromCommandLine(EQ_Band *eqband, UCI *uci)
             if (uci->argv[i] == NULL)
                 return (FALSE);
 
-            EqualizerBandPosition[j] = (int16) atoi(uci->argv[i]);
-            if (EqualizerBandPosition[j] < -20 || EqualizerBandPosition[j] > 20) {
-                ResetEQBand();
-
-                char buf[64];
-
-                wsprintf(buf, "%s - Equalizer Settings Error", _DLL_BUILD_);
-                MessageBox(GetActiveWindow(),
-                           "The Valid Range for the Equalizer Bands "
-                           "Is -20...20 dB.",
-                           buf, flags);
-
-                return (TRUE);
+            auto dbScale = atoi(uci->argv[i]);
+            if (dbScale < -20 || dbScale > 20) {
+                fprintf(
+                    stderr,
+                    "Band %i: valid range for the level amplification is -20...20 dB\n",
+                    j);
+                return FALSE;
             }
 
-            dBConvertedScale[j] = ConvertdBScale(EqualizerBandPosition[j]) * dBLevelScale;
+            eqband->setEQBand(j, dbScale);
             uci->argument_used[i] = 1;
         }
     }
 
-    return (TRUE);
+    return TRUE;
 }
-#endif
 
 /**************************************************************************
   Title       : ParseMPCommandLine
@@ -167,7 +155,7 @@ InitEQBandFromCommandLine(EQ_Band *eqband, UCI *uci)
 static bool
 ParseMPCommandLine(
     char *InStream,
-    EQ_Band * /*eq_band*/,
+    EQ_Band *eq_band,
     char *OutFileName,
     BOOL *waveOut,
     int argc,
@@ -176,7 +164,6 @@ ParseMPCommandLine(
 {
     UCI *uci;
     BOOL retValue = TRUE;
-    // char buf[256], buf0[64];
     char *txt = NULL;
 
     /*-- Parse the command line. --*/
@@ -184,70 +171,61 @@ ParseMPCommandLine(
     if (uci != NULL) {
         retValue = !uci->show_options;
 
+        initParam->fix_window = FALSE;
+
         strcpy(InStream, "");
         if (GetSwitchString(
-                uci, "-stream", "<MPEG_audio_stream>", "Bitstream to be decoded", &txt))
+                uci, "-stream", "<MPEG-audio-stream>", "Bitstream to be decoded", &txt))
             strcpy(InStream, txt);
 
         initParam->channels = MAX_CHANNELS;
         GetSwitchParam(
             uci,
-            "-out_channels",
-            "<num_channels>",
-            "Number of output channels (1 or 2) (default : same as input)",
+            "-out-channels",
+            "<num-of-channels>",
+            "Number of output channels (1 or 2) (default: 2)",
             &initParam->channels);
 
         initParam->decim_factor = 1;
         GetSwitchParam(
             uci,
-            "-decim_factor",
-            "<decimation_factor>",
-            "Decimation factor for the synthesis filterbank "
-            "(default : 1)",
+            "-decim-factor",
+            "<decimation-factor>",
+            "Decimation factor for the synthesis filterbank (1, 2, or 4)"
+            "(default: 1)",
             &initParam->decim_factor);
 
         initParam->window_pruning = WINDOW_PRUNING_START_IDX;
         GetSwitchParam(
             uci,
-            "-window_pruning",
-            "<subband_index>",
-            "Number of subwindows (0...15) discarded at the windowing "
-            "stage (default : 2)",
+            "-window-pruning",
+            "<subband-index>",
+            "Number of subwindows (0...15) discarded at the windowing stage (default : 2)",
             &initParam->window_pruning);
 
         initParam->alias_bands = SBLIMIT - 1;
         GetSwitchParam(
             uci,
-            "-alias_subbands",
-            "<subband_pairs>",
+            "-alias-subbands",
+            "<subband-pairs>",
             "Number of subband pairs (1..31) for alias-reduction "
-            "(default : 31 [all pairs])",
+            "(default: 31 [all pairs])",
             &initParam->alias_bands);
 
         initParam->imdct_sbs = SBLIMIT;
         GetSwitchParam(
             uci,
-            "-imdct_subbands",
-            "<num_subbands>",
+            "-imdct-subbands",
+            "<num-subbands>",
             "Number of "
-            "subbands pairs (1..32) using IMDCT (default : all "
-            "subbands)",
+            "subbands pairs (1..32) using IMDCT (default: all subbands)",
             &initParam->imdct_sbs);
-
-        initParam->fix_window = FALSE;
-        SwitchEnabled(
-            uci,
-            "-fix_window",
-            "Performs the windowing part using fixed "
-            "point arithmetic",
-            &initParam->fix_window);
 
         *waveOut = FALSE;
         SwitchEnabled(
             uci,
-            "-wave_out",
-            "Write the output to a wave file (default "
-            ": pcm/raw file)",
+            "-wave-out",
+            "Write the output to a wave file (default: pcm/raw file)",
             waveOut);
 
         initParam->bandLimit = MAX_MONO_SAMPLES;
@@ -259,35 +237,19 @@ ParseMPCommandLine(
             "(default : all bins)",
             &initParam->bandLimit);
 
-#if 0
         /*-- Get the equalizer settings from the command line. --*/
-        if (eq_band->InitEQBandFromCommandLine(uci) == FALSE) {
-            wsprintf(buf, "%s - Command Line Parsing Error", _DLL_BUILD_);
-            MessageBox(GetActiveWindow(),
-                       "An Error Occured While Processing "
-                       "Equalizer Settings.\n\tDisabling Equalizer.",
-                       buf, MB_OK | MB_ICONINFORMATION);
-        }
-#endif
+        if (!InitEQBandFromCommandLine(eq_band, uci))
+            return FALSE;
 
         strcpy(OutFileName, "");
-        if (GetSwitchString(uci, "-out", "<output_file>", "Name of decoded output file", &txt))
+        if (GetSwitchString(uci, "-out", "<output-file>", "Name of decoded output file", &txt))
             strcpy(OutFileName, txt);
 
         /*-- End of command line parsing. --*/
-        printf("VALIDATE\n");
         ValidateUCI(uci);
-        printf("VALIDATE DONE\n");
         DeleteUCI(uci);
-        printf("DELETE\n");
         uci = NULL;
     }
-#if 0
-    else {
-        wsprintf(buf, "%s - Command Line Parsing Error", _DLL_BUILD_);
-        ASSERT2(uci == NULL, "Unable to start command line processing.", buf, NULL);
-    }
-#endif
 
     return (retValue);
 }
@@ -316,11 +278,7 @@ main(int argc, char **argv)
     if (!ParseMPCommandLine(inStream, eq_band, outStream, &waveOut, argc, argv, &initParam))
         return EXIT_FAILURE;
 
-    printf("PARSE DONE\n");
-    fflush(stdout);
-    // return EXIT_SUCCESS;
-
-    /*-- Open the file. --*/
+        /*-- Open the file. --*/
 #define MAX_SLOTS ((MAX_FRAME_SLOTS << 1) + 1)
     if (!fp.open(inStream, kFileReadMode)) {
         fprintf(stderr, "Unable to open file %s\n", inStream);
@@ -328,20 +286,11 @@ main(int argc, char **argv)
     }
     bs->open(&fp, MAX_SLOTS);
 
-    printf("CREATE BITSTREAM: %i\n", out_param->decim_factor);
-    fflush(stdout);
-
     stream->InitDecoder(bs, out_param, out_complex);
-
-    printf("DECODER INITIALIZED\n");
-    fflush(stdout);
 
     /*-- This will determine the output quality. --*/
     SetAnyQualityParam(stream, &initParam);
     ReInitEngine(stream);
-
-    /*-- Next, according to the output quality, modify the sfb tables. --*/
-    /// III_BandLimit(&stream->side_info->sfbData, out_param->decim_factor);
 
     if (!console->open(
             outStream, out_param->sampling_frequency, out_param->num_out_channels, waveOut))
@@ -349,13 +298,6 @@ main(int argc, char **argv)
 
     /*-- Store the equalizer settings into the dequantizer module. --*/
     stream->dbScale = eq_band->getdBScale();
-
-    printf("DECIM FACTOR: %i %i\n", out_param->decim_factor, out_param->sampling_frequency);
-
-    /*
-    for (size_t i = 0; i < 51; i++)
-        printf("%zu: %f\n", i, stream->dbScale[i]);
-    */
 
     fprintf(stdout, "\nStream parameters for %s :\n", inStream);
     fprintf(
@@ -375,16 +317,15 @@ main(int argc, char **argv)
     fprintf(stdout, "Original : %s\n", (stream->header->original() ? "Yes" : "No"));
     fprintf(stdout, "De-emphasis : %s\n\n", stream->header->de_emphasis());
 
+    size_t frames = 0;
     SEEK_STATUS sync = SYNC_FOUND;
 
-    size_t frames = 0;
     do {
         /*-- Get the output samples. --*/
         if (!DecodeFrame(stream, stream->buffer->pcm_sample))
             goto exit;
 
         /*-- Write to file. --*/
-        // printf("SAMPLES TO WRITE: %i\n", stream->out_param->num_out_samples);
         console->writeBuffer(stream->buffer->pcm_sample, stream->out_param->num_out_samples);
 
         /*-- Find the start of the next frame. --*/
@@ -403,13 +344,9 @@ main(int argc, char **argv)
 exit:
     delete out_param;
     delete out_complex;
-
-    printf("DELETE\n");
     delete stream;
     delete bs;
-
     delete eq_band;
-
     delete console;
 
     return EXIT_SUCCESS;

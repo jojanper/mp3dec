@@ -219,7 +219,7 @@ SwitchEnabled(UCI *uci, const char *cswitch, const char *switch_explanation, BOO
 
     if (uci->show_options) {
         buf = buffer;
-        vspf("%-35s %s", cswitch, switch_explanation);
+        vspf("%-42s %s", cswitch, switch_explanation);
         uci->logfile.write("%s\n", buf);
 
         return (FALSE);
@@ -247,7 +247,7 @@ ShowCmdLineOption(
     buf = buffer_tmp;
     vspf("%s %s", cswitch, param_);
     buf = buffer;
-    vspf("%-35s %s", buffer_tmp, switch_explanation);
+    vspf("%-42s %s", buffer_tmp, switch_explanation);
     uci->logfile.write("%s\n", buf);
 }
 
