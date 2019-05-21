@@ -17,6 +17,7 @@ static int bitrate[2][3][16] = {
       { 0, 32, 48, 56, 64, 80, 96, 112, 128, 144, 160, 176, 192, 224, 256, 0 },
       { 0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160, 0 },
       { 0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160, 0 } },
+
     // Bit rates for MPEG-1.
     { { 0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 0 },
       { 0, 32, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 384, 0 },
@@ -40,7 +41,7 @@ static const char *mode_names[4] = { "stereo", "joint-stereo", "dual-channel", "
   *************************************************************************/
 
 const char *
-MP_Header::layer_string()
+MP_Header::layer_string() const
 {
     return (layer_names[layer_number() - 1]);
 }
@@ -59,7 +60,7 @@ MP_Header::layer_string()
   *************************************************************************/
 
 int
-MP_Header::bit_rate(void)
+MP_Header::bit_rate() const
 {
     return (bitrate[version()][layer_number() - 1][(header >> 12) & 0xF]);
 }
@@ -78,7 +79,7 @@ MP_Header::bit_rate(void)
   *************************************************************************/
 
 int *
-MP_Header::GetBitRateTable()
+MP_Header::GetBitRateTable() const
 {
     return (&bitrate[version()][layer_number() - 1][0]);
 }
@@ -97,11 +98,11 @@ MP_Header::GetBitRateTable()
   *************************************************************************/
 
 int32
-MP_Header::frequency()
+MP_Header::frequency() const
 {
-    int32 s_freq[3][4] = { { 22050, 24000, 16000, 0 },
-                           { 44100L, 48000L, 32000, 0 },
-                           { 11025, 12000, 8000, 0 } };
+    int32 s_freq[3][4] = {
+        { 22050, 24000, 16000, 0 }, { 44100L, 48000L, 32000, 0 }, { 11025, 12000, 8000, 0 }
+    };
 
     return (s_freq[(header & 0x100000) ? version() : 2][sfreq()]);
 }
@@ -120,7 +121,7 @@ MP_Header::frequency()
   *************************************************************************/
 
 const char *
-MP_Header::mode_string()
+MP_Header::mode_string() const
 {
     return (mode_names[mode()]);
 }
@@ -140,7 +141,7 @@ MP_Header::mode_string()
   *************************************************************************/
 
 const char *
-MP_Header::de_emphasis()
+MP_Header::de_emphasis() const
 {
     return (de_emp[header & 2]);
 }
@@ -257,7 +258,7 @@ MP_Header::pick_table()
  * Length of MPEG audio frame in milliseconds.
  */
 uint32
-MP_Header::GetFrameTime()
+MP_Header::GetFrameTime() const
 {
     // Frame length of each sampling frequency.
     uint32 framelength[3][9] = { { 17, 16, 24, 9, 8, 12, 0, 0, 0 },
@@ -271,7 +272,7 @@ MP_Header::GetFrameTime()
  * Length of MPEG audio frame in milliseconds (high precision).
  */
 FLOAT
-MP_Header::GetFrameTickCount()
+MP_Header::GetFrameTickCount() const
 {
     // Frame length of each sampling frequency (high precision).
     FLOAT framelength[3][9] = {

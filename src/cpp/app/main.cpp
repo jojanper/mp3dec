@@ -254,12 +254,95 @@ ParseMPCommandLine(
     return (retValue);
 }
 
+void
+retrieveTrackInfo(TrackInfo *trackInfo, const MP_Header *header)
+{
+    // trackInfo->tag = tag;
+
+    if (header->version())
+        strcpy(trackInfo->Version, "MPEG-1");
+    else if (header->mp25version())
+        strcpy(trackInfo->Version, "MPEG-2.5");
+    else
+        strcpy(trackInfo->Version, "MPEG-2 LSF");
+
+    trackInfo->Channels = header->channels();
+    trackInfo->Frequency = header->frequency();
+    strcpy(trackInfo->Layer, header->layer_string());
+    strcpy(trackInfo->Mode, header->mode_string());
+    strcpy(trackInfo->Private_bit, header->private_bit() ? "Yes" : "No");
+    strcpy(trackInfo->De_emphasis, header->de_emphasis());
+    strcpy(trackInfo->Copyright, header->copyright() ? "Yes" : "No");
+    strcpy(trackInfo->Stereo_mode, header->mode_string());
+    strcpy(trackInfo->Error_protection, header->error_protection() ? "Yes" : "No");
+    strcpy(trackInfo->Original, header->original() ? "Yes" : "No");
+
+    /*
+      trackInfo->Length = player->brInfo->GetTotalTime();
+      trackInfo->bitRate = player->brInfo->GetBitRate();
+      trackInfo->SizeInBytes = player->mp->bs->GetStreamSize();
+      trackInfo->TotalFrames = player->brInfo->GetTotalFrames();
+      */
+}
+
+char *
+showTrackProperties(char *buf, const TrackInfo *trackInfo)
+{
+    char tmpTxtBuf[64];
+
+    /*-- Collect the info from the structure to the message buffer. --*/
+    strcpy(buf, "");
+    sprintf(tmpTxtBuf, "\nVersion : %s", trackInfo->Version);
+    strcat(buf, tmpTxtBuf);
+
+    strcat(buf, "\nLayer : ");
+    strcat(buf, trackInfo->Layer);
+
+    strcat(buf, "\nChecksums ? : ");
+    strcat(buf, trackInfo->Error_protection);
+
+    strcat(buf, "\nBitrate : ");
+    sprintf(tmpTxtBuf, "%i kbps", trackInfo->bitRate);
+    strcat(buf, tmpTxtBuf);
+
+    strcat(buf, "\nSample Rate : ");
+    sprintf(tmpTxtBuf, "%i Hz", trackInfo->Frequency);
+    strcat(buf, tmpTxtBuf);
+
+    strcat(buf, "\nFrames : ");
+    sprintf(tmpTxtBuf, "%i", trackInfo->TotalFrames);
+    strcat(buf, tmpTxtBuf);
+
+    strcat(buf, "\nLength : ");
+    sprintf(tmpTxtBuf, "%i s", trackInfo->Length / 1000);
+    strcat(buf, tmpTxtBuf);
+
+    strcat(buf, "\nPrivate bit ? : ");
+    strcat(buf, trackInfo->Private_bit);
+
+    strcat(buf, "\nMode String : ");
+    strcat(buf, trackInfo->Mode);
+
+    strcat(buf, "\nCopyright ? : ");
+    strcat(buf, trackInfo->Copyright);
+
+    strcat(buf, "\nOriginal ? : ");
+    strcat(buf, trackInfo->Original);
+
+    strcat(buf, "\nDe-emphasis : ");
+    strcat(buf, trackInfo->De_emphasis);
+
+    return buf;
+}
+
 int
 main(int argc, char **argv)
 {
     InitMP3DecoderData();
 
     FileBuf fp;
+
+    TrackInfo trackInfo;
     EQ_Band *eq_band = new EQ_Band();
     CodecInitParam initParam;
     BitStream *bs = new BitStream();
@@ -299,7 +382,11 @@ main(int argc, char **argv)
     /*-- Store the equalizer settings into the dequantizer module. --*/
     stream->dbScale = eq_band->getdBScale();
 
-    fprintf(stdout, "\nStream parameters for %s :\n", inStream);
+    char infoBuffer[4096];
+    retrieveTrackInfo(&trackInfo, stream->header);
+    sprintf(infoBuffer, "\nStream parameters for %s :\n", inStream);
+    fprintf(stdout, "%s\n", showTrackProperties(infoBuffer, &trackInfo));
+    /*
     fprintf(
         stdout,
         "Version : %s\n",
@@ -316,6 +403,7 @@ main(int argc, char **argv)
     fprintf(stdout, "Copyright : %s\n", (stream->header->copyright() ? "Yes" : "No"));
     fprintf(stdout, "Original : %s\n", (stream->header->original() ? "Yes" : "No"));
     fprintf(stdout, "De-emphasis : %s\n\n", stream->header->de_emphasis());
+    */
 
     size_t frames = 0;
     SEEK_STATUS sync = SYNC_FOUND;
@@ -336,7 +424,6 @@ main(int argc, char **argv)
 
         // if (frames > 2)
         //  break;
-
     } while (sync == SYNC_FOUND);
 
     console->close();

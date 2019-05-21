@@ -50,100 +50,94 @@
 class MP_Header
 {
 public:
-    /*-- Constructor. --*/
-    MP_Header(void)
-    {
-        header = 0;
-        crc = 0;
-    }
-
-    /*-- Destructor. --*/
-    ~MP_Header(void) { ; }
+    MP_Header() : header(0), crc(0) {}
+    ~MP_Header() {}
 
     /*-- Public methods. --*/
     inline int32 SetHeader(int32 header)
     {
         int32 tmp = this->header;
         this->header = header;
-        return (tmp);
+        return tmp;
     }
-    uint32 GetFrameTime(void);
-    FLOAT GetFrameTickCount(void);
+
+    uint32 GetFrameTime() const;
+    FLOAT GetFrameTickCount() const;
 
     /*-- Methods to parse header bit fields. --*/
 
     // MPEG-1 (1) or MPEG-2 (0)
-    inline int version(void) { return ((header >> 19) & 1); }
+    inline int version() const { return ((header >> 19) & 1); }
 
     // MPEG-2.5
-    inline BOOL mp25version(void) { return ((header & 0x100000) ? FALSE : TRUE); }
+    inline BOOL mp25version() const { return ((header & 0x100000) ? FALSE : TRUE); }
 
     // Layer number (1, 2 or 3)
-    inline int layer_number(void) { return (int) ((4 - ((header >> 17) & 3))); }
+    inline int layer_number() const { return (int) ((4 - ((header >> 17) & 3))); }
 
     // Layer number as a string (I, II or III)
-    const char *layer_string(void);
+    const char *layer_string() const;
 
     // Error protection bit.
-    inline BOOL error_protection(void) { return (!((header >> 16) & 1)); }
+    inline BOOL error_protection() const { return (!((header >> 16) & 1)); }
 
     // Bit rate of stream.
-    int bit_rate(void);
+    int bit_rate() const;
 
     // Bit rate index.
-    inline int bit_rate_idx(void) { return ((header >> 12) & 0xF); }
+    inline int bit_rate_idx() const { return ((header >> 12) & 0xF); }
 
     // Table holding legal bit rates for this stream.
-    int *GetBitRateTable(void);
+    int *GetBitRateTable() const;
 
     // Sampling frequency.
-    int32 frequency(void);
+    int32 frequency() const;
 
     // Sampling frequency index.
-    inline int sfreq(void) { return (int) (header >> 10) & 3; }
+    inline int sfreq() const { return (int) (header >> 10) & 3; }
 
     // Padding bit.
-    inline BOOL padding(void) { return (BOOL)((header >> 9) & 1); }
+    inline BOOL padding() const { return (BOOL)((header >> 9) & 1); }
 
     // Private bit.
-    inline BOOL private_bit(void) { return (BOOL)((header >> 8) & 1); }
+    inline BOOL private_bit() const { return (BOOL)((header >> 8) & 1); }
 
     // Value of mode field.
-    inline int mode(void) { return (int) ((header >> 6) & 3); }
+    inline int mode() const { return (int) ((header >> 6) & 3); }
 
     // Type of stream (mono, stereo, joint or dual).
-    const char *mode_string(void);
+    const char *mode_string() const;
 
     // Value of mode extension.
-    inline int mode_extension(void) { return (int) ((header >> 4) & 3); }
+    inline int mode_extension() const { return (int) ((header >> 4) & 3); }
 
     // Copyright bit.
-    inline BOOL copyright(void) { return (BOOL)((header >> 3) & 1); }
+    inline BOOL copyright() const { return (BOOL)((header >> 3) & 1); }
 
     // Original bit.
-    inline BOOL original(void) { return (BOOL)((header >> 2) & 1); }
+    inline BOOL original() const { return (BOOL)((header >> 2) & 1); }
 
     // Name of de-emphasis used.
-    const char *de_emphasis(void);
+    const char *de_emphasis() const;
 
     /*-- Methods to interprete header parameters. --*/
 
     // Number of channels; 1 for mono, 2 for stereo
-    inline int channels(void) { return ((mode() == MPG_MD_MONO) ? 1 : 2); }
+    inline int channels() const { return ((mode() == MPG_MD_MONO) ? 1 : 2); }
 
     // Layer I and II specific methods.
-    int jsbound(void);
-    int subbands(void);
+    int jsbound();
+    int subbands();
 
     // Layer II only specific methods.
-    inline int GetLayer2TableIdx(void) { return (Layer_II_alloc_table); }
-    inline int GetLayer2Alloc(void) { return (Layer_II_b_alloc); }
+    inline int GetLayer2TableIdx() const { return Layer_II_alloc_table; }
+    inline int GetLayer2Alloc() const { return Layer_II_b_alloc; }
 
     uint32 header; // MPx header bits.
     int16 crc;     // Optional CRC error-check word.
 
 private:
-    int pick_table(void);
+    int pick_table();
 
     int Layer_II_alloc_table;
     int Layer_II_b_alloc;
