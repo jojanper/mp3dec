@@ -369,7 +369,7 @@ main(int argc, char **argv)
     }
     bs->open(&fp, MAX_SLOTS);
 
-    stream->InitDecoder(bs, out_param, out_complex);
+    stream->initDecoder(bs, out_param, out_complex);
 
     /*-- This will determine the output quality. --*/
     SetAnyQualityParam(stream, &initParam);
@@ -386,24 +386,6 @@ main(int argc, char **argv)
     retrieveTrackInfo(&trackInfo, stream->header);
     sprintf(infoBuffer, "\nStream parameters for %s :\n", inStream);
     fprintf(stdout, "%s\n", showTrackProperties(infoBuffer, &trackInfo));
-    /*
-    fprintf(
-        stdout,
-        "Version : %s\n",
-        (stream->header->version())
-            ? "Mpeg-1"
-            : ((stream->header->mp25version()) ? "Mpeg-2.5" : "Mpeg-2 LSF"));
-    fprintf(stdout, "Layer : %s\n", stream->header->layer_string());
-    fprintf(stdout, "Checksums? : %s\n", (stream->header->error_protection() ? "Yes" : "No"));
-    fprintf(stdout, "Bitrate: %i kbps\n", stream->header->bit_rate());
-    fprintf(stdout, "Sampling Frequency : %i kHz\n", stream->header->frequency());
-    fprintf(stdout, "Padding bit ? : %s\n", (stream->header->padding() ? "Yes" : "No"));
-    fprintf(stdout, "Private bit ? : %s\n", (stream->header->private_bit() ? "Yes" : "No"));
-    fprintf(stdout, "Mode String : %s\n", stream->header->mode_string());
-    fprintf(stdout, "Copyright : %s\n", (stream->header->copyright() ? "Yes" : "No"));
-    fprintf(stdout, "Original : %s\n", (stream->header->original() ? "Yes" : "No"));
-    fprintf(stdout, "De-emphasis : %s\n\n", stream->header->de_emphasis());
-    */
 
     size_t frames = 0;
     SEEK_STATUS sync = SYNC_FOUND;

@@ -49,7 +49,7 @@ MP_Stream::MP_Stream() :
 
 MP_Stream::~MP_Stream()
 {
-    this->ReleaseDecoder();
+    this->releaseDecoder();
 
     bs = NULL;
 
@@ -94,18 +94,9 @@ MP_Stream::~MP_Stream()
     initialized = FALSE;
 }
 
-/**************************************************************************
-  Title        : FillDataSlotTable
-
-  Purpose      : Precomputes the # of main data slots to internal table.
-
-  Usage        : FillDataSlotTable()
-
-  Author(s)    : Juha Ojanpera
-  *************************************************************************/
-
+// Precomputes the # of main data slots to internal table.
 void
-MP_Stream::FillDataSlotTable(void)
+MP_Stream::fillDataSlotTable()
 {
     int *brTbl, Slots;
 
@@ -133,21 +124,10 @@ MP_Stream::FillDataSlotTable(void)
     }
 }
 
-
-/**************************************************************************
-  Title        : main_data_slots
-
-  Purpose      : Retrieves the number of bytes for the layer III payload. The
-                 payload consists of the scalefactors and quantized data of
-                 the channel(s).
-
-  Usage        : main_data_slots()
-
-  Author(s)    : Juha Ojanpera
-  *************************************************************************/
-
+// Retrieves the number of bytes for the layer III payload. The payload consists
+// of the scalefactors and quantized data of the channel(s).
 int
-MP_Stream::main_data_slots(void)
+MP_Stream::main_data_slots()
 {
     int nSlots;
 
@@ -170,19 +150,9 @@ MP_Stream::main_data_slots(void)
     return (nSlots);
 }
 
-
-/**************************************************************************
-  Title        : ReleaseDecoder
-
-  Purpose      : Deletes resources allocated to the decoder.
-
-  Usage        : ReleaseDecoder()
-
-  Author(s)    : Juha Ojanpera
-  *************************************************************************/
-
+// Deletes resources allocated to the decoder.
 void
-MP_Stream::ReleaseDecoder(void)
+MP_Stream::releaseDecoder()
 {
     if (initialized) {
         /*-- Close the stream. --*/
@@ -271,19 +241,9 @@ MP_Stream::ReleaseDecoder(void)
     }
 }
 
-
-/**************************************************************************
-  Title        : InitLayerIIICommonObjects
-
-  Purpose      : Initializes layer III specific objects.
-
-  Usage        : InitLayerIIICommonObjects()
-
-  Author(s)    : Juha Ojanpera
-  *************************************************************************/
-
+// Initialize layer III specific objects.
 BOOL
-MP_Stream::InitLayerIIICommonObjects(void)
+MP_Stream::initLayerIIICommonObjects(void)
 {
     int i, j;
     III_Channel_Info *ch_info;
@@ -297,7 +257,7 @@ MP_Stream::InitLayerIIICommonObjects(void)
     WasSeeking = FALSE;
 
     /*-- Compute the payload for each legal bit rate. --*/
-    FillDataSlotTable();
+    fillDataSlotTable();
 
     /*-- Bit reservoir. --*/
     br = new BitBuffer();
@@ -352,7 +312,7 @@ MP_Stream::InitLayerIIICommonObjects(void)
  * layer is guessed based on the file extension. Default is layer 3.
  */
 SYNC_STATUS
-MP_Stream::GuessLayer(const char *stream)
+MP_Stream::guessLayer(const char *stream)
 {
     SYNC_STATUS layer;
 
@@ -381,7 +341,7 @@ MP_Stream::GuessLayer(const char *stream)
  * and/or the initial MPEG layer was not correct.
  */
 SEEK_STATUS
-MP_Stream::Init_Sync(SYNC_STATUS layer)
+MP_Stream::initSync(SYNC_STATUS layer)
 {
     int32 hdr;
 
@@ -428,7 +388,7 @@ MP_Stream::Init_Sync(SYNC_STATUS layer)
   *************************************************************************/
 
 BOOL
-MP_Stream::InitDecoder(BitStream *input, Out_Param *out_param, Out_Complexity *complex)
+MP_Stream::initDecoder(BitStream *input, Out_Param *out_param, Out_Complexity *complex)
 {
     BOOL result = TRUE;
     SYNC_STATUS initLayer;
@@ -443,7 +403,7 @@ MP_Stream::InitDecoder(BitStream *input, Out_Param *out_param, Out_Complexity *c
      */
     auto stream_name = this->bs->getIOHandle()->GetStreamName();
     if (stream_name && strcmp(streamName, stream_name)) {
-        initLayer = GuessLayer(stream_name);
+        initLayer = guessLayer(stream_name);
 
         /*-- An error occured while processing dialog box. --*/
         if (initLayer == LAYER_UNDEFINED)
@@ -455,7 +415,7 @@ MP_Stream::InitDecoder(BitStream *input, Out_Param *out_param, Out_Complexity *c
         initLayer = streamSync;
 
     /*-- Find the start of first frame. --*/
-    this->Init_Sync(initLayer);
+    this->initSync(initLayer);
 
     /*
      * Store the filename and layer. These are needed if we have playback loop.
@@ -492,7 +452,7 @@ MP_Stream::InitDecoder(BitStream *input, Out_Param *out_param, Out_Complexity *c
 
     /*-- Layer III initialization. --*/
     if (header->layer_number() == 3) {
-        InitLayerIIICommonObjects();
+        initLayerIIICommonObjects();
 
         /*-- Re-calculate the needed amount of memory. --*/
         groups = MAX_MONO_SAMPLES * header->channels();

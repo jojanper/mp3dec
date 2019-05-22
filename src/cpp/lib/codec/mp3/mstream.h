@@ -69,18 +69,15 @@ typedef struct SyncInfoStr
 class MP_Stream
 {
 public:
-    /*-- Constructor. --*/
     MP_Stream();
-
-    /*-- Destructor. --*/
     ~MP_Stream();
 
     /*-- Public methods. --*/
-    BOOL InitDecoder(BitStream *input, Out_Param *out_param, Out_Complexity *complex);
+    BOOL initDecoder(BitStream *input, Out_Param *out_param, Out_Complexity *complex);
 
-    void ReleaseDecoder(void);
+    void releaseDecoder(void);
 
-    SEEK_STATUS Init_Sync(SYNC_STATUS layer);
+    SEEK_STATUS initSync(SYNC_STATUS layer);
 
     // Payload size of layer III frame.
     int main_data_slots(void);
@@ -148,9 +145,9 @@ public:
 
 private:
     /*-- Private methods. --*/
-    void FillDataSlotTable();
-    BOOL InitLayerIIICommonObjects();
-    SYNC_STATUS GuessLayer(const char *stream);
+    void fillDataSlotTable();
+    BOOL initLayerIIICommonObjects();
+    SYNC_STATUS guessLayer(const char *stream);
 
     /*-- Private properties. --*/
     BOOL initialized;
