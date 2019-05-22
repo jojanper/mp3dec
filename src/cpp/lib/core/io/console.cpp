@@ -13,40 +13,22 @@
 #include "core/io/console.h"
 #include "core/io/wave.h"
 
-/**************************************************************************
-  Title       : Console
+/*
+   Purpose:     Upper limit for the frames to be decoded.
+   Explanation: - */
+#ifndef INFINITE
+#define INFINITE (-1)
+#endif
 
-  Purpose     : Class constructor.
-
-  Usage       : Console()
-
-  Author(s)   : Juha Ojanpera
-  *************************************************************************/
-
-Console::Console(void)
+Console::Console() : hFile(NULL), wave_format(false), header_written(false)
 {
-    hFile = NULL;
-    wave_format = FALSE;
-    header_written = FALSE;
     strcpy(filename, "");
 }
-
-
-/**************************************************************************
-  Title       : ~Console
-
-  Purpose     : Class destructor.
-
-  Usage       : ~Console()
-
-  Author(s)   : Juha Ojanpera
-  *************************************************************************/
 
 Console::~Console(void)
 {
     this->close();
 }
-
 
 /**************************************************************************
   Title       : OpenConsole
@@ -65,48 +47,33 @@ Console::~Console(void)
   Author(s)   : Juha Ojanpera
   *************************************************************************/
 
-BOOL
-Console::open(const char *stream, int sample_rate, int channels, BOOL use_wave)
+bool
+Console::open(const char *stream, int sample_rate, int channels, bool use_wave)
 {
-    char buf[128];
-    BOOL result = TRUE;
+    bool result = true;
 
     wave_format = use_wave;
-    header_written = FALSE;
+    header_written = false;
     strcpy(filename, stream);
-    sprintf(buf, "Unable to open output file %s.", stream);
     hFile = fopen(filename, "wb");
 
     if (hFile == NULL) {
         fclose(hFile);
 
         hFile = NULL;
-        result = FALSE;
+        result = false;
     }
     else if (wave_format)
         if (!Write_WAVE_Header(sample_rate, channels, hFile))
-            result = FALSE;
+            result = false;
 
     return (result);
 }
 
-
-/**************************************************************************
-  Title       : CloseConsole
-
-  Purpose     : Closes output stream.
-
-  Usage       : y = CloseConsole()
-
-  Output      : y - TRUE on success, FALSE otherwise
-
-  Author(s)   : Juha Ojanpera
-  *************************************************************************/
-
-BOOL
+bool
 Console::close()
 {
-    BOOL result = FALSE;
+    bool result = false;
 
     if (hFile != NULL) {
         if (!header_written) {
@@ -114,9 +81,9 @@ Console::close()
             if (wave_format)
                 result = Write_WAVE_Flush(hFile);
             else
-                result = TRUE;
+                result = true;
         }
-        header_written = TRUE;
+        header_written = true;
 
         fclose(hFile);
     }
@@ -125,27 +92,10 @@ Console::close()
     return (result);
 }
 
-
-/**************************************************************************
-  Title       : WriteBuffer
-
-  Purpose     : Writes data to output stream.
-
-  Usage       : y = WriteBuffer(data, len)
-
-  Input       : data - data (16-bit) for output
-                len  - length of data to be written
-
-  Output      : y - TRUE on success, FALSE otherwise;
-                    throws AdvanceExcpt * on error
-
-  Author(s)   : Juha Ojanpera
-  *************************************************************************/
-
-BOOL
-Console::writeBuffer(int16 *data, uint32 len)
+bool
+Console::writeBuffer(int16_t *data, uint32_t len)
 {
-    BOOL result = TRUE;
+    bool result = true;
 
     if (wave_format)
         result = Write_WAVE_Data(data, len, hFile);
@@ -153,8 +103,8 @@ Console::writeBuffer(int16 *data, uint32 len)
         auto ItemsWritten = fwrite(data, sizeof(int16), len, hFile);
 
         if (ItemsWritten != len)
-            result = FALSE;
+            result = false;
     }
 
-    return (result);
+    return result;
 }

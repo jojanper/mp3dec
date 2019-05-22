@@ -11,30 +11,24 @@
 /*-- Project Headers. --*/
 #include "core/defines.h"
 #include "core/io/iobuf.h"
+#include "interface/console.h"
 
-/*
-   Purpose:     Upper limit for the frames to be decoded.
-   Explanation: - */
-#ifndef INFINITE
-#define INFINITE (-1)
-#endif
-
-class Console
+class Console : public IOutputStream
 {
 public:
     Console();
     ~Console();
 
-    /*-- Public methods. --*/
-    BOOL open(const char *stream, int sample_rate, int channels, BOOL use_wave);
-    BOOL close();
-    BOOL writeBuffer(int16 *data, uint32 len);
-    inline BOOL isUsed(void) { return (hFile) ? TRUE : FALSE; };
+    bool open(const char *stream, int sample_rate, int channels, bool use_wave);
+    const char *getName() const { return this->filename; }
+
+    virtual bool close();
+    virtual bool writeBuffer(int16_t *data, uint32_t len);
 
 private:
     FILE_HANDLE hFile;   // Handle of output stream.
-    BOOL wave_format;    // Indicates whether WAVE format should be generated.
-    BOOL header_written; // Indicates whether WAVE header is ok.
+    bool wave_format;    // Indicates whether WAVE format should be generated.
+    bool header_written; // Indicates whether WAVE header is ok.
     char filename[512];  // Name of output stream.
 };
 

@@ -404,7 +404,7 @@ main(int argc, char **argv)
         fprintf(stdout, "Frames decoded: %zu\r", frames++);
         fflush(stdout);
 
-        // if (frames > 2)
+        // if (frames > 5)
         //  break;
     } while (sync == SYNC_FOUND);
 

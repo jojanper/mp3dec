@@ -1,7 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
 #include <stdint.h>
-
 
 /**
  * Interface for output storage.
@@ -9,23 +9,17 @@
 class IOutputStream
 {
 public:
-    // Get stream name
-    virtual const char *GetStreamName() const = 0;
+    // Close output stream. Return true on success, false otherwise
+    virtual bool close() = 0;
 
-    // Get size of stream in bytes
-    virtual uint32_t GetStreamSize() const = 0;
-
-    // Read from stream, return number of bytes read
-    virtual uint32_t ReadToBuffer(uint8_t *buffer, uint32_t bufLen) = 0;
-
-    // Write to stream, return number of bytes written
-    virtual uint32_t WriteFromBuffer(uint8_t *buffer, uint32_t bufLen) = 0;
-
-    // Set stream to lookahead mode
-    virtual void SetLookAheadMode(bool enable) = 0;
-
-    // Is stream writable?
-    virtual bool CanWrite() const = 0;
+    /**
+     * Write data to output stream.
+     *
+     * @param data Output data
+     * @param len Size of data
+     * @return true on success, false otherwise
+     */
+    virtual bool writeBuffer(int16_t *data, uint32_t len) = 0;
 
 protected:
     IOutputStream() {}

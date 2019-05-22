@@ -19,11 +19,12 @@
    Explanation: - */
 #define VBR_THRESHOLD (150)
 
-BrInfo::BrInfo(MP_Stream *mp,
-               BOOL VBR_TagPresent,
-               DWORD VBR_NumFrames,
-               DWORD VBR_FileSize,
-               BOOL IsStreaming)
+BrInfo::BrInfo(
+    MP_Stream *mp,
+    BOOL VBR_TagPresent,
+    DWORD VBR_NumFrames,
+    DWORD VBR_FileSize,
+    BOOL IsStreaming)
 {
     mp_internal = mp;
     start_bitrate = 0;
@@ -192,8 +193,10 @@ BrInfo::ComputeStartBitRate(MP_Stream *mp, int lookahead_frames)
     /*-- Bitstream buffer will be locked if EOF found, unlock it. --*/
     mp->bs->releaseBufferLock();
     mp->bs->flushStream();
+
     /*-- Restore the original size. --*/
     mp->bs->setDefaultBufferSize();
+
     /*-- Rewind the stream back to the beginning. --*/
     mp->bs->seekStream(START_POS, 0);
 
