@@ -11,10 +11,10 @@ public:
     virtual bool close() = 0;
 
 protected:
-    BaseDecoder() {}
+    BaseDecoder() : m_output(nullptr) {}
     virtual ~BaseDecoder() {}
 
-    IOutputStream *output; // Output stream interface
+    IOutputStream *m_output; // Output stream interface
 };
 
 } // namespace draaldecoder
