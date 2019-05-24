@@ -7,6 +7,7 @@
 #include "codec/mp3/mstream.h"
 #include "codec/mp3/param.h"
 #include "core/bits.h"
+#include "core/meta.h"
 #include "mp3dec.h"
 
 #define MAX_SLOTS ((MAX_FRAME_SLOTS << 1) + 1)
@@ -31,8 +32,10 @@ MP3Decoder::MP3Decoder() :
     m_dec(new MP_Stream()),
     m_bs(new BitStream()),
     m_outInfo(new Out_Info()),
-    m_trackInfo(new TrackInfo())
+    m_trackInfo(new ::TrackInfo())
 {
+    m_attrs = new AudioAttributes();
+
     memset(m_outInfo, 0, sizeof(Out_Info));
 
     // Initialize MP3 decoder tables etc
@@ -75,6 +78,8 @@ MP3Decoder::init(IStreamBuffer *input, CodecInitParam *param, IOutputStream *out
     m_dec->dbScale = m_eq->getdBScale();
 
     this->fillTrackInfo();
+    m_attrs->setInt32Data(kKeySampleRate, m_outInfo->param.sampling_frequency);
+    m_attrs->setInt32Data(kKeyChannels, m_outInfo->param.num_out_channels);
 
     return true;
 }

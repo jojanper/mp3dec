@@ -22,8 +22,7 @@ public:
     virtual bool decode() override;
     virtual bool close() override;
 
-    const Out_Info *getInfo() const { return m_outInfo; }
-    const char *getTrackProperties(char *buf);
+    virtual const char *getTrackProperties(char *buf) override;
 
 protected:
     // Initializes decoder engine parameters based on the quality parameters
@@ -35,7 +34,7 @@ protected:
     MP_Stream *m_dec;
     BitStream *m_bs;
     Out_Info *m_outInfo;
-    TrackInfo *m_trackInfo;
+    ::TrackInfo *m_trackInfo;
 };
 
 } // namespace draaldecoder

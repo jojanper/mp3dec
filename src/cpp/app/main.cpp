@@ -6,8 +6,6 @@
 #include "core/io/iobuf.h"
 #include "core/io/uci.h"
 #include "core/throw.h"
-#include "param.h"
-
 #include "mcu/mp3decconsole.h"
 
 // Parse command line parameters for MPEG audio playback.
@@ -28,10 +26,7 @@ ParseMPCommandLine(
     BOOL retValue = !uci->show_options;
 
     GetSwitchString(uci, "-stream", "<MPEG-audio-stream>", "Bitstream to be decoded", in);
-
-    SwitchEnabled(
-        uci, "-wave-out", "Write the output to a wave file (default: pcm/raw file)", waveOut);
-
+    SwitchEnabled(uci, "-wave-out", "Write the output to a wave file (default: PCM)", waveOut);
     GetSwitchString(uci, "-out", "<output-file>", "Name of decoded output file", out);
 
     dec->parseCommandLine(uci);
@@ -65,9 +60,8 @@ main(int argc, char **argv)
     dec->init(&fp, console);
 
     // Open the output stream
-    auto out_param = &dec->getInfo()->param;
-    if (!console->open(
-            outStream, out_param->sampling_frequency, out_param->num_out_channels, waveOut))
+    auto info = dec->getTrackInfo();
+    if (!console->open(outStream, info->sampleRate, info->outChannels, waveOut))
         return EXIT_FAILURE;
 
     char infoBuffer[4096];
