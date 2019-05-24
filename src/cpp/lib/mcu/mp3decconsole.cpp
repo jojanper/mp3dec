@@ -121,9 +121,9 @@ MP3ConsoleDecoder::initEQBandFromCommandLine(UCI *uci)
 
         addr++;
 
-        if (num_bands > MAX_SFB_BANDS) {
-            fprintf(stderr, "The maximum # of bands for the equalizer is %i", MAX_SFB_BANDS);
-            num_bands = MAX_SFB_BANDS;
+        if (num_bands > MAX_EQ_BANDS) {
+            fprintf(stderr, "The maximum # of bands for the equalizer is %i", MAX_EQ_BANDS);
+            num_bands = MAX_EQ_BANDS;
         }
 
         for (int j = 0, i = addr + 1; i < num_bands + addr + 1; i++, j++) {

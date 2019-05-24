@@ -1,8 +1,8 @@
 #pragma once
 
-#include "core/eqband.h"
 #include "interface/attributes.h"
 #include "interface/console.h"
+#include "interface/eqband.h"
 
 namespace draaldecoder {
 
