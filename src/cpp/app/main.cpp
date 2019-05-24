@@ -2,75 +2,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "core/eqband.h"
+//#include "core/eqband.h"
 #include "core/io/console.h"
 #include "core/io/iobuf.h"
 #include "core/io/uci.h"
 #include "core/throw.h"
-#include "mp3.h"
+#include "mp3def.h"
 #include "mp3info.h"
-#include "mstream.h"
+#include "param.h"
 
-static void
-SetRestParam(Out_Param *out_param)
-{
-    out_param->sampling_frequency /= out_param->decim_factor;
-    out_param->num_samples = (int16)(SBLIMIT / out_param->decim_factor);
-    out_param->num_out_samples = (int16)(SBLIMIT / out_param->decim_factor);
-    out_param->window_offset = (int16)(SBLIMIT * out_param->window_pruning_idx);
-    out_param->num_subwindows = (int16)(NUM_SUBWIN - 2 * out_param->window_pruning_idx);
-}
-
-
-/**************************************************************************
-  Title       : SetAnyQualityParam
-
-  Purpose     : Initializes decoder engine parameters based on the quality
-                parameters that are given as an input.
-
-  Usage       : SetAnyQualityParam(initParam)
-
-  Input       : initParam - quality parameters for the mp3 stream
-
-  Author(s)   : Juha Ojanpera
-  *************************************************************************/
-
-void
-SetAnyQualityParam(MP_Stream *mp, CodecInitParam *initParam)
-{
-    Out_Param *out_param = mp->out_param;
-
-    mp->side_info->sfbData.bandLimit = MAX_MONO_SAMPLES;
-    if (initParam->bandLimit > 0 && initParam->bandLimit <= MAX_MONO_SAMPLES)
-        mp->side_info->sfbData.bandLimit = initParam->bandLimit;
-
-    out_param->sampling_frequency = mp->header->frequency();
-    out_param->num_out_channels = (int16) mp->header->channels();
-    if (initParam->channels > 0 && initParam->channels <= mp->header->channels())
-        out_param->num_out_channels = initParam->channels;
-
-    out_param->decim_factor = 1;
-    if (initParam->decim_factor == 2 || initParam->decim_factor == 4)
-        out_param->decim_factor = initParam->decim_factor;
-
-    out_param->window_pruning_idx = WINDOW_PRUNING_START_IDX;
-    if (initParam->window_pruning > 0 && initParam->window_pruning < SBLIMIT + 1)
-        out_param->window_pruning_idx = initParam->window_pruning;
-
-    out_param->num_samples = SBLIMIT;
-
-    mp->complex->subband_pairs = 15;
-    if (initParam->alias_bands >= 0 && initParam->alias_bands < SBLIMIT - 1)
-        mp->complex->subband_pairs = initParam->alias_bands;
-
-    mp->complex->imdct_subbands = MAX_MONO_SAMPLES;
-    if (initParam->imdct_sbs > 0 && initParam->imdct_sbs <= SBLIMIT)
-        mp->complex->imdct_subbands = initParam->imdct_sbs * SSLIMIT;
-
-    mp->complex->fix_window = initParam->fix_window;
-
-    SetRestParam(out_param);
-}
+#include "mcu/mp3dec.h"
 
 bool
 InitEQBandFromCommandLine(EQ_Band *eqband, UCI *uci)
@@ -254,111 +195,20 @@ ParseMPCommandLine(
     return (retValue);
 }
 
-void
-retrieveTrackInfo(TrackInfo *trackInfo, const MP_Header *header)
-{
-    // trackInfo->tag = tag;
-
-    if (header->version())
-        strcpy(trackInfo->Version, "MPEG-1");
-    else if (header->mp25version())
-        strcpy(trackInfo->Version, "MPEG-2.5");
-    else
-        strcpy(trackInfo->Version, "MPEG-2 LSF");
-
-    trackInfo->Channels = header->channels();
-    trackInfo->Frequency = header->frequency();
-    strcpy(trackInfo->Layer, header->layer_string());
-    strcpy(trackInfo->Mode, header->mode_string());
-    strcpy(trackInfo->Private_bit, header->private_bit() ? "Yes" : "No");
-    strcpy(trackInfo->De_emphasis, header->de_emphasis());
-    strcpy(trackInfo->Copyright, header->copyright() ? "Yes" : "No");
-    strcpy(trackInfo->Stereo_mode, header->mode_string());
-    strcpy(trackInfo->Error_protection, header->error_protection() ? "Yes" : "No");
-    strcpy(trackInfo->Original, header->original() ? "Yes" : "No");
-
-    /*
-      trackInfo->Length = player->brInfo->GetTotalTime();
-      trackInfo->bitRate = player->brInfo->GetBitRate();
-      trackInfo->SizeInBytes = player->mp->bs->GetStreamSize();
-      trackInfo->TotalFrames = player->brInfo->GetTotalFrames();
-      */
-}
-
-char *
-showTrackProperties(char *buf, const TrackInfo *trackInfo)
-{
-    char tmpTxtBuf[64];
-
-    /*-- Collect the info from the structure to the message buffer. --*/
-    strcpy(buf, "");
-    sprintf(tmpTxtBuf, "\nVersion : %s", trackInfo->Version);
-    strcat(buf, tmpTxtBuf);
-
-    strcat(buf, "\nLayer : ");
-    strcat(buf, trackInfo->Layer);
-
-    strcat(buf, "\nChecksums ? : ");
-    strcat(buf, trackInfo->Error_protection);
-
-    strcat(buf, "\nBitrate : ");
-    sprintf(tmpTxtBuf, "%i kbps", trackInfo->bitRate);
-    strcat(buf, tmpTxtBuf);
-
-    strcat(buf, "\nSample Rate : ");
-    sprintf(tmpTxtBuf, "%i Hz", trackInfo->Frequency);
-    strcat(buf, tmpTxtBuf);
-
-    strcat(buf, "\nFrames : ");
-    sprintf(tmpTxtBuf, "%i", trackInfo->TotalFrames);
-    strcat(buf, tmpTxtBuf);
-
-    strcat(buf, "\nLength : ");
-    sprintf(tmpTxtBuf, "%i s", trackInfo->Length / 1000);
-    strcat(buf, tmpTxtBuf);
-
-    strcat(buf, "\nPrivate bit ? : ");
-    strcat(buf, trackInfo->Private_bit);
-
-    strcat(buf, "\nMode String : ");
-    strcat(buf, trackInfo->Mode);
-
-    strcat(buf, "\nCopyright ? : ");
-    strcat(buf, trackInfo->Copyright);
-
-    strcat(buf, "\nOriginal ? : ");
-    strcat(buf, trackInfo->Original);
-
-    strcat(buf, "\nDe-emphasis : ");
-    strcat(buf, trackInfo->De_emphasis);
-
-    return buf;
-}
-
 int
 main(int argc, char **argv)
 {
-    InitMP3DecoderData();
-
     FileBuf fp;
-
-    TrackInfo trackInfo;
-    EQ_Band *eq_band = new EQ_Band();
     CodecInitParam initParam;
-    BitStream *bs = new BitStream();
-    MP_Stream *stream = new MP_Stream();
-
     Console *console = new Console();
 
-    auto out_param = new Out_Param();
-    auto out_complex = new Out_Complexity();
-    memset(out_param, 0, sizeof(Out_Param));
-    memset(out_complex, 0, sizeof(Out_Complexity));
+    draaldecoder::MP3Decoder *dec = new draaldecoder::MP3Decoder();
 
     BOOL waveOut = FALSE;
     char inStream[1024], outStream[1024];
 
-    if (!ParseMPCommandLine(inStream, eq_band, outStream, &waveOut, argc, argv, &initParam))
+    if (!ParseMPCommandLine(
+            inStream, dec->getEQ(), outStream, &waveOut, argc, argv, &initParam))
         return EXIT_FAILURE;
 
         /*-- Open the file. --*/
@@ -367,56 +217,36 @@ main(int argc, char **argv)
         fprintf(stderr, "Unable to open file %s\n", inStream);
         return EXIT_FAILURE;
     }
-    bs->open(&fp, MAX_SLOTS);
 
-    stream->initDecoder(bs, out_param, out_complex);
+    dec->init(&fp, &initParam, console);
 
-    /*-- This will determine the output quality. --*/
-    SetAnyQualityParam(stream, &initParam);
-    ReInitEngine(stream);
-
+    auto out_param = &dec->getInfo()->param;
     if (!console->open(
             outStream, out_param->sampling_frequency, out_param->num_out_channels, waveOut))
         return EXIT_FAILURE;
 
-    /*-- Store the equalizer settings into the dequantizer module. --*/
-    stream->dbScale = eq_band->getdBScale();
-
     char infoBuffer[4096];
-    retrieveTrackInfo(&trackInfo, stream->header);
     sprintf(infoBuffer, "\nStream parameters for %s :\n", inStream);
-    fprintf(stdout, "%s\n", showTrackProperties(infoBuffer, &trackInfo));
+    fprintf(stdout, "%s\n", dec->getTrackProperties(infoBuffer));
 
     size_t frames = 0;
-    SEEK_STATUS sync = SYNC_FOUND;
+    bool result = true;
 
     do {
-        /*-- Get the output samples. --*/
-        if (!DecodeFrame(stream, stream->buffer->pcm_sample))
-            goto exit;
-
-        /*-- Write to file. --*/
-        console->writeBuffer(stream->buffer->pcm_sample, stream->out_param->num_out_samples);
-
-        /*-- Find the start of the next frame. --*/
-        sync = SeekSync(stream);
+        result = dec->decode();
 
         fprintf(stdout, "Frames decoded: %zu\r", frames++);
         fflush(stdout);
 
         // if (frames > 5)
         //  break;
-    } while (sync == SYNC_FOUND);
+
+    } while (result);
 
     console->close();
 
-exit:
-    delete out_param;
-    delete out_complex;
-    delete stream;
-    delete bs;
-    delete eq_band;
     delete console;
+    delete dec;
 
     return EXIT_SUCCESS;
 }

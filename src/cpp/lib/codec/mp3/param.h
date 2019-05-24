@@ -58,8 +58,8 @@ typedef struct Out_ParamStr
    Explanation: - */
 typedef struct Out_InfoStr
 {
-    Out_Param *out_param;
-    Out_Complexity *out_complex;
+    Out_Param param;
+    Out_Complexity complex;
 
 } Out_Info;
 
