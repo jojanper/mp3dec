@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-//#include "core/eqband.h"
 #include "core/io/console.h"
 #include "core/io/iobuf.h"
 #include "core/io/uci.h"
@@ -11,69 +10,37 @@
 
 #include "mcu/mp3decconsole.h"
 
-/**************************************************************************
-  Title       : ParseMPCommandLine
-
-  Purpose     : Parses command line parameters for MPEG audio playback.
-
-  Usage       : ParseMPCommandLine(hInst, InStream, eq_band, OutFileName,
-                                   waveOut, argc, argv, initParam)
-
-  Input       : hInst       - handle of current instance
-                argc        - number of command line arguments
-                argv        - command line arguments
-
-  Output      : InStream    - name of MPEG audio stream for decoding
-                eq_band     - equalizer setting for the mp3 decoder
-                OutFileName - name out output file
-                initParam   - init parameters for the codec
-
-  Author(s)   : Juha Ojanpera
-  *************************************************************************/
-
+// Parse command line parameters for MPEG audio playback.
 static bool
 ParseMPCommandLine(
-    char *InStream,
-    char *OutFileName,
+    char **in,
+    char **out,
     BOOL *waveOut,
     int argc,
     char **argv,
     draaldecoder::MP3ConsoleDecoder *dec)
 {
-    UCI *uci;
-    BOOL retValue = TRUE;
-    char *txt = NULL;
-
     /*-- Parse the command line. --*/
-    uci = InitUCI(argc, argv, (argc == 1) ? TRUE : FALSE);
-    if (uci != NULL) {
-        retValue = !uci->show_options;
+    UCI *uci = InitUCI(argc, argv, (argc == 1) ? TRUE : FALSE);
+    if (uci == NULL)
+        return FALSE;
 
-        strcpy(InStream, "");
-        if (GetSwitchString(
-                uci, "-stream", "<MPEG-audio-stream>", "Bitstream to be decoded", &txt))
-            strcpy(InStream, txt);
+    BOOL retValue = !uci->show_options;
 
-        dec->parseCommandLine(uci);
+    GetSwitchString(uci, "-stream", "<MPEG-audio-stream>", "Bitstream to be decoded", in);
 
-        *waveOut = FALSE;
-        SwitchEnabled(
-            uci,
-            "-wave-out",
-            "Write the output to a wave file (default: pcm/raw file)",
-            waveOut);
+    SwitchEnabled(
+        uci, "-wave-out", "Write the output to a wave file (default: pcm/raw file)", waveOut);
 
-        strcpy(OutFileName, "");
-        if (GetSwitchString(uci, "-out", "<output-file>", "Name of decoded output file", &txt))
-            strcpy(OutFileName, txt);
+    GetSwitchString(uci, "-out", "<output-file>", "Name of decoded output file", out);
 
-        /*-- End of command line parsing. --*/
-        ValidateUCI(uci);
-        DeleteUCI(uci);
-        uci = NULL;
-    }
+    dec->parseCommandLine(uci);
 
-    return (retValue);
+    /*-- End of command line parsing. --*/
+    ValidateUCI(uci);
+    uci = DeleteUCI(uci);
+
+    return retValue;
 }
 
 int
@@ -81,13 +48,11 @@ main(int argc, char **argv)
 {
     FileBuf fp;
     Console *console = new Console();
-
     draaldecoder::MP3ConsoleDecoder *dec = new draaldecoder::MP3ConsoleDecoder();
 
     BOOL waveOut = FALSE;
-    char inStream[1024], outStream[1024];
-
-    if (!ParseMPCommandLine(inStream, outStream, &waveOut, argc, argv, dec))
+    char *inStream, *outStream;
+    if (!ParseMPCommandLine(&inStream, &outStream, &waveOut, argc, argv, dec))
         return EXIT_FAILURE;
 
     // Open the input stream

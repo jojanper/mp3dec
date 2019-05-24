@@ -2,12 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-//#include "codec/mp3/mp3.h"
 #include "codec/mp3/mp3def.h"
 #include "codec/mp3/mp3info.h"
-//#include "codec/mp3/mstream.h"
 #include "codec/mp3/param.h"
-//#include "core/bits.h"
 #include "core/io/uci.h"
 #include "mp3decconsole.h"
 
