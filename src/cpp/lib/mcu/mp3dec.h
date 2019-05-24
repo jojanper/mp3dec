@@ -19,8 +19,8 @@ public:
 
     bool init(IStreamBuffer *input, CodecInitParam *param, IOutputStream *output);
 
-    virtual bool decode();
-    virtual bool close();
+    virtual bool decode() override;
+    virtual bool close() override;
 
     const Out_Info *getInfo() const { return m_outInfo; }
     const char *getTrackProperties(char *buf);

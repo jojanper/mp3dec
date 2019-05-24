@@ -7,6 +7,7 @@ set(HDRS
 
 set(SRCS
   mp3dec.cpp
+  mp3decconsole.cpp
 )
 
 set(DEFINES)
