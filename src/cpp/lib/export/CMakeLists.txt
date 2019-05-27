@@ -1,26 +1,10 @@
-set(LIBNAME "mp3dec_obj")
 set(LIBNAME_STATIC "mp3dec_static")
 set(LIBNAME_SHARED "mp3dec")
-
-set(HDRS
-)
-
-set(SRCS
-   lib_wrapper.cpp
-)
 
 set(EXTRA_LINK_LIBRARIES
 )
 
-set(DEFINES)
-
-# Create object library (as intermediate target)
-set(OBJECT_SRCS ${HDRS} ${SRCS})
-build_object_library("${LIBNAME}" "${OBJECT_SRCS}" "${DEFINES}")
-
 set(LIB_SRCS
-  ${HDRS}
-  $<TARGET_OBJECTS:${LIBNAME}>
   $<TARGET_OBJECTS:commoncodec>
   $<TARGET_OBJECTS:mp3codec>
   $<TARGET_OBJECTS:coreutils>
