@@ -45,11 +45,26 @@ AudioAttributes::getString(const char *key) const
     return (it != this->mStringStorage.end()) ? it->second.c_str() : nullptr;
 }
 
+bool
+AudioAttributes::setDataPtr(int32_t key, const void *ptr)
+{
+    this->mDataPtrStorage[key] = ptr;
+    return true;
+}
+
+const void *
+AudioAttributes::getDataPtr(int32_t key) const
+{
+    auto it = this->mDataPtrStorage.find(key);
+    return (it != this->mDataPtrStorage.end()) ? it->second : nullptr;
+}
+
 void
 AudioAttributes::clear()
 {
     this->mStringStorage.clear();
     this->mInt32Storage.clear();
+    this->mDataPtrStorage.clear();
 }
 
 void

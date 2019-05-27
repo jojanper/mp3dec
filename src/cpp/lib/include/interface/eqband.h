@@ -36,6 +36,9 @@ public:
     EQ_Band();
     virtual ~EQ_Band() {}
 
+    // Maximum level amplification
+    static int MAX_AMP;
+
     virtual void resetEQBand();
     virtual void setEQBand(int16_t band, int16_t dBScale);
     virtual void setEQLevelAmp(int16_t LevelAmp);

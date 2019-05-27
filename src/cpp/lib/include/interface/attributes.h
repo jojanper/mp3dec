@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 namespace draaldecoder {
 
 enum
@@ -18,6 +20,9 @@ public:
 
     virtual bool setString(const char *key, const char *value) = 0;
     virtual const char *getString(const char *key) const = 0;
+
+    virtual bool setDataPtr(int32_t key, const void *ptr) = 0;
+    virtual const void *getDataPtr(int32_t key) const = 0;
 
 protected:
     IAttributes() {}

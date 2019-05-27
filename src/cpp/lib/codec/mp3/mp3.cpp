@@ -42,6 +42,18 @@ InitMP3DecoderData(void)
     InitMP3DequantModule();
 }
 
+void
+InitCodecInitParam(CodecInitParam *param)
+{
+    param->fix_window = FALSE;
+    param->channels = MAX_CHANNELS;
+    param->decim_factor = 1;
+    param->window_pruning = WINDOW_PRUNING_START_IDX;
+    param->alias_bands = SBLIMIT - 1;
+    param->imdct_sbs = SBLIMIT;
+    param->bandLimit = MAX_MONO_SAMPLES;
+}
+
 /**************************************************************************
   Title        : DecodeFrame
 

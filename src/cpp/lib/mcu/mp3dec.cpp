@@ -64,8 +64,17 @@ MP3Decoder::~MP3Decoder()
 }
 
 bool
-MP3Decoder::init(IStreamBuffer *input, CodecInitParam *param, IOutputStream *output)
+MP3Decoder::init(IStreamBuffer *input, IOutputStream *output, const IAttributes *attrs)
 {
+    CodecInitParam _param, *param;
+
+    // Query if init params available, otherwise use default parameters
+    param = (CodecInitParam *) attrs->getDataPtr(kKeyMP3InitParam);
+    if (!param) {
+        param = &_param;
+        InitCodecInitParam(&_param);
+    }
+
     m_output = output;
     m_bs->open(input, MAX_SLOTS);
     m_dec->initDecoder(m_bs, &m_outInfo->param, &m_outInfo->complex);

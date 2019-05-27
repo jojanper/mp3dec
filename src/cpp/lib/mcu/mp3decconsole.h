@@ -13,7 +13,9 @@ public:
     MP3ConsoleDecoder();
     virtual ~MP3ConsoleDecoder();
 
-    bool init(IStreamBuffer *input, IOutputStream *output);
+    virtual bool
+    init(IStreamBuffer *input, IOutputStream *output, const IAttributes *attrs) override;
+
     bool parseCommandLine(UCI *uci);
 
 protected:

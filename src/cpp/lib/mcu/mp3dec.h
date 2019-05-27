@@ -1,5 +1,6 @@
 #pragma once
 
+#include "interface/attributes.h"
 #include "interface/decoder.h"
 #include "interface/stream.h"
 
@@ -17,7 +18,8 @@ public:
     MP3Decoder();
     virtual ~MP3Decoder();
 
-    bool init(IStreamBuffer *input, CodecInitParam *param, IOutputStream *output);
+    virtual bool
+    init(IStreamBuffer *input, IOutputStream *output, const IAttributes *attrs) override;
 
     virtual bool decode() override;
     virtual bool close() override;

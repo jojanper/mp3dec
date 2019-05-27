@@ -2,10 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "codec/mp3/mp3.h"
 #include "codec/mp3/mp3def.h"
 #include "codec/mp3/mp3info.h"
 #include "codec/mp3/param.h"
 #include "core/io/uci.h"
+#include "core/meta.h"
 #include "mp3decconsole.h"
 
 namespace draaldecoder {
@@ -14,23 +16,29 @@ MP3ConsoleDecoder::MP3ConsoleDecoder() : MP3Decoder(), m_initParam(new CodecInit
 
 MP3ConsoleDecoder::~MP3ConsoleDecoder()
 {
+    InitCodecInitParam(m_initParam);
+
     if (m_initParam)
         delete m_initParam;
     m_initParam = nullptr;
 }
 
 bool
-MP3ConsoleDecoder::init(IStreamBuffer *input, IOutputStream *output)
+MP3ConsoleDecoder::init(
+    IStreamBuffer *input,
+    IOutputStream *output,
+    const IAttributes * /*attrs*/)
 {
-    return MP3Decoder::init(input, m_initParam, output);
+    // Pass initialization parameters to decoder
+    auto attrs = AudioAttributes();
+    attrs.setDataPtr(kKeyMP3InitParam, m_initParam);
+
+    return MP3Decoder::init(input, output, &attrs);
 }
 
 bool
 MP3ConsoleDecoder::parseCommandLine(UCI *uci)
 {
-    m_initParam->fix_window = FALSE;
-
-    m_initParam->channels = MAX_CHANNELS;
     GetSwitchParam(
         uci,
         "-out-channels",
@@ -38,7 +46,6 @@ MP3ConsoleDecoder::parseCommandLine(UCI *uci)
         "Number of output channels (1 or 2) (default: 2)",
         &m_initParam->channels);
 
-    m_initParam->decim_factor = 1;
     GetSwitchParam(
         uci,
         "-decim-factor",
@@ -47,7 +54,6 @@ MP3ConsoleDecoder::parseCommandLine(UCI *uci)
         "(default: 1)",
         &m_initParam->decim_factor);
 
-    m_initParam->window_pruning = WINDOW_PRUNING_START_IDX;
     GetSwitchParam(
         uci,
         "-window-pruning",
@@ -55,7 +61,6 @@ MP3ConsoleDecoder::parseCommandLine(UCI *uci)
         "Number of subwindows (0...15) discarded at the windowing stage (default : 2)",
         &m_initParam->window_pruning);
 
-    m_initParam->alias_bands = SBLIMIT - 1;
     GetSwitchParam(
         uci,
         "-alias-subbands",
@@ -64,7 +69,6 @@ MP3ConsoleDecoder::parseCommandLine(UCI *uci)
         "(default: 31 [all pairs])",
         &m_initParam->alias_bands);
 
-    m_initParam->imdct_sbs = SBLIMIT;
     GetSwitchParam(
         uci,
         "-imdct-subbands",
@@ -73,7 +77,6 @@ MP3ConsoleDecoder::parseCommandLine(UCI *uci)
         "subbands pairs (1..32) using IMDCT (default: all subbands)",
         &m_initParam->imdct_sbs);
 
-    m_initParam->bandLimit = MAX_MONO_SAMPLES;
     GetSwitchParam(
         uci,
         "-band_limit",
@@ -89,6 +92,7 @@ bool
 MP3ConsoleDecoder::initEQBandFromCommandLine(UCI *uci)
 {
     int16_t equalizerLevel = 0;
+    int MAX_AMP = EQ_Band::MAX_AMP;
 
     if (GetSwitchParam(
             uci,
@@ -96,9 +100,12 @@ MP3ConsoleDecoder::initEQBandFromCommandLine(UCI *uci)
             "<level-amp>",
             "Equalizer level amplification (default: 0 dB)",
             &equalizerLevel)) {
-        if (equalizerLevel < -20 || equalizerLevel > 20) {
+        if (equalizerLevel < -MAX_AMP || equalizerLevel > MAX_AMP) {
             fprintf(
-                stderr, "%s\n", "The valid range for the level amplification is -20...20 dB");
+                stderr,
+                "The valid range for the level amplification is -%i...%i dB\n",
+                MAX_AMP,
+                MAX_AMP);
             return false;
         }
         else
@@ -131,11 +138,13 @@ MP3ConsoleDecoder::initEQBandFromCommandLine(UCI *uci)
                 return false;
 
             auto dbScale = atoi(uci->argv[i]);
-            if (dbScale < -20 || dbScale > 20) {
+            if (dbScale < -MAX_AMP || dbScale > MAX_AMP) {
                 fprintf(
                     stderr,
-                    "Band %i: valid range for the level amplification is -20...20 dB\n",
-                    j);
+                    "Band %i: valid range for the level amplification is -%i...%i dB\n",
+                    j,
+                    MAX_AMP,
+                    MAX_AMP);
                 return false;
             }
 

@@ -28,6 +28,10 @@ typedef struct TrackInfoStr
 class BaseDecoder
 {
 public:
+    // Initialize decoder
+    virtual bool
+    init(IStreamBuffer *input, IOutputStream *output, const IAttributes *attrs) = 0;
+
     // Decode one frame from input stream to output stream
     virtual bool decode() = 0;
 

@@ -11,6 +11,7 @@
 /*-- Project Headers. --*/
 #include "brate.h"
 #include "core/defines.h"
+#include "mp3info.h"
 
 /*-- The following functions are defined in module 'mp3.cpp'. --*/
 void InitMP3DecoderData(void);
@@ -20,6 +21,7 @@ void ReInitEngine(MP_Stream *mp);
 SEEK_STATUS SeekSync(MP_Stream *mp);
 void ReComputeEngineParameters(MP_Stream *mp, int decim_factor);
 BOOL DecodeFrame(MP_Stream *mp, int16 *pcm_sample);
+void InitCodecInitParam(CodecInitParam *param);
 
 /*-- The following functions are defined in module 'mp3wind.cpp'. --*/
 BOOL ReSync(MP_Stream *mp);

@@ -20,6 +20,9 @@ convertdBScale(int dBScale)
     return (float) (pow((double) 10.0f, (double) (dBScale) / 23.0f));
 }
 
+// +- 20dB
+int EQ_Band::MAX_AMP = 20;
+
 EQ_Band::EQ_Band() : profile(NO_PROFILE)
 {
     this->resetEQBand();

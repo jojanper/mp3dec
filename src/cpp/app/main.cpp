@@ -57,7 +57,7 @@ main(int argc, char **argv)
     }
 
     // Initialize decoder; pass input and output stream
-    dec->init(&fp, console);
+    dec->init(&fp, console, nullptr);
 
     // Open the output stream
     auto info = dec->getTrackInfo();
