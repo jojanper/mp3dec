@@ -12,7 +12,11 @@
 
 namespace draaldecoder {
 
-MP3ConsoleDecoder::MP3ConsoleDecoder() : MP3Decoder(), m_initParam(new CodecInitParam()) {}
+MP3ConsoleDecoder::MP3ConsoleDecoder() :
+    IBaseConsoleDecoder(),
+    MP3Decoder(),
+    m_initParam(new CodecInitParam())
+{}
 
 MP3ConsoleDecoder::~MP3ConsoleDecoder()
 {

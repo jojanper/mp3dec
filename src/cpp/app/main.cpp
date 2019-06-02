@@ -16,7 +16,7 @@ ParseMPCommandLine(
     BOOL *waveOut,
     int argc,
     char **argv,
-    draaldecoder::MP3ConsoleDecoder *dec)
+    draaldecoder::IBaseConsoleDecoder *dec)
 {
     /*-- Parse the command line. --*/
     UCI *uci = InitUCI(argc, argv, (argc == 1) ? TRUE : FALSE);
@@ -25,10 +25,12 @@ ParseMPCommandLine(
 
     BOOL retValue = !uci->show_options;
 
-    GetSwitchString(uci, "-stream", "<MPEG-audio-stream>", "Bitstream to be decoded", in);
+    // General command line options
+    GetSwitchString(uci, "-stream", "<audio-stream>", "Bitstream to be decoded", in);
     SwitchEnabled(uci, "-wave-out", "Write the output to a wave file (default: PCM)", waveOut);
     GetSwitchString(uci, "-out", "<output-file>", "Name of decoded output file", out);
 
+    // Decoder specific command line options and related parsing
     dec->parseCommandLine(uci);
 
     /*-- End of command line parsing. --*/

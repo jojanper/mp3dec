@@ -1,13 +1,13 @@
 #pragma once
 
+#include "interface/cdecoder.h"
 #include "mcu/mp3dec.h"
 
-typedef struct UCI_Str UCI;
 typedef struct CodecInitParamStr CodecInitParam;
 
 namespace draaldecoder {
 
-class MP3ConsoleDecoder : public MP3Decoder
+class MP3ConsoleDecoder : public IBaseConsoleDecoder, public MP3Decoder
 {
 public:
     MP3ConsoleDecoder();
@@ -16,7 +16,7 @@ public:
     virtual bool
     init(IStreamBuffer *input, IOutputStream *output, const IAttributes *attrs) override;
 
-    bool parseCommandLine(UCI *uci);
+    virtual bool parseCommandLine(UCI *uci);
 
 protected:
     bool initEQBandFromCommandLine(UCI *uci);
