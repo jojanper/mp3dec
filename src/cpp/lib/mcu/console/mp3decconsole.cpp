@@ -16,12 +16,12 @@ MP3ConsoleDecoder::MP3ConsoleDecoder() :
     IBaseConsoleDecoder(),
     MP3Decoder(),
     m_initParam(new CodecInitParam())
-{}
+{
+    InitCodecInitParam(m_initParam);
+}
 
 MP3ConsoleDecoder::~MP3ConsoleDecoder()
 {
-    InitCodecInitParam(m_initParam);
-
     if (m_initParam)
         delete m_initParam;
     m_initParam = nullptr;
