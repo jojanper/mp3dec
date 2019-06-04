@@ -79,7 +79,7 @@ InitUCI(int argc, char **argv, BOOL show_options)
             uci->show_options = show_options;
             if (uci->show_options) {
                 uci->logfile.open();
-                uci->logfile.write("Command Line Options for %s :\n", argv[0]);
+                uci->logfile.write("Command line options for %s :\n", argv[0]);
             }
 
             uci->argument_used = new int16[argc];

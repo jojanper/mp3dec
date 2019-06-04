@@ -12,7 +12,7 @@ typedef struct CodecInitParamStr CodecInitParam;
 
 namespace draaldecoder {
 
-class MP3Decoder : public BaseDecoder
+class MP3Decoder : public virtual BaseDecoder
 {
 public:
     MP3Decoder();

@@ -3,6 +3,7 @@
 #include "interface/attributes.h"
 #include "interface/console.h"
 #include "interface/eqband.h"
+#include "interface/stream.h"
 
 namespace draaldecoder {
 

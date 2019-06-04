@@ -27,6 +27,12 @@ MP3ConsoleDecoder::~MP3ConsoleDecoder()
     m_initParam = nullptr;
 }
 
+void
+MP3ConsoleDecoder::destroy()
+{
+    delete this;
+}
+
 bool
 MP3ConsoleDecoder::init(
     IStreamBuffer *input,

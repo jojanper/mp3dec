@@ -6,8 +6,9 @@ set(HDRS
 )
 
 set(SRCS
-  mp3dec.cpp
-  mp3decconsole.cpp
+  decoders/mp3dec.cpp
+  console/mp3decconsole.cpp
+  consoledecoder.cpp
 )
 
 set(DEFINES)

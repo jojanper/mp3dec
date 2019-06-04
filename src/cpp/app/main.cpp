@@ -6,7 +6,7 @@
 #include "core/io/iobuf.h"
 #include "core/io/uci.h"
 #include "core/throw.h"
-#include "mcu/mp3decconsole.h"
+#include "mcu/consoledecoder.h"
 
 // Parse command line parameters for MPEG audio playback.
 static bool
@@ -45,7 +45,7 @@ main(int argc, char **argv)
 {
     FileBuf fp;
     Console *console = new Console();
-    draaldecoder::MP3ConsoleDecoder *dec = new draaldecoder::MP3ConsoleDecoder();
+    auto dec = draaldecoder::ConsoleDecoder::create(draaldecoder::MP3DEC);
 
     BOOL waveOut = FALSE;
     char *inStream, *outStream;
@@ -87,7 +87,7 @@ main(int argc, char **argv)
 
     console->close();
 
-    delete dec;
+    dec->destroy();
     delete console;
 
     return EXIT_SUCCESS;
