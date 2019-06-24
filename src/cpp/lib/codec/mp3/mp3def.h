@@ -16,8 +16,6 @@
   *************************************************************************/
 
 /*-- Some Useful Macros. --*/
-#define MIN(A, B) ((A) < (B) ? (A) : (B))
-#define MAX(A, B) ((A) > (B) ? (A) : (B))
 #define HIGHWORD(x) ((uint32) x >> 24)
 #define LOWWORD(x) ((uint32) x & 0x0000FFFF)
 #define HIGHBYTE(x) ((uint32) x >> 8)

@@ -71,3 +71,7 @@ typedef uint8_t BYTE;
 
 #define TRUE true
 #define FALSE false
+
+/*-- Some Useful Macros. --*/
+#define MIN(A, B) ((A) < (B) ? (A) : (B))
+#define MAX(A, B) ((A) > (B) ? (A) : (B))

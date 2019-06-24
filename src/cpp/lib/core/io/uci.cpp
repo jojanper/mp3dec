@@ -23,20 +23,12 @@
   Internal Objects
   *************************************************************************/
 
-/*
-   Purpose:     Enables testing of this module.
-   Explanation: - */
-//#define TEST_MODULE
-
-/*
-   Purpose:     Static buffers for this module.
-   Explanation: These are needed when printing the help parameters. */
-static char *buf;
-static char buffer[1024];
-static char buffer_tmp[1024];
+#define VERBOSE_PREFIX(uci) \
+    char fmt[32];           \
+    sprintf(fmt, "%s%zus %s", "%-", uci->indent_size, "%s")
 
 static int
-vspf(const char *fmt, ...)
+vspf(char *buf, const char *fmt, ...)
 {
     va_list argptr;
     int cnt;
@@ -46,6 +38,22 @@ vspf(const char *fmt, ...)
     va_end(argptr);
 
     return (cnt);
+}
+
+static inline void
+ShowCmdLineOption(
+    UCI *uci,
+    const char *cswitch,
+    const char *param_,
+    const char *switch_explanation)
+{
+    char buffer[1024];
+    char buffer_tmp[1024];
+
+    vspf(buffer_tmp, "%s %s", cswitch, param_);
+    VERBOSE_PREFIX(uci);
+    vspf(buffer, fmt, buffer_tmp, switch_explanation);
+    uci->logfile.write("%s\n", buffer);
 }
 
 
@@ -60,6 +68,7 @@ vspf(const char *fmt, ...)
                  argv         - command line parameters
                  show_options - if TRUE the help parameters are printed when
                                 accessing the functions of this module
+                 indent_size  - indent size for verbose logging
 
   Output       : y - command line parser on success, NULL otherwise
 
@@ -67,19 +76,21 @@ vspf(const char *fmt, ...)
   *************************************************************************/
 
 UCI *
-InitUCI(int argc, char **argv, BOOL show_options)
+InitUCI(int argc, char **argv, BOOL show_options, size_t indent_size)
 {
     UCI *uci = NULL;
 
     try {
         uci = new UCI();
         if (uci) {
-            uci->args = (int16) argc;
             uci->argv = argv;
+            uci->args = (int16) argc;
+            uci->indent_size = indent_size;
             uci->show_options = show_options;
+
             if (uci->show_options) {
                 uci->logfile.open();
-                uci->logfile.write("Command line options for %s :\n", argv[0]);
+                uci->logfile.write("Command line options for %s:\n", argv[0]);
             }
 
             uci->argument_used = new int16[argc];
@@ -218,9 +229,10 @@ SwitchEnabled(UCI *uci, const char *cswitch, const char *switch_explanation, BOO
     int16 address;
 
     if (uci->show_options) {
-        buf = buffer;
-        vspf("%-42s %s", cswitch, switch_explanation);
-        uci->logfile.write("%s\n", buf);
+        char buffer[1024];
+        VERBOSE_PREFIX(uci);
+        vspf(buffer, fmt, cswitch, switch_explanation);
+        uci->logfile.write("%s\n", buffer);
 
         return (FALSE);
     }
@@ -234,21 +246,6 @@ SwitchEnabled(UCI *uci, const char *cswitch, const char *switch_explanation, BOO
     }
 
     return ((address != -1));
-}
-
-
-static inline void
-ShowCmdLineOption(
-    UCI *uci,
-    const char *cswitch,
-    const char *param_,
-    const char *switch_explanation)
-{
-    buf = buffer_tmp;
-    vspf("%s %s", cswitch, param_);
-    buf = buffer;
-    vspf("%-42s %s", buffer_tmp, switch_explanation);
-    uci->logfile.write("%s\n", buf);
 }
 
 

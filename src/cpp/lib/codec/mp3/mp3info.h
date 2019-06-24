@@ -23,9 +23,9 @@ typedef struct TrackInfoStr
     char Layer[5];
     char Mode[16];
     char Private_bit[8];
-    char De_emphasis[5];
+    char De_emphasis[20];
     char Copyright[5];
-    char Stereo_mode[5];
+    char Stereo_mode[16];
     char Error_protection[5];
     char Original[5];
     DWORD Length;

@@ -19,7 +19,7 @@ ParseMPCommandLine(
     draaldecoder::IBaseConsoleDecoder *dec)
 {
     /*-- Parse the command line. --*/
-    UCI *uci = InitUCI(argc, argv, (argc == 1) ? TRUE : FALSE);
+    UCI *uci = InitUCI(argc, argv, (argc == 1) ? TRUE : FALSE, 41);
     if (uci == NULL)
         return FALSE;
 
