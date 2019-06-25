@@ -12,6 +12,11 @@ set(LIB_SRCS
 )
 
 if (BUILD_WEBASSEMBLY)
+  set(LIB_SRCS
+    "${LIB_SRCS}"
+    decoder.cpp
+  )
+
   # WebAssembly target is actually an executable target
   build_exe(${LIBNAME_STATIC} "${LIB_SRCS}" "${EXTRA_LINK_LIBRARIES}" "")
 else()
