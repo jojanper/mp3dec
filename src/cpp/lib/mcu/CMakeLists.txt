@@ -7,9 +7,16 @@ set(HDRS
 
 set(SRCS
   decoders/mp3dec.cpp
-  console/mp3decconsole.cpp
-  consoledecoder.cpp
 )
+
+# Do not include file I/O related implementations to WebAssembly
+if (NOT BUILD_WEBASSEMBLY)
+  set(SRCS
+    "${SRCS}"
+    console/mp3decconsole.cpp
+    consoledecoder.cpp
+  )
+endif(NOT BUILD_WEBASSEMBLY)
 
 set(DEFINES)
 

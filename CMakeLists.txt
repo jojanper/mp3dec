@@ -7,6 +7,7 @@ include(CheckIncludeFileCXX)
 
 option(BUILD_APPS "Build test apps" ON)
 option(BUILD_TESTS "Build gtest unit tests" ON)
+option(BUILD_WEBASSEMBLY "Build as WebAssembly" OFF)
 option(HAVE_THREADS "Use pthread in unit tests" ON)
 option(HAVE_COVERAGE "Enable code coverage" ON)
 

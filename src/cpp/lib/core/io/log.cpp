@@ -87,5 +87,5 @@ LogFile::write(const char *format, ...)
     fprintf(m_fpLog, "%s", szBuffer);
     fflush(m_fpLog);
 
-    delete szBuffer;
+    delete[] szBuffer;
 }
