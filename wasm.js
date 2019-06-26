@@ -81,6 +81,21 @@ const wasmModule = new WebAssembly.Module(fs.readFileSync(__dirname + WASMLIB));
 const instance = new WebAssembly.Instance(wasmModule, importObject);
 
 function testExec(instance) {
+    const stream = fs.createReadStream(__dirname + '/Bryan_Adams_Xmas_Time.mp3');
+
+    const chunkSize = 16 * 1024;
+
+    stream.on('readable', () => {
+        let chunk;
+        while ((chunk = stream.read(chunkSize))) {
+            console.log(`First received ${chunk.length} bytes of data`);
+        }
+
+        while (null !== (chunk = stream.read())) {
+            console.log(`Received ${chunk.length} bytes of data`);
+        }
+    });
+
     const { exports } = instance;
     console.log(exports);
 
