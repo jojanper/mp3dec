@@ -7,6 +7,7 @@ set(HDRS
 
 set(SRCS
   decoders/mp3dec.cpp
+  streamable.cpp
 )
 
 # Do not include file I/O related implementations to WebAssembly

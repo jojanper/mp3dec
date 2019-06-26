@@ -7,6 +7,8 @@
 
 namespace draaldecoder {
 
+static const char *const MP3MIME = "audio/mpeg";
+
 /**
  * Track related data.
  */
@@ -29,6 +31,9 @@ typedef struct TrackInfoStr
 class BaseDecoder
 {
 public:
+    // Delete instance and its related resources
+    void destroy() { delete this; }
+
     // Initialize decoder
     virtual bool
     init(IStreamBuffer *input, IOutputStream *output, const IAttributes *attrs) = 0;
@@ -75,6 +80,30 @@ protected:
     IOutputStream *m_output; // Output stream interface
     IAttributes *m_attrs;    // Decoder attributes
     TrackInfo m_info;        // Decoding information
+};
+
+// Decoder interface that accepts only buffers as input data
+class IStreamableDecoder
+{
+public:
+    // Create decoder instane based on specified attributes
+    static IStreamableDecoder *create(const IAttributes &attrs);
+
+    // Destroy decoder instance
+    void destroy();
+
+    // Append new input data to decoder
+    virtual void addInput(const uint8_t *buffer, size_t size) = 0;
+
+    // Assign output stream for the decoder
+    virtual void setOutput(IOutputStream *output) = 0;
+
+    // Decode frame from input buffer
+    virtual bool decode() = 0;
+
+protected:
+    IStreamableDecoder() {}
+    virtual ~IStreamableDecoder() {}
 };
 
 } // namespace draaldecoder

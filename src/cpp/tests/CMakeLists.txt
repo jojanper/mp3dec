@@ -5,6 +5,7 @@ set(SRCS
   core/test_filebuf.cpp
   core/test_bitsring.cpp
   core/test_utils.cpp
+  mcu/test_streamable.cpp
 )
 
 set(EXTRA_LINK_LIBRARIES
