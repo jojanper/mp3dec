@@ -32,7 +32,7 @@ public:
     bool init(size_t size, int mode, const char *name = nullptr);
 
     // Copy external buffer
-    bool setBuffer(uint8_t *buffer, size_t size);
+    bool setBuffer(const uint8_t *buffer, size_t size);
 
     virtual const char *GetStreamName() const override { return m_deviceName; }
     virtual uint32_t GetStreamSize() const override { return m_bufSize; }
@@ -46,6 +46,7 @@ private:
     uint8_t *m_buf;          // Memory buffer
     size_t m_bufSize;        // Memory buffer size
     size_t m_readPos;        // Current read position
+    size_t m_writePos;       // Current write index
     int m_mode;              // Buffer mode
     char m_deviceName[2048]; // Name of the buffer
 };

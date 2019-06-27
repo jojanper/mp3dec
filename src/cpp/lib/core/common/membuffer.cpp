@@ -8,6 +8,7 @@ MemoryBuffer::MemoryBuffer() :
     m_buf(nullptr),
     m_bufSize(0),
     m_readPos(0),
+    m_writePos(0),
     m_mode(kLinearBuffer)
 {
     m_deviceName[0] = '\0';
@@ -83,16 +84,17 @@ MemoryBuffer::ReadToBuffer(uint8_t *buffer, uint32_t bufLen)
 }
 
 bool
-MemoryBuffer::setBuffer(uint8_t *buffer, size_t size)
+MemoryBuffer::setBuffer(const uint8_t *buffer, size_t size)
 {
     if (this->m_mode == kOverWriteBuffer)
         memcpy(this->m_buf, buffer, size);
     else if (this->m_mode == kLinearBuffer) {
         // Make sure out of bounds does not occur
-        if (this->m_readPos + size > this->m_bufSize)
+        if (this->m_writePos + size > this->m_bufSize)
             return false;
 
-        memcpy(this->m_buf + this->m_readPos, buffer, size);
+        memcpy(this->m_buf + this->m_writePos, buffer, size);
+        this->m_writePos += size;
     }
 
     return true;

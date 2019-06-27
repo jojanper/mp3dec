@@ -12,10 +12,11 @@ TEST(MemoryBufferTestSuite, Init)
     EXPECT_TRUE(buffer.init(128, kLinearBuffer)); // Valid buffer size
 }
 
-TEST(MemoryBufferTestSuite, Read)
+static const uint8_t data[] = { 3, 100, 192, 4, 77 };
+
+TEST(MemoryBufferTestSuite, OverWriteBuffer)
 {
     MemoryBuffer buffer;
-    uint8_t data[] = { 3, 100, 192, 4, 77 };
 
     // GIVEN initialized buffer handle
     ASSERT_TRUE(buffer.init(sizeof(data), kOverWriteBuffer, "foo"));
@@ -79,4 +80,24 @@ TEST(MemoryBufferTestSuite, Read)
     EXPECT_EQ(readData[0], 4);
     EXPECT_EQ(readData[1], 77);
     EXPECT_EQ(readData[2], 0);
+}
+
+TEST(MemoryBufferTestSuite, LinearBuffer)
+{
+    MemoryBuffer buffer;
+
+    // GIVEN initialized buffer handle
+    ASSERT_TRUE(buffer.init(2 * sizeof(data), kLinearBuffer, "foo"));
+
+    // WHEN adding new data
+    // THEN it should succeed
+    EXPECT_TRUE(buffer.setBuffer(data, sizeof(data)));
+
+    // WHEN adding again new data
+    // THEN it should succeed
+    EXPECT_TRUE(buffer.setBuffer(data, sizeof(data)));
+
+    // WHEN adding again new data
+    // THEN it should fail as data will not fit into the buffer
+    EXPECT_FALSE(buffer.setBuffer(data, sizeof(data)));
 }
