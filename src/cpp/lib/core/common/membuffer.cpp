@@ -4,7 +4,11 @@
 #include "core/membuffer.h"
 
 
-MemoryBuffer::MemoryBuffer() : m_buf(nullptr), m_bufSize(0), m_readPos(0)
+MemoryBuffer::MemoryBuffer() :
+    m_buf(nullptr),
+    m_bufSize(0),
+    m_readPos(0),
+    m_mode(kLinearBuffer)
 {
     m_deviceName[0] = '\0';
 }
@@ -17,8 +21,10 @@ MemoryBuffer::~MemoryBuffer()
 }
 
 bool
-MemoryBuffer::init(size_t size, const char *name)
+MemoryBuffer::init(size_t size, int mode, const char *name)
 {
+    this->m_mode = mode;
+
     if (name)
         strcpy(this->m_deviceName, name);
 
@@ -79,6 +85,15 @@ MemoryBuffer::ReadToBuffer(uint8_t *buffer, uint32_t bufLen)
 bool
 MemoryBuffer::setBuffer(uint8_t *buffer, size_t size)
 {
-    memcpy(this->m_buf + this->m_readPos, buffer, size);
+    if (this->m_mode == kOverWriteBuffer)
+        memcpy(this->m_buf, buffer, size);
+    else if (this->m_mode == kLinearBuffer) {
+        // Make sure out of bounds does not occur
+        if (this->m_readPos + size > this->m_bufSize)
+            return false;
+
+        memcpy(this->m_buf + this->m_readPos, buffer, size);
+    }
+
     return true;
 }

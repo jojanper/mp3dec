@@ -6,6 +6,12 @@
 #include "interface/stream.h"
 
 
+enum
+{
+    kLinearBuffer = 1,    // New data is appended to buffer
+    kOverWriteBuffer = 2, // New data overwrites existing data
+};
+
 /**
  * Block buffer interface.
  */
@@ -19,10 +25,11 @@ public:
      * Initialize buffer.
      *
      * @param size Buffer size in bytes
+     * @param mode Buufer mode
      * @param name Name for the buffer data
      * @return true on succes, false otherwise
      */
-    bool init(size_t size, const char *name = nullptr);
+    bool init(size_t size, int mode, const char *name = nullptr);
 
     // Copy external buffer
     bool setBuffer(uint8_t *buffer, size_t size);
@@ -39,5 +46,6 @@ private:
     uint8_t *m_buf;          // Memory buffer
     size_t m_bufSize;        // Memory buffer size
     size_t m_readPos;        // Current read position
+    int m_mode;              // Buffer mode
     char m_deviceName[2048]; // Name of the buffer
 };

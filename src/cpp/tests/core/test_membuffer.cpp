@@ -6,10 +6,10 @@ TEST(MemoryBufferTestSuite, Init)
 {
     MemoryBuffer buffer;
 
-    EXPECT_FALSE(buffer.init(0));                              // Invalid buffer size
+    EXPECT_FALSE(buffer.init(0, kLinearBuffer));               // Invalid buffer size
     EXPECT_EQ(buffer.SeekBuffer(CURRENT_POS, 3), (int32_t) 0); // Seek fails
 
-    EXPECT_TRUE(buffer.init(128)); // Valid buffer size
+    EXPECT_TRUE(buffer.init(128, kLinearBuffer)); // Valid buffer size
 }
 
 TEST(MemoryBufferTestSuite, Read)
@@ -18,7 +18,7 @@ TEST(MemoryBufferTestSuite, Read)
     uint8_t data[] = { 3, 100, 192, 4, 77 };
 
     // GIVEN initialized buffer handle
-    ASSERT_TRUE(buffer.init(sizeof(data), "foo"));
+    ASSERT_TRUE(buffer.init(sizeof(data), kOverWriteBuffer, "foo"));
     ASSERT_TRUE(buffer.setBuffer(data, sizeof(data)));
     ASSERT_STREQ(buffer.GetStreamName(), "foo");
     ASSERT_EQ(buffer.GetStreamSize(), (uint32_t) 5);
