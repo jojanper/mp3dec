@@ -5,6 +5,7 @@ set(SRCS
   core/test_filebuf.cpp
   core/test_bitsring.cpp
   core/test_utils.cpp
+  core/test_membuffer.cpp
   mcu/test_streamable.cpp
 )
 

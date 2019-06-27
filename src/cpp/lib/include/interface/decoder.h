@@ -83,11 +83,11 @@ protected:
 };
 
 // Decoder interface that accepts only buffers as input data
-class IStreamableDecoder
+class StreamableDecoder
 {
 public:
     // Create decoder instane based on specified attributes
-    static IStreamableDecoder *create(const IAttributes &attrs);
+    static StreamableDecoder *create(const IAttributes &attrs);
 
     // Destroy decoder instance
     void destroy();
@@ -102,8 +102,8 @@ public:
     virtual bool decode() = 0;
 
 protected:
-    IStreamableDecoder() {}
-    virtual ~IStreamableDecoder() {}
+    StreamableDecoder() {}
+    virtual ~StreamableDecoder() {}
 };
 
 } // namespace draaldecoder

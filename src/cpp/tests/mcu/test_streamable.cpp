@@ -7,19 +7,19 @@ namespace draaldecodertest {
 
 TEST(StreambleDecoderStaticTestSuite, Create)
 {
-    draaldecoder::IStreamableDecoder *dec;
+    draaldecoder::StreamableDecoder *dec;
     auto attrs = draaldecoder::AudioAttributes();
 
     // No instance when unsupported MIME type specified
     attrs.setString("mime", "foo/bar");
-    dec = draaldecoder::IStreamableDecoder::create(attrs);
+    dec = draaldecoder::StreamableDecoder::create(attrs);
     EXPECT_TRUE(dec == nullptr);
 }
 
 class StreambleDecoderTestSuite : public testing::Test
 {
 protected:
-    draaldecoder::IStreamableDecoder *m_dec;
+    draaldecoder::StreamableDecoder *m_dec;
 
     virtual void SetUp()
     {
@@ -27,7 +27,7 @@ protected:
 
         // Request MP3 decoder instance
         attrs.setString("mime", draaldecoder::MP3MIME);
-        m_dec = draaldecoder::IStreamableDecoder::create(attrs);
+        m_dec = draaldecoder::StreamableDecoder::create(attrs);
         ASSERT_TRUE(m_dec != nullptr);
     }
 

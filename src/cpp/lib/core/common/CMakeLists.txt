@@ -9,7 +9,9 @@ set(SRCS
    bitsring.cpp
    eqband.cpp
    meta.cpp
+   membuffer.cpp
 )
+
 
 set(EXTRA_LINK_LIBRARIES
 )

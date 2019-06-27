@@ -107,7 +107,6 @@ FileBuf::SeekBuffer(FilePos fpos, int32_t offset)
             break;
 
         case END_POS: {
-            // if (offset < 0) offset = -offset;
             fseek(this->m_hFile, -offset, SEEK_END);
             currentPosition = ftell(this->m_hFile);
             break;

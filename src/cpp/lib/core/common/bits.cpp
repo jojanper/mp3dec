@@ -7,8 +7,7 @@
 #include "core/bits.h"
 
 
-BitStream::BitStream() : BitStreamBuffer(), m_ioBuf(NULL), m_eobs(true), m_streamSize(0)
-{}
+BitStream::BitStream() : BitStreamBuffer(), m_ioBuf(NULL), m_eobs(true), m_streamSize(0) {}
 
 BitStream::~BitStream()
 {

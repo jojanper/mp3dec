@@ -11,7 +11,7 @@ enum
     kMimeMP3 = 1,
 };
 
-class StreamableDecoderImpl : public IStreamableDecoder
+class StreamableDecoderImpl : public StreamableDecoder
 {
 public:
     StreamableDecoderImpl(size_t mime) : m_dec(nullptr)
@@ -39,8 +39,8 @@ protected:
     BaseDecoder *m_dec;
 };
 
-IStreamableDecoder *
-IStreamableDecoder::create(const IAttributes &attrs)
+StreamableDecoder *
+StreamableDecoder::create(const IAttributes &attrs)
 {
     size_t mimeId = 0;
     auto mime = attrs.getString("mime");
@@ -52,7 +52,7 @@ IStreamableDecoder::create(const IAttributes &attrs)
 }
 
 void
-IStreamableDecoder::destroy()
+StreamableDecoder::destroy()
 {
     delete this;
 }
