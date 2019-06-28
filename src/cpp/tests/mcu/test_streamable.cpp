@@ -2,6 +2,7 @@
 
 #include "core/meta.h"
 #include "interface/decoder.h"
+#include "interface/defs.h"
 
 namespace draaldecodertest {
 

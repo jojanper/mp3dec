@@ -5,13 +5,6 @@
 #include "core/defines.h"
 #include "interface/stream.h"
 
-
-enum
-{
-    kLinearBuffer = 1,    // New data is appended to buffer
-    kOverWriteBuffer = 2, // New data overwrites existing data
-};
-
 /**
  * Block buffer interface.
  */

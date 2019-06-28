@@ -2,7 +2,10 @@
 #include <string.h>
 
 #include "./decoders/mp3dec.h"
+#include "core/membuffer.h"
+#include "core/meta.h"
 #include "interface/decoder.h"
+#include "interface/defs.h"
 
 namespace draaldecoder {
 
@@ -11,13 +14,39 @@ enum
     kMimeMP3 = 1,
 };
 
+struct mimeMap_s
+{
+    const char *str;
+    int id;
+} static const MIMEMAP[] = { { MP3MIME, kMimeMP3 } };
+
+static int
+getMimeId(const char *mime)
+{
+    if (mime) {
+        for (size_t i = 0; i < sizeof(MIMEMAP) / sizeof(struct mimeMap_s); i++)
+            if (!strcmp(mime, MIMEMAP[i].str))
+                return MIMEMAP[i].id;
+    }
+
+    return -1;
+}
+
 class StreamableDecoderImpl : public StreamableDecoder
 {
 public:
-    StreamableDecoderImpl(size_t mime) : m_dec(nullptr)
+    StreamableDecoderImpl(int mime) : m_dec(nullptr)
     {
         if (mime == kMimeMP3)
             m_dec = new MP3Decoder();
+
+        if (m_dec) {
+            // 32kB buffer size if not specified via API
+            this->m_attrs.setInt32Data(kBufferSize, 32768);
+
+            // Buffer mode if not specified via API
+            this->m_attrs.setInt32Data(kBufferMode, kOverWriteBuffer);
+        }
     }
 
     virtual ~StreamableDecoderImpl()
@@ -27,28 +56,37 @@ public:
         this->m_dec = nullptr;
     }
 
-    virtual void addInput(const uint8_t * /*buffer*/, size_t /*size*/) override {}
+    virtual IAttributes *getAttributes() override { return &m_attrs; }
 
-    // Assign output stream for the decoder
-    virtual void setOutput(IOutputStream * /*output*/) override {}
+    virtual bool init() override
+    {
+        int32_t size, mode;
+        this->m_attrs.getInt32Data(kBufferSize, size);
+        this->m_attrs.getInt32Data(kBufferMode, mode);
+        return this->m_buffer.init(size, mode);
+    }
 
-    // Decode frame from input buffer
+    virtual bool addInput(const uint8_t *buffer, size_t size) override
+    {
+        return this->m_buffer.setBuffer(buffer, size);
+    }
+
+    virtual void setOutput(IOutputStream *output) override { this->m_output = output; }
+
     virtual bool decode() override { return false; }
 
 protected:
     BaseDecoder *m_dec;
+    MemoryBuffer m_buffer;
+    AudioAttributes m_attrs;
+    IOutputStream *m_output;
 };
 
 StreamableDecoder *
 StreamableDecoder::create(const IAttributes &attrs)
 {
-    size_t mimeId = 0;
-    auto mime = attrs.getString("mime");
-
-    if (mime && !strcmp(mime, MP3MIME))
-        mimeId = kMimeMP3;
-
-    return (mimeId) ? new StreamableDecoderImpl(mimeId) : nullptr;
+    auto mimeId = getMimeId(attrs.getString("mime"));
+    return (mimeId > 0) ? new StreamableDecoderImpl(mimeId) : nullptr;
 }
 
 void

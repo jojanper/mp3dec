@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "core/membuffer.h"
+#include "interface/defs.h"
 
 
 MemoryBuffer::MemoryBuffer() :
@@ -9,7 +10,7 @@ MemoryBuffer::MemoryBuffer() :
     m_bufSize(0),
     m_readPos(0),
     m_writePos(0),
-    m_mode(kLinearBuffer)
+    m_mode(draaldecoder::kLinearBuffer)
 {
     m_deviceName[0] = '\0';
 }
@@ -86,9 +87,9 @@ MemoryBuffer::ReadToBuffer(uint8_t *buffer, uint32_t bufLen)
 bool
 MemoryBuffer::setBuffer(const uint8_t *buffer, size_t size)
 {
-    if (this->m_mode == kOverWriteBuffer)
+    if (this->m_mode == draaldecoder::kOverWriteBuffer)
         memcpy(this->m_buf, buffer, size);
-    else if (this->m_mode == kLinearBuffer) {
+    else if (this->m_mode == draaldecoder::kLinearBuffer) {
         // Make sure out of bounds does not occur
         if (this->m_writePos + size > this->m_bufSize)
             return false;

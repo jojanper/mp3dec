@@ -7,8 +7,6 @@
 
 namespace draaldecoder {
 
-static const char *const MP3MIME = "audio/mpeg";
-
 /**
  * Track related data.
  */
@@ -86,14 +84,20 @@ protected:
 class StreamableDecoder
 {
 public:
-    // Create decoder instane based on specified attributes
+    // Create decoder instance based on specified attributes
     static StreamableDecoder *create(const IAttributes &attrs);
 
     // Destroy decoder instance
     void destroy();
 
+    // Return attributes handle
+    virtual IAttributes *getAttributes() = 0;
+
+    // Initialize decoder based on (modified) attributes
+    virtual bool init() = 0;
+
     // Append new input data to decoder
-    virtual void addInput(const uint8_t *buffer, size_t size) = 0;
+    virtual bool addInput(const uint8_t *buffer, size_t size) = 0;
 
     // Assign output stream for the decoder
     virtual void setOutput(IOutputStream *output) = 0;

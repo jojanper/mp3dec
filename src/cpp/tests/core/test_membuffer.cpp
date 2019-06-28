@@ -1,15 +1,16 @@
 #include <gtest/gtest.h>
 
 #include "core/membuffer.h"
+#include "interface/defs.h"
 
 TEST(MemoryBufferTestSuite, Init)
 {
     MemoryBuffer buffer;
 
-    EXPECT_FALSE(buffer.init(0, kLinearBuffer));               // Invalid buffer size
+    EXPECT_FALSE(buffer.init(0, draaldecoder::kLinearBuffer)); // Invalid buffer size
     EXPECT_EQ(buffer.SeekBuffer(CURRENT_POS, 3), (int32_t) 0); // Seek fails
 
-    EXPECT_TRUE(buffer.init(128, kLinearBuffer)); // Valid buffer size
+    EXPECT_TRUE(buffer.init(128, draaldecoder::kLinearBuffer)); // Valid buffer size
 }
 
 static const uint8_t data[] = { 3, 100, 192, 4, 77 };
@@ -19,7 +20,7 @@ TEST(MemoryBufferTestSuite, OverWriteBuffer)
     MemoryBuffer buffer;
 
     // GIVEN initialized buffer handle
-    ASSERT_TRUE(buffer.init(sizeof(data), kOverWriteBuffer, "foo"));
+    ASSERT_TRUE(buffer.init(sizeof(data), draaldecoder::kOverWriteBuffer, "foo"));
     ASSERT_TRUE(buffer.setBuffer(data, sizeof(data)));
     ASSERT_STREQ(buffer.GetStreamName(), "foo");
     ASSERT_EQ(buffer.GetStreamSize(), (uint32_t) 5);
@@ -87,7 +88,7 @@ TEST(MemoryBufferTestSuite, LinearBuffer)
     MemoryBuffer buffer;
 
     // GIVEN initialized buffer handle
-    ASSERT_TRUE(buffer.init(2 * sizeof(data), kLinearBuffer, "foo"));
+    ASSERT_TRUE(buffer.init(2 * sizeof(data), draaldecoder::kLinearBuffer));
 
     // WHEN adding new data
     // THEN it should succeed
