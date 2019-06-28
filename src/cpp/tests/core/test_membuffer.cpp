@@ -86,6 +86,7 @@ TEST(MemoryBufferTestSuite, OverWriteBuffer)
 TEST(MemoryBufferTestSuite, LinearBuffer)
 {
     MemoryBuffer buffer;
+    uint8_t readData[12];
 
     // GIVEN initialized buffer handle
     ASSERT_TRUE(buffer.init(2 * sizeof(data), draaldecoder::kLinearBuffer));
@@ -94,11 +95,62 @@ TEST(MemoryBufferTestSuite, LinearBuffer)
     // THEN it should succeed
     EXPECT_TRUE(buffer.setBuffer(data, sizeof(data)));
 
+    // AND read data is as expected
+    EXPECT_EQ(buffer.ReadToBuffer(readData, 4), (uint32_t) 4);
+    EXPECT_EQ(readData[0], 3);
+    EXPECT_EQ(readData[1], 100);
+    EXPECT_EQ(readData[2], 192);
+    EXPECT_EQ(readData[3], 4);
+    EXPECT_EQ(buffer.SeekBuffer(CURRENT_POS, 4), (int32_t) 4);
+
+
     // WHEN adding again new data
     // THEN it should succeed
     EXPECT_TRUE(buffer.setBuffer(data, sizeof(data)));
 
+    // AND read data is as expected
+    EXPECT_EQ(buffer.ReadToBuffer(readData, 6), (uint32_t) 6);
+    EXPECT_EQ(readData[0], 77);
+    EXPECT_EQ(readData[1], 3);
+    EXPECT_EQ(readData[2], 100);
+    EXPECT_EQ(readData[3], 192);
+    EXPECT_EQ(readData[4], 4);
+    EXPECT_EQ(readData[5], 77);
+    EXPECT_EQ(buffer.SeekBuffer(CURRENT_POS, 6), (int32_t) 10);
+
+
     // WHEN adding again new data
     // THEN it should fail as data will not fit into the buffer
     EXPECT_FALSE(buffer.setBuffer(data, sizeof(data)));
+}
+
+TEST(MemoryBufferTestSuite, ModuloBuffer)
+{
+    MemoryBuffer buffer;
+    uint8_t readData[12];
+
+    // GIVEN initialized buffer handle
+    ASSERT_TRUE(buffer.init(2 * sizeof(data), draaldecoder::kModuloBuffer));
+
+    // WHEN adding new data
+    // THEN it should succeed
+    EXPECT_TRUE(buffer.setBuffer(data, sizeof(data)));
+
+    // AND read data is as expected
+    EXPECT_EQ(buffer.ReadToBuffer(readData, 3), (uint32_t) 3);
+    EXPECT_EQ(readData[0], 3);
+    EXPECT_EQ(readData[1], 100);
+    EXPECT_EQ(readData[2], 192);
+    EXPECT_EQ(buffer.SeekBuffer(CURRENT_POS, 3), (int32_t) 3);
+
+
+    // WHEN adding new data
+    // THEN it should succeed
+    EXPECT_TRUE(buffer.setBuffer(data, sizeof(data)));
+
+    // AND read data is as expected
+    EXPECT_EQ(buffer.ReadToBuffer(readData, 3), (uint32_t) 3);
+    EXPECT_EQ(readData[0], 4);
+    EXPECT_EQ(readData[1], 77);
+    EXPECT_EQ(readData[2], 3);
 }

@@ -45,7 +45,7 @@ public:
             this->m_attrs.setInt32Data(kBufferSize, 32768);
 
             // Buffer mode if not specified via API
-            this->m_attrs.setInt32Data(kBufferMode, kOverWriteBuffer);
+            this->m_attrs.setInt32Data(kBufferMode, kModuloBuffer);
         }
     }
 
@@ -77,11 +77,15 @@ public:
     {
         bool result = true;
 
-        if (!this->m_initialized)
+        if (!this->m_initialized) {
             result = this->m_dec->init(&this->m_buffer, this->m_output, nullptr);
+            if (result)
+                this->m_initialized = true;
+        }
 
-        if (result)
+        if (this->m_initialized && this->m_output) {
             result = this->m_dec->decode();
+        }
 
         return result;
     }

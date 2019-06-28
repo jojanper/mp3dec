@@ -38,8 +38,8 @@ public:
 private:
     uint8_t *m_buf;          // Memory buffer
     size_t m_bufSize;        // Memory buffer size
+    size_t m_dataSize;       // Size of data within buffer
     size_t m_readPos;        // Current read position
-    size_t m_writePos;       // Current write index
     int m_mode;              // Buffer mode
     char m_deviceName[2048]; // Name of the buffer
 };

@@ -8,8 +8,8 @@
 MemoryBuffer::MemoryBuffer() :
     m_buf(nullptr),
     m_bufSize(0),
+    m_dataSize(0),
     m_readPos(0),
-    m_writePos(0),
     m_mode(draaldecoder::kLinearBuffer)
 {
     m_deviceName[0] = '\0';
@@ -56,12 +56,12 @@ MemoryBuffer::SeekBuffer(FilePos fpos, int32_t offset)
             break;
 
         case END_POS: {
-            this->m_readPos = this->m_bufSize - offset;
+            this->m_readPos = this->m_dataSize - offset;
             break;
         }
     }
 
-    if (this->m_readPos > this->m_bufSize)
+    if (this->m_readPos > this->m_dataSize)
         this->m_readPos = nowPos;
 
     return this->m_readPos;
@@ -74,8 +74,8 @@ MemoryBuffer::ReadToBuffer(uint8_t *buffer, uint32_t bufLen)
         return 0;
 
     auto len = bufLen;
-    if (this->m_readPos + bufLen > this->m_bufSize)
-        len = this->m_bufSize - this->m_readPos;
+    if (this->m_readPos + bufLen > this->m_dataSize)
+        len = this->m_dataSize - this->m_readPos;
 
     memcpy(buffer, this->m_buf + this->m_readPos, len);
     if (len < bufLen)
@@ -87,15 +87,25 @@ MemoryBuffer::ReadToBuffer(uint8_t *buffer, uint32_t bufLen)
 bool
 MemoryBuffer::setBuffer(const uint8_t *buffer, size_t size)
 {
-    if (this->m_mode == draaldecoder::kOverWriteBuffer)
+    if (this->m_mode == draaldecoder::kOverWriteBuffer) {
+        this->m_readPos = 0;
+        this->m_dataSize = size;
         memcpy(this->m_buf, buffer, size);
+    }
     else if (this->m_mode == draaldecoder::kLinearBuffer) {
         // Make sure out of bounds does not occur
-        if (this->m_writePos + size > this->m_bufSize)
+        if (this->m_dataSize + size > this->m_bufSize)
             return false;
 
-        memcpy(this->m_buf + this->m_writePos, buffer, size);
-        this->m_writePos += size;
+        memcpy(this->m_buf + this->m_dataSize, buffer, size);
+        this->m_dataSize += size;
+    }
+    else if (this->m_mode == draaldecoder::kModuloBuffer) {
+        auto len = this->m_dataSize - this->m_readPos;
+        memcpy(this->m_buf, this->m_buf + this->m_readPos, len);
+        memcpy(this->m_buf + len, buffer, size);
+        this->m_dataSize = len + size;
+        this->m_readPos = 0;
     }
 
     return true;
