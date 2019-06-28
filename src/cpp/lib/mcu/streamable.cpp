@@ -35,7 +35,7 @@ getMimeId(const char *mime)
 class StreamableDecoderImpl : public StreamableDecoder
 {
 public:
-    StreamableDecoderImpl(int mime) : m_dec(nullptr)
+    StreamableDecoderImpl(int mime) : m_initialized(false), m_dec(nullptr)
     {
         if (mime == kMimeMP3)
             m_dec = new MP3Decoder();
@@ -73,9 +73,21 @@ public:
 
     virtual void setOutput(IOutputStream *output) override { this->m_output = output; }
 
-    virtual bool decode() override { return false; }
+    virtual bool decode() override
+    {
+        bool result = true;
+
+        if (!this->m_initialized)
+            result = this->m_dec->init(&this->m_buffer, this->m_output, nullptr);
+
+        if (result)
+            result = this->m_dec->decode();
+
+        return result;
+    }
 
 protected:
+    bool m_initialized;
     BaseDecoder *m_dec;
     MemoryBuffer m_buffer;
     AudioAttributes m_attrs;
