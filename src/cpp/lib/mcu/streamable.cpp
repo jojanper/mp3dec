@@ -56,6 +56,7 @@ public:
         this->m_dec = nullptr;
     }
 
+    // IAttributes::create
     virtual IAttributes *getAttributes() override { return &m_attrs; }
 
     virtual bool init() override
@@ -75,9 +76,9 @@ public:
 
     virtual bool decode() override
     {
-        bool result = true;
+        bool result = false;
 
-        if (!this->m_initialized) {
+        if (!this->m_initialized && this->m_buffer.dataSize()) {
             result = this->m_dec->init(&this->m_buffer, this->m_output, nullptr);
             if (result)
                 this->m_initialized = true;

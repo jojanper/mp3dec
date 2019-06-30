@@ -27,6 +27,9 @@ public:
     // Copy external buffer
     bool setBuffer(const uint8_t *buffer, size_t size);
 
+    // Query the data size
+    size_t dataSize() const { return this->m_dataSize; };
+
     virtual const char *GetStreamName() const override { return m_deviceName; }
     virtual uint32_t GetStreamSize() const override { return m_bufSize; }
     virtual int32_t SeekBuffer(FilePos fpos, int32_t offset) override;
