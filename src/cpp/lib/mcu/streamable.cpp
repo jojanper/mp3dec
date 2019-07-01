@@ -53,19 +53,36 @@ public:
         this->m_dec = nullptr;
     }
 
-    virtual bool init(IAttributes &attrs) override
+    virtual bool init(IAttributes &attrs, const uint8_t *buffer, size_t size) override
     {
-        int32_t size, mode;
+        int32_t bufsize, mode;
+
+        if (this->m_initialized)
+            return false;
 
         // 32kB buffer size if not specified via API
-        if (!attrs.getInt32Data(kBufferSize, size))
+        if (!attrs.getInt32Data(kBufferSize, bufsize))
             size = 32768;
 
         // Buffer mode if not specified via API
         if (!attrs.getInt32Data(kBufferMode, mode))
             mode = kModuloBuffer;
 
-        return this->m_buffer.init(size, mode);
+        auto result = this->m_buffer.init(bufsize, mode);
+        if (result) {
+            if (!this->addInput(buffer, size))
+                return false;
+
+            if (!this->m_buffer.dataSize())
+                return false;
+
+            // Pass this class as receiver for the decoded samples
+            result = this->m_dec->init(&this->m_buffer, this, nullptr);
+            if (result)
+                this->m_initialized = true;
+        }
+
+        return result;
     }
 
     virtual bool addInput(const uint8_t *buffer, size_t size) override
@@ -99,14 +116,6 @@ public:
         bool result = false;
 
         this->resetReceivedAudio();
-
-        // If enough input data, make sure decoder is initialized
-        if (!this->m_initialized && this->m_buffer.dataSize()) {
-            // Pass this class as receiver for the decoded samples
-            result = this->m_dec->init(&this->m_buffer, this, nullptr);
-            if (result)
-                this->m_initialized = true;
-        }
 
         // Decode frame
         if (this->m_initialized) {

@@ -91,7 +91,7 @@ public:
     void destroy();
 
     // Initialize decoder based on input attributes
-    virtual bool init(IAttributes &attrs) = 0;
+    virtual bool init(IAttributes &attrs, const uint8_t *buffer, size_t size) = 0;
 
     // Append new input data to decoder
     virtual bool addInput(const uint8_t *buffer, size_t size) = 0;

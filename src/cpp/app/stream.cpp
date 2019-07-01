@@ -43,17 +43,15 @@ main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    if (!dec->init(*attrs)) {
-        fprintf(stderr, "Unable to initialize decoder for file %s\n", inStream);
-        return EXIT_FAILURE;
-    }
-
     // Read entire file into memory
     auto *buffer = new uint8_t[size];
     size = fread(buffer, sizeof(uint8_t), size, fp);
 
-    // Pass data to decoder
-    dec->addInput(buffer, size);
+    if (!dec->init(*attrs, buffer, size)) {
+        fprintf(stderr, "Unable to initialize decoder for file %s\n", inStream);
+        return EXIT_FAILURE;
+    }
+
     delete[] buffer;
 
     // Open output (file)
