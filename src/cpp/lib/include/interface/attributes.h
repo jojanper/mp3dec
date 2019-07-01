@@ -13,6 +13,8 @@ enum
 class IAttributes
 {
 public:
+    static IAttributes *create();
+
     virtual void destroy() = 0;
 
     virtual bool setInt32Data(int32_t key, int32_t value) = 0;

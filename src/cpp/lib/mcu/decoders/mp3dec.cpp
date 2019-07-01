@@ -69,7 +69,7 @@ MP3Decoder::init(IStreamBuffer *input, IOutputStream *output, const IAttributes 
     CodecInitParam _param, *param;
 
     // Query if init params available, otherwise use default parameters
-    param = (CodecInitParam *) attrs->getDataPtr(kKeyMP3InitParam);
+    param = (attrs) ? (CodecInitParam *) attrs->getDataPtr(kKeyMP3InitParam) : nullptr;
     if (!param) {
         param = &_param;
         InitCodecInitParam(&_param);

@@ -90,20 +90,16 @@ public:
     // Destroy decoder instance
     void destroy();
 
-    // Return attributes handle
-    virtual IAttributes *getAttributes() = 0;
-
-    // Initialize decoder based on (modified) attributes
-    virtual bool init() = 0;
+    // Initialize decoder based on input attributes
+    virtual bool init(IAttributes &attrs) = 0;
 
     // Append new input data to decoder
     virtual bool addInput(const uint8_t *buffer, size_t size) = 0;
 
-    // Assign output stream for the decoder
-    virtual void setOutput(IOutputStream *output) = 0;
-
     // Decode frame from input buffer
     virtual bool decode() = 0;
+
+    virtual int16_t *getDecodedAudio(size_t &size) = 0;
 
 protected:
     StreamableDecoder() {}

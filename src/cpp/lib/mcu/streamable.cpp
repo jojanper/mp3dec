@@ -32,21 +32,18 @@ getMimeId(const char *mime)
     return -1;
 }
 
-class StreamableDecoderImpl : public StreamableDecoder
+
+class StreamableDecoderImpl : public StreamableDecoder, public IOutputStream
 {
 public:
-    StreamableDecoderImpl(int mime) : m_initialized(false), m_dec(nullptr)
+    StreamableDecoderImpl(int mime) :
+        m_initialized(false),
+        m_dec(nullptr),
+        m_decData(nullptr),
+        m_decSize(0)
     {
         if (mime == kMimeMP3)
             m_dec = new MP3Decoder();
-
-        if (m_dec) {
-            // 32kB buffer size if not specified via API
-            this->m_attrs.setInt32Data(kBufferSize, 32768);
-
-            // Buffer mode if not specified via API
-            this->m_attrs.setInt32Data(kBufferMode, kModuloBuffer);
-        }
     }
 
     virtual ~StreamableDecoderImpl()
@@ -56,14 +53,18 @@ public:
         this->m_dec = nullptr;
     }
 
-    // IAttributes::create
-    virtual IAttributes *getAttributes() override { return &m_attrs; }
-
-    virtual bool init() override
+    virtual bool init(IAttributes &attrs) override
     {
         int32_t size, mode;
-        this->m_attrs.getInt32Data(kBufferSize, size);
-        this->m_attrs.getInt32Data(kBufferMode, mode);
+
+        // 32kB buffer size if not specified via API
+        if (!attrs.getInt32Data(kBufferSize, size))
+            size = 32768;
+
+        // Buffer mode if not specified via API
+        if (!attrs.getInt32Data(kBufferMode, mode))
+            mode = kModuloBuffer;
+
         return this->m_buffer.init(size, mode);
     }
 
@@ -72,19 +73,43 @@ public:
         return this->m_buffer.setBuffer(buffer, size);
     }
 
-    virtual void setOutput(IOutputStream *output) override { this->m_output = output; }
+    virtual bool close() override { return true; }
+
+    virtual int16_t *getDecodedAudio(size_t &size)
+    {
+        size = m_decSize;
+        auto ptr = m_decData;
+
+        this->resetReceivedAudio();
+
+        return ptr;
+    }
+
+    // Decoder provides decoded samples via this interface
+    virtual bool writeBuffer(int16_t *data, uint32_t len) override
+    {
+        // Just save the pointer for later use
+        m_decData = data;
+        m_decSize = len;
+        return true;
+    }
 
     virtual bool decode() override
     {
         bool result = false;
 
+        this->resetReceivedAudio();
+
+        // If enough input data, make sure decoder is initialized
         if (!this->m_initialized && this->m_buffer.dataSize()) {
-            result = this->m_dec->init(&this->m_buffer, this->m_output, nullptr);
+            // Pass this class as receiver for the decoded samples
+            result = this->m_dec->init(&this->m_buffer, this, nullptr);
             if (result)
                 this->m_initialized = true;
         }
 
-        if (this->m_initialized && this->m_output) {
+        // Decode frame
+        if (this->m_initialized) {
             result = this->m_dec->decode();
         }
 
@@ -92,11 +117,18 @@ public:
     }
 
 protected:
+    void resetReceivedAudio()
+    {
+        this->m_decData = nullptr;
+        this->m_decSize = 0;
+    }
+
     bool m_initialized;
     BaseDecoder *m_dec;
     MemoryBuffer m_buffer;
-    AudioAttributes m_attrs;
-    IOutputStream *m_output;
+
+    int16_t *m_decData;
+    uint32_t m_decSize;
 };
 
 StreamableDecoder *

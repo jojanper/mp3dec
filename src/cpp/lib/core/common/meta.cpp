@@ -2,6 +2,13 @@
 
 namespace draaldecoder {
 
+IAttributes *
+IAttributes::create()
+{
+    return new AudioAttributes();
+}
+
+
 AudioAttributes::AudioAttributes()
 {
     this->clear();
