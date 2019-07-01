@@ -39,10 +39,18 @@ protected:
     }
 };
 
-TEST_F(StreambleDecoderTestSuite, Decode)
+TEST_F(StreambleDecoderTestSuite, NotInitialized)
 {
-    auto result = m_dec->decode();
+    auto result = m_dec->addInput(nullptr, 0);
     EXPECT_FALSE(result);
+
+    result = m_dec->decode();
+    EXPECT_FALSE(result);
+
+    size_t size;
+    auto ptr = m_dec->getDecodedAudio(size);
+    EXPECT_TRUE(ptr == nullptr);
+    EXPECT_EQ(size, (size_t) 0);
 }
 
 } // namespace draaldecodertest

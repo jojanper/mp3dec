@@ -18,8 +18,11 @@ struct mimeMap_s
 {
     const char *str;
     int id;
-} static const MIMEMAP[] = { { MP3MIME, kMimeMP3 } };
+}
+// Supported decoder MIME types
+static const MIMEMAP[] = { { MP3MIME, kMimeMP3 } };
 
+// Map MIME type into internal decoder ID
 static int
 getMimeId(const char *mime)
 {
@@ -68,6 +71,7 @@ public:
         if (!attrs.getInt32Data(kBufferMode, mode))
             mode = kModuloBuffer;
 
+        // Initialize input buffer
         auto result = this->m_buffer.init(bufsize, mode);
         if (result) {
             if (!this->addInput(buffer, size))
@@ -76,6 +80,7 @@ public:
             if (!this->m_buffer.dataSize())
                 return false;
 
+            // Initialize decoder handle
             // Pass this class as receiver for the decoded samples
             result = this->m_dec->init(&this->m_buffer, this, nullptr);
             if (result)
@@ -87,10 +92,11 @@ public:
 
     virtual bool addInput(const uint8_t *buffer, size_t size) override
     {
+        if (!this->m_initialized)
+            return false;
+
         return this->m_buffer.setBuffer(buffer, size);
     }
-
-    virtual bool close() override { return true; }
 
     virtual int16_t *getDecodedAudio(size_t &size)
     {
@@ -102,7 +108,10 @@ public:
         return ptr;
     }
 
-    // Decoder provides decoded samples via this interface
+    // IOutputStream: Close stream
+    virtual bool close() override { return true; }
+
+    // IOutputStream: Decoder provides decoded samples via this interface
     virtual bool writeBuffer(int16_t *data, uint32_t len) override
     {
         // Just save the pointer for later use
@@ -114,6 +123,9 @@ public:
     virtual bool decode() override
     {
         bool result = false;
+
+        if (!this->m_initialized)
+            return result;
 
         this->resetReceivedAudio();
 
