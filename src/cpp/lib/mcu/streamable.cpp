@@ -98,7 +98,7 @@ public:
         return this->m_buffer.setBuffer(buffer, size);
     }
 
-    virtual int16_t *getDecodedAudio(size_t &size)
+    virtual int16_t *getDecodedAudio(size_t &size) override
     {
         size = m_decSize;
         auto ptr = m_decData;

@@ -11,18 +11,19 @@ const memory = new WebAssembly.Memory({
 const heap = new Uint8Array(memory.buffer);
 
 const importObject = {
+    'global.Math': Math,
     global: {
-        Infinity: Math.pow(10, 1000),
+        Infinity: Math.pow(10, 1000)
     },
     env: {
         'abortStackOverflow': _ => { throw new Error('overflow'); },
         '__memory_base': 1024,
         '__table_base': 0,
         'memory': memory,
-        'table': new WebAssembly.Table({ initial: 160, maximum: 160, element: 'anyfunc' }),
+        'table': new WebAssembly.Table({ initial: 168, maximum: 168, element: 'anyfunc' }),
         'STACKTOP': 0,
         'STACK_MAX': memory.buffer.byteLength,
-        abort: () => { },
+        //abort: () => { },
         ___syscall146: () => { },
         ___setErrNo: () => { },
         _abort: () => { throw new Error('abort'); },
@@ -40,12 +41,15 @@ const importObject = {
             //console.log('llvm_exp2_f64', val);
             return Math.pow(2, val);
         },
-        ___cxa_pure_virtual: () => { },
+        ___cxa_pure_virtual: () => {
+            console.log('___cxa_pure_virtual');
+        },
 
         memory: memory,
-        DYNAMICTOP_PTR: 4096,
+        DYNAMICTOP_PTR: 8192,
         abort: function (err) {
-            throw new Error('abort ' + err);
+            console.log(err);
+            throw new Error('abort ', err);
         },
         abortOnCannotGrowMemory: function (err) {
             throw new Error('abortOnCannotGrowMemory ' + err);
@@ -63,17 +67,39 @@ const importObject = {
         },
         */
         _emscripten_get_heap_size: function () {
+            //console.log('_emscripten_get_heap_size');
             return heap.length;
         },
         _emscripten_resize_heap: function (size) {
+            //console.log('_emscripten_resize_heap');
             return false; // always fail
         },
         _emscripten_memcpy_big: function (dest, src, count) {
+            console.log('_emscripten_memcpy_big');
             heap.set(heap.subarray(src, src + count), dest);
         },
         __table_base: 0,
 
         //DYNAMICTOP_PTR: 0,
+
+        nullFunc_ii: () => console.log('nullFunc_ii'),
+        nullFunc_iii: () => console.log('nullFunc_iii'),
+        nullFunc_iiii: () => console.log('nullFunc_iiii'),
+        nullFunc_iiiii: () => console.log('nullFunc_iiiii'),
+        nullFunc_v: () => console.log('nullFunc_v'),
+        nullFunc_vi: () => console.log('nullFunc_vi'),
+        nullFunc_vii: () => console.log('nullFunc_vii'),
+        nullFunc_viii: () => console.log('nullFunc_viii'),
+        nullFunc_viiii: () => console.log('nullFunc_viiii'),
+        nullFunc_viiiii: () => console.log('nullFunc_viiiii'),
+        nullFunc_viiiiii: () => console.log('nullFunc_viiiiii'),
+        ___cxa_begin_catch: () => console.log('___cxa_begin_catch'),
+        ___lock: () => console.log('___lock'),
+        ___unlock: () => console.log('___unlock'),
+        ___syscall54: () => { },
+        _llvm_cos_f64: () => 0,
+        _llvm_sin_f64: () => 0,
+        tempDoublePtr: 0,
     }
 };
 
@@ -85,19 +111,44 @@ function testExec(instance) {
 
     const chunkSize = 16 * 1024;
 
+    const { exports } = instance;
+    console.log(exports);
+
+    let initialized = false;
+    exports._openDecoder();
+
     stream.on('readable', () => {
         let chunk;
         while ((chunk = stream.read(chunkSize))) {
             console.log(`First received ${chunk.length} bytes of data`);
+
+            if (!initialized) {
+                console.log('Initialize decoder');
+
+                const jsInput = new Uint8Array(chunk.length);
+                const wasmInputPtr = exports._create_buffer(jsInput.length);
+                const wasmInput = new Uint8Array(memory.buffer, wasmInputPtr, jsInput.length);
+
+                /*
+                console.log(chunk);
+                for (let i = 0; i < 10; i++)
+                    console.log(chunk[i]);
+                    */
+
+                wasmInput.set(chunk);
+
+                const init = exports._initDecoder(wasmInputPtr, jsInput.length);
+
+                console.log('Decoder init result is', init);
+
+                initialized = true;
+            }
         }
 
         while (null !== (chunk = stream.read())) {
             console.log(`Received ${chunk.length} bytes of data`);
         }
     });
-
-    const { exports } = instance;
-    console.log(exports);
 
     // JavaScript sends data to WebAssembly, WebAssembly accesses the data via pointer
     const jsInput = new Uint8Array(3);
@@ -137,6 +188,8 @@ function testExec(instance) {
         console.log(input + ' doubled is ' + result);
         input = result;
     };
+
+    //exports._closeDecoder();
 }
 
 testExec(instance);

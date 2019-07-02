@@ -13,6 +13,16 @@ extern "C" {
 #endif
 
 EMSCRIPTEN_KEEPALIVE
+void closeDecoder();
+
+EMSCRIPTEN_KEEPALIVE
+void openDecoder();
+
+EMSCRIPTEN_KEEPALIVE
+int initDecoder(uint8_t *buffer, int len);
+
+
+EMSCRIPTEN_KEEPALIVE
 int doubler(int x);
 
 EMSCRIPTEN_KEEPALIVE

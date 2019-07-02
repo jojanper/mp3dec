@@ -22,7 +22,7 @@ endforeach(cmakeFile)
 include(${PROJECT_SOURCE_DIR}/projectConfig.cmake)
 
 # Unit testing: gtest as external component
-if(BUILD_TESTS)
+if(BUILD_TESTS AND NOT BUILD_WEBASSEMBLY)
   if(HAVE_THREADS)
     find_package(Threads REQUIRED)
   endif(HAVE_THREADS)
