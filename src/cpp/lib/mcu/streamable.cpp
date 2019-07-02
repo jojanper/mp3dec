@@ -41,6 +41,7 @@ class StreamableDecoderImpl : public StreamableDecoder, public IOutputStream
 public:
     StreamableDecoderImpl(int mime) :
         m_initialized(false),
+        m_bufferInitialized(false),
         m_dec(nullptr),
         m_decData(nullptr),
         m_decSize(0)
@@ -74,6 +75,7 @@ public:
         // Initialize input buffer
         auto result = this->m_buffer.init(bufsize, mode);
         if (result) {
+            this->m_bufferInitialized = true;
             if (!this->addInput(buffer, size))
                 return false;
 
@@ -92,7 +94,7 @@ public:
 
     virtual bool addInput(const uint8_t *buffer, size_t size) override
     {
-        if (!this->m_initialized)
+        if (!this->m_bufferInitialized)
             return false;
 
         return this->m_buffer.setBuffer(buffer, size);
@@ -145,6 +147,7 @@ protected:
     }
 
     bool m_initialized;
+    bool m_bufferInitialized;
     BaseDecoder *m_dec;
     MemoryBuffer m_buffer;
 

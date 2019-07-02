@@ -107,7 +107,8 @@ const wasmModule = new WebAssembly.Module(fs.readFileSync(__dirname + WASMLIB));
 const instance = new WebAssembly.Instance(wasmModule, importObject);
 
 function testExec(instance) {
-    const stream = fs.createReadStream(__dirname + '/Bryan_Adams_Xmas_Time.mp3');
+    //const stream = fs.createReadStream(__dirname + '/Bryan_Adams_Xmas_Time.mp3');
+    const stream = fs.createReadStream(__dirname + '/kim_wilde_you_came.mp3');
 
     const chunkSize = 16 * 1024;
 
@@ -142,6 +143,7 @@ function testExec(instance) {
                 console.log('Decoder init result is', init);
 
                 initialized = true;
+                exports._destroy_buffer(wasmInputPtr);
             }
         }
 
