@@ -31,6 +31,8 @@ main(int argc, char **argv)
     auto size = ftell(fp);
     fseek(fp, 0, SEEK_SET);
 
+    size = 16384;
+
     // Prepare decoder
     auto attrs = draaldecoder::IAttributes::create();
     attrs->setString("mime", draaldecoder::MP3MIME);
@@ -47,12 +49,14 @@ main(int argc, char **argv)
     auto *buffer = new uint8_t[size];
     size = fread(buffer, sizeof(uint8_t), size, fp);
 
+    printf("OK 1\n");
+
     if (!dec->init(*attrs, buffer, size)) {
         fprintf(stderr, "Unable to initialize decoder for file %s\n", inStream);
         return EXIT_FAILURE;
     }
 
-    delete[] buffer;
+    printf("OK 2\n");
 
     // Open output (file)
     if (!console->open(outStream, 44100, 2, waveOut))
@@ -62,19 +66,37 @@ main(int argc, char **argv)
     size_t frames = 0;
     bool result = true;
 
-    do {
-        result = dec->decode();
-        if (result) {
-            size_t size;
-            auto data = dec->getDecodedAudio(size);
+    fprintf(stdout, "\n");
+    fflush(stdout);
 
-            console->writeBuffer(data, size);
+    do {
+        printf("OK 3\n");
+        do {
+            result = dec->decode();
+            if (result) {
+                size_t size;
+                auto data = dec->getDecodedAudio(size);
+
+                console->writeBuffer(data, size);
+
+                fprintf(stdout, "Frames decoded: %zu\r", frames++);
+                fflush(stdout);
+            }
+
+        } while (result);
+
+        printf("OK 4\n");
+        size = fread(buffer, sizeof(uint8_t), size, fp);
+        if (size) {
+            dec->addInput(buffer, size);
         }
 
-        fprintf(stdout, "Frames decoded: %zu\r", frames++);
-        fflush(stdout);
+    } while (size);
 
-    } while (result);
+    fprintf(stdout, "\n");
+    fflush(stdout);
+
+    delete[] buffer;
 
     attrs->destroy();
     dec->destroy();

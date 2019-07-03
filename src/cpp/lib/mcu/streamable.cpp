@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "./decoders/mp3dec.h"
@@ -72,6 +73,9 @@ public:
         if (!attrs.getInt32Data(kBufferMode, mode))
             mode = kModuloBuffer;
 
+        if (mode == kModuloBuffer)
+            bufsize *= 2;
+
         // Initialize input buffer
         auto result = this->m_buffer.init(bufsize, mode);
         if (result) {
@@ -130,6 +134,13 @@ public:
             return result;
 
         this->resetReceivedAudio();
+
+        // printf("this->m_buffer.dataLeft() = %zu\n", this->m_buffer.dataLeft());
+
+        if (this->m_buffer.dataLeft() < 2 * (2 * 1427 + 1)) {
+            printf("NOT ENOUGH DATA\n");
+            return false;
+        }
 
         // Decode frame
         if (this->m_initialized) {

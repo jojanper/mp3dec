@@ -75,7 +75,7 @@ const importObject = {
             return false; // always fail
         },
         _emscripten_memcpy_big: function (dest, src, count) {
-            console.log('_emscripten_memcpy_big');
+            console.log('_emscripten_memcpy_big', count);
             heap.set(heap.subarray(src, src + count), dest);
         },
         __table_base: 0,
@@ -107,8 +107,8 @@ const wasmModule = new WebAssembly.Module(fs.readFileSync(__dirname + WASMLIB));
 const instance = new WebAssembly.Instance(wasmModule, importObject);
 
 function testExec(instance) {
-    //const stream = fs.createReadStream(__dirname + '/Bryan_Adams_Xmas_Time.mp3');
-    const stream = fs.createReadStream(__dirname + '/kim_wilde_you_came.mp3');
+    const stream = fs.createReadStream(__dirname + '/Bryan_Adams_Xmas_Time.mp3');
+    //const stream = fs.createReadStream(__dirname + '/kim_wilde_you_came.mp3');
 
     const chunkSize = 16 * 1024;
 
@@ -118,17 +118,21 @@ function testExec(instance) {
     let initialized = false;
     exports._openDecoder();
 
+    let frames = 0;
+
     stream.on('readable', () => {
         let chunk;
         while ((chunk = stream.read(chunkSize))) {
             console.log(`First received ${chunk.length} bytes of data`);
 
+            const jsInput = new Uint8Array(chunk.length);
+            const wasmInputPtr = exports._create_buffer(jsInput.length);
+            const wasmInput = new Uint8Array(memory.buffer, wasmInputPtr, jsInput.length);
+
+            wasmInput.set(chunk);
+
             if (!initialized) {
                 console.log('Initialize decoder');
-
-                const jsInput = new Uint8Array(chunk.length);
-                const wasmInputPtr = exports._create_buffer(jsInput.length);
-                const wasmInput = new Uint8Array(memory.buffer, wasmInputPtr, jsInput.length);
 
                 /*
                 console.log(chunk);
@@ -136,15 +140,41 @@ function testExec(instance) {
                     console.log(chunk[i]);
                     */
 
-                wasmInput.set(chunk);
-
                 const init = exports._initDecoder(wasmInputPtr, jsInput.length);
 
                 console.log('Decoder init result is', init);
 
                 initialized = true;
-                exports._destroy_buffer(wasmInputPtr);
+
+                while (1) {
+                    const result = exports._decode();
+                    console.log('Decoding result', result, frames);
+                    if (result === 0) {
+                        break;
+                    }
+
+                    frames++;
+                }
+            } else {
+                const ret1 = exports._addInput(wasmInputPtr, jsInput.length);
+
+                while (1) {
+                    const result = exports._decode();
+
+                    console.log('Decoding result', ret1, result, frames);
+                    if (result === 0) {
+                        break;
+                    }
+
+                    frames++;
+                }
+
+                //const ret2 = exports._decode();
+
+                //console.log(ret1, ret2);
             }
+
+            exports._destroy_buffer(wasmInputPtr);
         }
 
         while (null !== (chunk = stream.read())) {

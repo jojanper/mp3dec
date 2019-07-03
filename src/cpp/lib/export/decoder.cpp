@@ -42,6 +42,19 @@ initDecoder(uint8_t *buffer, int len)
     return result;
 }
 
+int
+decode()
+{
+    auto result = dec->decode();
+    return result;
+}
+
+int
+addInput(uint8_t *buffer, int len)
+{
+    return dec->addInput(buffer, len);
+}
+
 
 int
 doubler(int x)

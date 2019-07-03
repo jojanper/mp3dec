@@ -21,6 +21,12 @@ void openDecoder();
 EMSCRIPTEN_KEEPALIVE
 int initDecoder(uint8_t *buffer, int len);
 
+EMSCRIPTEN_KEEPALIVE
+int decode();
+
+EMSCRIPTEN_KEEPALIVE
+int addInput(uint8_t *buffer, int len);
+
 
 EMSCRIPTEN_KEEPALIVE
 int doubler(int x);
