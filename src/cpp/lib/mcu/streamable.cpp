@@ -138,7 +138,7 @@ public:
         // printf("this->m_buffer.dataLeft() = %zu\n", this->m_buffer.dataLeft());
 
         if (this->m_buffer.dataLeft() < 2 * (2 * 1427 + 1)) {
-            printf("NOT ENOUGH DATA\n");
+            printf("\nNOT ENOUGH DATA: %20zu\n", this->m_buffer.dataLeft());
             return false;
         }
 

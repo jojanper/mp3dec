@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -71,8 +70,6 @@ MemoryBuffer::SeekBuffer(FilePos fpos, int32_t offset)
 uint32_t
 MemoryBuffer::ReadToBuffer(uint8_t *buffer, uint32_t bufLen)
 {
-    printf("READ NEW BUFFER DATA: %u %zu\n", bufLen, this->dataLeft());
-
     if (!this->m_buf || !this->m_bufSize || !bufLen)
         return 0;
 
@@ -105,12 +102,6 @@ MemoryBuffer::setBuffer(const uint8_t *buffer, size_t size)
     }
     else if (this->m_mode == draaldecoder::kModuloBuffer) {
         auto len = this->dataLeft();
-        printf(
-            "len = %zu %zu %zu %zu\n",
-            len,
-            this->m_dataSize,
-            this->m_readPos,
-            this->m_bufSize);
         memcpy(this->m_buf, this->m_buf + this->m_readPos, len);
         memcpy(this->m_buf + len, buffer, size);
         this->m_dataSize = len + size;
