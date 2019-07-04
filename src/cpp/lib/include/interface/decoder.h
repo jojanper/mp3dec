@@ -1,11 +1,19 @@
 #pragma once
 
+#include <memory>
+
 #include "interface/attributes.h"
 #include "interface/console.h"
 #include "interface/eqband.h"
 #include "interface/stream.h"
 
 namespace draaldecoder {
+
+template <class T>
+struct ClassDeleter
+{
+    void operator()(T *handle) { handle->destroy(); }
+};
 
 /**
  * Track related data.
@@ -24,6 +32,7 @@ typedef struct TrackInfoStr
 
 } TrackInfo;
 
+typedef std::unique_ptr<IAttributes, ClassDeleter<IAttributes>> UniqueIAttributesPtr;
 
 // Base class for audio decoding
 class BaseDecoder
@@ -41,6 +50,9 @@ public:
 
     // Close decoder
     virtual bool close() = 0;
+
+    // Query attributes
+    virtual UniqueIAttributesPtr getAttributes(uint64_t keys) = 0;
 
     // Return equalizer settings
     EQ_Band *getEQ() const { return m_eq; }

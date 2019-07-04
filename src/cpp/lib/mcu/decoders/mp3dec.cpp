@@ -8,6 +8,7 @@
 #include "codec/mp3/param.h"
 #include "core/bits.h"
 #include "core/meta.h"
+#include "interface/defs.h"
 #include "mp3dec.h"
 
 #define MAX_SLOTS ((MAX_FRAME_SLOTS << 1) + 1)
@@ -115,6 +116,17 @@ bool
 MP3Decoder::close()
 {
     return true;
+}
+
+UniqueIAttributesPtr
+MP3Decoder::getAttributes(uint64_t keys)
+{
+    auto attrs = UniqueIAttributesPtr(IAttributes::create());
+
+    if (keys & kBufferSize)
+        attrs->setInt32Data(kBufferSize, MAX_SLOTS);
+
+    return attrs;
 }
 
 void
