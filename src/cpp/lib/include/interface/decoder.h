@@ -96,9 +96,13 @@ public:
     // Append new input data to decoder
     virtual bool addInput(const uint8_t *buffer, size_t size) = 0;
 
+    // Signal end-of-stream (that is, no more incoming buffers)
+    virtual void setEndOfStream() = 0;
+
     // Decode frame from input buffer
     virtual bool decode() = 0;
 
+    // Query decoded audio
     virtual int16_t *getDecodedAudio(size_t &size) = 0;
 
 protected:

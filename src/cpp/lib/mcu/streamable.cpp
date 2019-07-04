@@ -43,6 +43,7 @@ public:
     StreamableDecoderImpl(int mime) :
         m_initialized(false),
         m_bufferInitialized(false),
+        m_eos(false),
         m_dec(nullptr),
         m_decData(nullptr),
         m_decSize(0)
@@ -74,7 +75,8 @@ public:
             mode = kModuloBuffer;
 
         if (mode == kModuloBuffer)
-            bufsize *= 2;
+            // bufsize *= 2;
+            bufsize += 2 * (2 * 1427 + 1);
 
         // Initialize input buffer
         auto result = this->m_buffer.init(bufsize, mode);
@@ -103,6 +105,8 @@ public:
 
         return this->m_buffer.setBuffer(buffer, size);
     }
+
+    virtual void setEndOfStream() override { this->m_eos = true; }
 
     virtual int16_t *getDecodedAudio(size_t &size) override
     {
@@ -137,8 +141,8 @@ public:
 
         // printf("this->m_buffer.dataLeft() = %zu\n", this->m_buffer.dataLeft());
 
-        if (this->m_buffer.dataLeft() < 2 * (2 * 1427 + 1)) {
-            printf("\nNOT ENOUGH DATA: %20zu\n", this->m_buffer.dataLeft());
+        if (!this->m_eos && this->m_buffer.dataLeft() < 2 * (2 * 1427 + 1)) {
+            printf("\nNOT ENOUGH DATA: %20zu %i\n", this->m_buffer.dataLeft(), this->m_eos);
             return false;
         }
 
@@ -159,6 +163,8 @@ protected:
 
     bool m_initialized;
     bool m_bufferInitialized;
+    bool m_eos;
+
     BaseDecoder *m_dec;
     MemoryBuffer m_buffer;
 
