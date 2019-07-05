@@ -60,6 +60,8 @@ main(int argc, char **argv)
     fprintf(stdout, "\n");
     fflush(stdout);
 
+    FILE *fp2 = fopen("../test.raw", "rb");
+
     // Decode until end of stream found
     do {
         bool result = true;
@@ -70,8 +72,31 @@ main(int argc, char **argv)
             if (result) {
                 size_t audioSize;
                 auto data = dec->getDecodedAudio(audioSize);
-                if (data)
+                if (data) {
+                    int16_t audio[14096];
+
+                    auto n = fread(audio, sizeof(int16_t), audioSize, fp2);
+
+                    /*
+                    for (size_t i = 0; i < n; i++)
+                        if (audio[i] != 0)
+                            printf("DIFF: %zu %i\n", i, audio[i]);
+                            */
+
+                    bool diff = false;
+                    for (size_t i = 0; i < audioSize; i++) {
+                        if (data[i] != audio[i]) {
+                            printf("%zu %i %i %zu\n", i, data[i], audio[i], n);
+                            // getchar();
+                            diff = true;
+                        }
+                    }
+
+                    if (diff)
+                        getchar();
+
                     console->writeBuffer(data, audioSize);
+                }
 
                 fprintf(stdout, "Frames decoded: %zu\r", frames++);
                 fflush(stdout);

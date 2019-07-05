@@ -55,6 +55,20 @@ addInput(uint8_t *buffer, int len)
     return dec->addInput(buffer, len);
 }
 
+size_t audioSize;
+
+int16_t *
+getAudio()
+{
+    return dec->getDecodedAudio(audioSize);
+}
+
+int
+getAudioSize()
+{
+    return (int) audioSize;
+}
+
 
 int
 doubler(int x)

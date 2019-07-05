@@ -1,5 +1,7 @@
 const fs = require('fs');
 
+// play --type raw --rate 44100 --endian little --encoding signed-integer --bits 16 --channels 2 test.raw
+
 
 const WASMLIB = '/build-wasm/bin/mp3dec_static.wasm';
 
@@ -20,7 +22,7 @@ const importObject = {
         '__memory_base': 1024,
         '__table_base': 0,
         'memory': memory,
-        'table': new WebAssembly.Table({ initial: 168, maximum: 168, element: 'anyfunc' }),
+        'table': new WebAssembly.Table({ initial: 172, maximum: 172, element: 'anyfunc' }),
         'STACKTOP': 0,
         'STACK_MAX': memory.buffer.byteLength,
         //abort: () => { },
@@ -38,8 +40,9 @@ const importObject = {
         //_emscripten_get_heap_size: () => { },
         _llvm_trap: () => { console.log('llvm_trap'); },
         _llvm_exp2_f64: (val) => {
-            //console.log('llvm_exp2_f64', val);
-            return Math.pow(2, val);
+            const result = Math.pow(2, val);
+            console.log('llvm_exp2_f64', val, result);
+            return result;
         },
         ___cxa_pure_virtual: () => {
             console.log('___cxa_pure_virtual');
@@ -75,7 +78,7 @@ const importObject = {
             return false; // always fail
         },
         _emscripten_memcpy_big: function (dest, src, count) {
-            console.log('_emscripten_memcpy_big', count);
+            //console.log('_emscripten_memcpy_big', count);
             heap.set(heap.subarray(src, src + count), dest);
         },
         __table_base: 0,
@@ -107,8 +110,13 @@ const wasmModule = new WebAssembly.Module(fs.readFileSync(__dirname + WASMLIB));
 const instance = new WebAssembly.Instance(wasmModule, importObject);
 
 function testExec(instance) {
-    const stream = fs.createReadStream(__dirname + '/Bryan_Adams_Xmas_Time.mp3');
+    //const stream = fs.createReadStream(__dirname + '/Bryan_Adams_Xmas_Time.mp3');
+    //const stream = fs.createReadStream(__dirname + '/Toto-Africa.mp3');
+    const stream = fs.createReadStream(__dirname + '/Record.mp3');
     //const stream = fs.createReadStream(__dirname + '/kim_wilde_you_came.mp3');
+
+    //const outStream = fs.createWriteStream('test.raw');
+    const outStream = fd = fs.openSync('test.raw', 'w');
 
     const chunkSize = 16 * 1024;
 
@@ -121,6 +129,8 @@ function testExec(instance) {
     let frames = 0;
 
     stream.on('readable', () => {
+        console.log('FOOFOO');
+
         let chunk;
         while ((chunk = stream.read(chunkSize))) {
             console.log(`First received ${chunk.length} bytes of data`);
@@ -148,8 +158,47 @@ function testExec(instance) {
 
                 while (1) {
                     const result = exports._decode();
-                    console.log('Decoding result', result, frames);
+                    if (result) {
+                        const decPtr = exports._getAudio();
+                        const nDecSamples = exports._getAudioSize() * 2;
+                        console.log('Decoding result', result, frames, nDecSamples);
+
+                        const jsData = new Int16Array(memory.buffer, decPtr, nDecSamples);
+
+                        //const buffer = Buffer.from(jsData.buffer, 0, jsData.length);
+                        const slicedData = jsData.slice(0, nDecSamples);
+                        //const buffer = Buffer.from(slicedData);
+                        //const response = outStream.write(buffer);
+                        const response = fs.writeSync(outStream, slicedData, 0, nDecSamples);
+                        //outStream.write(slicedData.buffer);
+                        //console.log(jsData.length, buffer.length, response);
+                        //as
+                        //outStream.write(jsData.buffer.slice(0, nDecSamples));
+
+                        /*
+                        for (let i = 0; i < nDecSamples; i++)
+                            console.log(jsData[i], slicedData[i], buffer[i]);
+                        */
+
+                        //for (let i = 0; i < 10; i++)
+                        //console.log(chunk[i]);
+                        //const d = buffer.map(item => item);
+
+                        //const od = d.join('\n');
+                        //console.log(od);
+                        //outStream.write(od);
+                        //console.log('done');
+
+                        //const decOutput = new Int16Array(2304);
+                        //const wasmDecOutputPtr = exports._create_buffer(decOutput.length);
+                        //const wasmDecOutput = new Int16Array(memory.buffer, wasmDecOutputPtr, decOutput.length);
+                    }
+
                     if (result === 0) {
+                        //outStream.end();
+                        //fs.close(outStream, () => { });
+                        //as
+                        //process.exit(1);
                         break;
                     }
 
@@ -160,8 +209,25 @@ function testExec(instance) {
 
                 while (1) {
                     const result = exports._decode();
+                    if (result) {
+                        const decPtr = exports._getAudio();
+                        const nDecSamples = exports._getAudioSize() * 2;
 
-                    console.log('Decoding result', ret1, result, frames);
+                        const jsData = new Int16Array(memory.buffer, decPtr, nDecSamples);
+
+                        const slicedData = jsData.slice(0, nDecSamples);
+
+                        const response = fs.writeSync(outStream, slicedData, 0, nDecSamples);
+
+                        //const buffer = Buffer.from(slicedData);
+                        //outStream.write(buffer);
+                        //console.log(jsData.length, buffer.length);
+                        //const buffer = Buffer.from(jsData.buffer.slice(0, nDecSamples));
+                        //outStream.write(buffer);
+
+                        console.log('Decoding result', ret1, result, frames, nDecSamples);
+                    }
+
                     if (result === 0) {
                         break;
                     }
@@ -179,8 +245,12 @@ function testExec(instance) {
 
         while (null !== (chunk = stream.read())) {
             console.log(`Received ${chunk.length} bytes of data`);
+            //outStream.end();
+            fs.close(outStream, () => { });
         }
     });
+
+    //outStream.end();
 
     // JavaScript sends data to WebAssembly, WebAssembly accesses the data via pointer
     const jsInput = new Uint8Array(3);
@@ -225,3 +295,5 @@ function testExec(instance) {
 }
 
 testExec(instance);
+
+console.log('HEP');
