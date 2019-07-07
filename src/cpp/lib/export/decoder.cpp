@@ -97,7 +97,7 @@ get_data()
 uint8_t *
 create_buffer(int len)
 {
-    return (uint8_t *) calloc(sizeof(uint8_t), len);
+    return (uint8_t *) calloc(len, sizeof(uint8_t));
 }
 
 void
