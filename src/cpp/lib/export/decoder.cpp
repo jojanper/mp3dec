@@ -32,23 +32,25 @@ openDecoder()
 }
 
 int
-initDecoder(uint8_t *buffer, int len)
+initDecoder(DecoderHandle handle, uint8_t *buffer, int len)
 {
+    draaldecoder::StreamableDecoder *decoder = (draaldecoder::StreamableDecoder *) handle;
+
     printf("Len is %i", len);
     auto attrs = draaldecoder::IAttributes::create();
     attrs->setInt32Data(draaldecoder::kBufferSize, len);
     attrs->setInt32Data(draaldecoder::kBufferMode, draaldecoder::kModuloBuffer);
-    auto result = dec->init(*attrs, buffer, len);
+    auto result = decoder->init(*attrs, buffer, len);
     attrs->destroy();
 
     return result;
 }
 
 int
-decode()
+decode(DecoderHandle handle)
 {
-    auto result = dec->decode();
-    return result;
+    draaldecoder::StreamableDecoder *decoder = (draaldecoder::StreamableDecoder *) handle;
+    return decoder->decode();
 }
 
 int

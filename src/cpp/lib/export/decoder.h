@@ -21,10 +21,10 @@ EMSCRIPTEN_KEEPALIVE
 DecoderHandle openDecoder();
 
 EMSCRIPTEN_KEEPALIVE
-int initDecoder(uint8_t *buffer, int len);
+int initDecoder(DecoderHandle handle, uint8_t *buffer, int len);
 
 EMSCRIPTEN_KEEPALIVE
-int decode();
+int decode(DecoderHandle handle);
 
 EMSCRIPTEN_KEEPALIVE
 int addInput(uint8_t *buffer, int len);

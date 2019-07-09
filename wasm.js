@@ -156,14 +156,14 @@ function testExec(instance) {
                     console.log(chunk[i]);
                     */
 
-                const init = exports._initDecoder(wasmInputPtr, jsInput.length);
+                const init = exports._initDecoder(decoder, wasmInputPtr, jsInput.length);
 
                 console.log('Decoder init result is', init);
 
                 initialized = true;
 
                 while (1) {
-                    const result = exports._decode();
+                    const result = exports._decode(decoder);
                     if (result) {
                         const decPtr = exports._getAudio();
                         const nDecSamples = exports._getAudioSize() * 2;
@@ -216,7 +216,7 @@ function testExec(instance) {
                 const ret1 = exports._addInput(wasmInputPtr, jsInput.length);
 
                 while (1) {
-                    const result = exports._decode();
+                    const result = exports._decode(decoder);
                     if (result) {
                         const decPtr = exports._getAudio();
                         const nDecSamples = exports._getAudioSize() * 2;
