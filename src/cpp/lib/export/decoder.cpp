@@ -8,23 +8,27 @@
 #include "interface/decoder.h"
 #include "interface/defs.h"
 
-draaldecoder::StreamableDecoder *dec = nullptr;
-
 void
-closeDecoder()
+closeDecoder(DecoderHandle handle)
 {
+    draaldecoder::StreamableDecoder *dec = (draaldecoder::StreamableDecoder *) handle;
+
     if (dec)
         dec->destroy();
     dec = nullptr;
 }
 
-void
+draaldecoder::StreamableDecoder *dec = nullptr;
+
+DecoderHandle
 openDecoder()
 {
     auto attrs = draaldecoder::IAttributes::create();
     attrs->setString("mime", draaldecoder::MP3MIME);
     dec = draaldecoder::StreamableDecoder::create(*attrs);
     attrs->destroy();
+
+    return dec;
 }
 
 int

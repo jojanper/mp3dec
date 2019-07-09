@@ -126,7 +126,7 @@ function testExec(instance) {
     console.log(exports);
 
     let initialized = false;
-    exports._openDecoder();
+    const decoder = exports._openDecoder();
 
     let frames = 0;
 
@@ -256,6 +256,7 @@ function testExec(instance) {
             outStream.end();
             //fs.close(outStream, () => { });
             exports._destroy_buffer(wasmInputPtr);
+            exports._closeDecoder(decoder);
         }
     });
 

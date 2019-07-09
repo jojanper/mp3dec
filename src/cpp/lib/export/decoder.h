@@ -8,15 +8,17 @@
 #define EMSCRIPTEN_KEEPALIVE
 #endif // __EMSCRIPTEN__
 
+typedef void *DecoderHandle;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 EMSCRIPTEN_KEEPALIVE
-void closeDecoder();
+void closeDecoder(DecoderHandle handle);
 
 EMSCRIPTEN_KEEPALIVE
-void openDecoder();
+DecoderHandle openDecoder();
 
 EMSCRIPTEN_KEEPALIVE
 int initDecoder(uint8_t *buffer, int len);
