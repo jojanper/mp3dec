@@ -7,10 +7,8 @@
 #include "interface/attributes.h"
 #include "interface/decoder.h"
 #include "interface/defs.h"
-#include "mcu/decoders/mp3dec.h"
 
 draaldecoder::StreamableDecoder *dec = nullptr;
-// static draaldecoder::MP3Decoder *dec = nullptr;
 
 void
 closeDecoder()
@@ -67,31 +65,6 @@ int
 getAudioSize()
 {
     return (int) audioSize;
-}
-
-
-int
-doubler(int x)
-{
-    if (dec == nullptr)
-        return 123;
-
-    return 2 * x;
-}
-
-void
-inc_array(uint8_t *arr, int len)
-{
-    for (int i = 0; i < len; i++)
-        arr[i] = 100;
-}
-
-static uint8_t staticData[] = { 3, 2, 1 };
-
-uint8_t *
-get_data()
-{
-    return staticData;
 }
 
 uint8_t *

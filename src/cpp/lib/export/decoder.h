@@ -33,16 +33,6 @@ int16_t *getAudio();
 EMSCRIPTEN_KEEPALIVE
 int getAudioSize();
 
-
-EMSCRIPTEN_KEEPALIVE
-int doubler(int x);
-
-EMSCRIPTEN_KEEPALIVE
-void inc_array(uint8_t *arr, int len);
-
-EMSCRIPTEN_KEEPALIVE
-uint8_t *get_data();
-
 EMSCRIPTEN_KEEPALIVE
 uint8_t *create_buffer(int len);
 

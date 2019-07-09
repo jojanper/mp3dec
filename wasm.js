@@ -40,9 +40,10 @@ const importObject = {
         //_emscripten_get_heap_size: () => { },
         _llvm_trap: () => { console.log('llvm_trap'); },
         _llvm_exp2_f64: (val) => {
-            const result = Math.pow(2, val);
-            console.log('llvm_exp2_f64', val, result);
-            return result;
+            return Math.pow(2, val);
+            //const result = Math.pow(2, val);
+            //console.log('llvm_exp2_f64', val, result);
+            //return result;
         },
         ___cxa_pure_virtual: () => {
             console.log('___cxa_pure_virtual');
@@ -78,7 +79,7 @@ const importObject = {
             return false; // always fail
         },
         _emscripten_memcpy_big: function (dest, src, count) {
-            console.log('_emscripten_memcpy_big', count);
+            //console.log('_emscripten_memcpy_big', count);
             heap.set(heap.subarray(src, src + count), dest);
         },
         __table_base: 0,
@@ -110,14 +111,14 @@ const wasmModule = new WebAssembly.Module(fs.readFileSync(__dirname + WASMLIB));
 const instance = new WebAssembly.Instance(wasmModule, importObject);
 
 function testExec(instance) {
-    //const stream = fs.createReadStream(__dirname + '/Bryan_Adams_Xmas_Time.mp3');
+    const stream = fs.createReadStream(__dirname + '/Bryan_Adams_Xmas_Time.mp3');
     //const stream = fs.createReadStream(__dirname + '/Toto-Africa.mp3');
     //const stream = fs.createReadStream(__dirname + '/Record.mp3');
     //const stream = fs.createReadStream(__dirname + '/Jon_Secada-Just_Another_Day.mp3');
-    const stream = fs.createReadStream(__dirname + '/Natalie_Cole_Miss_You_Like_Crazy.mp3');
+    //const stream = fs.createReadStream(__dirname + '/Natalie_Cole_Miss_You_Like_Crazy.mp3');
 
-    //const outStream = fs.createWriteStream('test.raw');
-    const outStream = fd = fs.openSync('test.raw', 'w');
+    const outStream = fs.createWriteStream('test.raw');
+    //const outStream = fd = fs.openSync('test.raw', 'w');
 
     const chunkSize = 32 * 1024;
 
@@ -174,8 +175,8 @@ function testExec(instance) {
                         const slicedData = jsData.slice(0, nDecSamples);
                         //const buffer = Buffer.from(slicedData);
                         //const response = outStream.write(buffer);
-                        const response = fs.writeSync(outStream, slicedData, 0, nDecSamples);
-                        //outStream.write(slicedData.buffer);
+                        //const response = fs.writeSync(outStream, slicedData, 0, nDecSamples);
+                        outStream.write(Buffer.from(slicedData.buffer, 0, nDecSamples));
                         //console.log(jsData.length, buffer.length, response);
                         //as
                         //outStream.write(jsData.buffer.slice(0, nDecSamples));
@@ -224,10 +225,10 @@ function testExec(instance) {
 
                         const slicedData = jsData.slice(0, nDecSamples);
 
-                        const response = fs.writeSync(outStream, slicedData, 0, nDecSamples);
+                        //const response = fs.writeSync(outStream, slicedData, 0, nDecSamples);
 
                         //const buffer = Buffer.from(slicedData);
-                        //outStream.write(buffer);
+                        outStream.write(Buffer.from(slicedData.buffer, 0, nDecSamples));
                         //console.log(jsData.length, buffer.length);
                         //const buffer = Buffer.from(jsData.buffer.slice(0, nDecSamples));
                         //outStream.write(buffer);
@@ -252,8 +253,8 @@ function testExec(instance) {
 
         while (null !== (chunk = stream.read())) {
             console.log(`Received ${chunk.length} bytes of data`);
-            //outStream.end();
-            fs.close(outStream, () => { });
+            outStream.end();
+            //fs.close(outStream, () => { });
             exports._destroy_buffer(wasmInputPtr);
         }
     });
