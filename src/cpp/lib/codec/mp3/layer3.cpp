@@ -700,7 +700,7 @@ III_reorder(MP_Stream *mp, int ch, int gr)
   for(i = sb_start; i < MAX_MONO_SAMPLES; i++)
     src[i] = dst[i];
 #else
-    memmove(src + sb_start, dst + sb_start, (MAX_MONO_SAMPLES - sb_start) << 2);
+    memmove(src + sb_start, dst + sb_start, (MAX_MONO_SAMPLES - sb_start) * sizeof(FLOAT));
     // memmove(src + sb_start, dst + sb_start, sizeof(FLOAT) * (MAX_MONO_SAMPLES -
     // sb_start));
 #endif

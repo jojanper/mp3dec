@@ -40,6 +40,7 @@ const importObject = {
         //_emscripten_get_heap_size: () => { },
         _llvm_trap: () => { console.log('llvm_trap'); },
         _llvm_exp2_f64: (val) => {
+            //console.log('llvm_exp2_f64', val);
             return Math.pow(2, val);
             //const result = Math.pow(2, val);
             //console.log('llvm_exp2_f64', val, result);

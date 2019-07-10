@@ -33,7 +33,7 @@ pairtable(MP_Stream *mp, int section_length, int table_num, int16 *quant)
     MP3_Huffman *h = &mp->huffman[table_num];
 
     if (h->tree_len == 0)
-        memset(quant, 0, section_length << 1);
+        memset(quant, 0, section_length * sizeof(int16));
     else {
         tbl_idx = -1;
         int16 *q = quant;
