@@ -14,32 +14,42 @@ typedef void *DecoderHandle;
 extern "C" {
 #endif
 
-EMSCRIPTEN_KEEPALIVE
-void closeDecoder(DecoderHandle handle);
-
+// Open decoder, return handle
 EMSCRIPTEN_KEEPALIVE
 DecoderHandle openDecoder();
 
+// Close decoder handle
+EMSCRIPTEN_KEEPALIVE
+DecoderHandle closeDecoder(DecoderHandle handle);
+
+// Initialize decoder
 EMSCRIPTEN_KEEPALIVE
 int initDecoder(DecoderHandle handle, uint8_t *buffer, int len);
 
+// Decode next audio buffer
 EMSCRIPTEN_KEEPALIVE
 int decode(DecoderHandle handle);
 
+// Add new input buffer for decoding
 EMSCRIPTEN_KEEPALIVE
-int addInput(uint8_t *buffer, int len);
+int addInput(DecoderHandle handle, uint8_t *buffer, int len);
 
+// Return decoded audio buffer
 EMSCRIPTEN_KEEPALIVE
-int16_t *getAudio();
+int16_t *getAudio(DecoderHandle handle);
 
+// Return size of decoded audio
 EMSCRIPTEN_KEEPALIVE
-int getAudioSize();
+int getAudioSize(DecoderHandle handle);
 
-EMSCRIPTEN_KEEPALIVE
-uint8_t *create_buffer(int len);
 
+// Create memory buffer
 EMSCRIPTEN_KEEPALIVE
-void destroy_buffer(void *data);
+uint8_t *createBuffer(int len);
+
+// Destroy memory buffer
+EMSCRIPTEN_KEEPALIVE
+void destroyBuffer(void *data);
 
 #ifdef __cplusplus
 }

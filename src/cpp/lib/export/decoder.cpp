@@ -1,5 +1,4 @@
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -8,39 +7,58 @@
 #include "interface/decoder.h"
 #include "interface/defs.h"
 
-void
+typedef struct DecoderHandleWrapperStr
+{
+    draaldecoder::StreamableDecoder *dec;
+    size_t audioSize;
+
+} DecoderHandleWrapper;
+
+
+DecoderHandle
 closeDecoder(DecoderHandle handle)
 {
-    draaldecoder::StreamableDecoder *dec = (draaldecoder::StreamableDecoder *) handle;
+    DecoderHandleWrapper *decoder = (DecoderHandleWrapper *) handle;
 
-    if (dec)
-        dec->destroy();
-    dec = nullptr;
+    if (decoder) {
+        if (decoder->dec)
+            decoder->dec->destroy();
+        decoder->dec = nullptr;
+
+        free(decoder);
+    }
+
+    return NULL;
 }
-
-draaldecoder::StreamableDecoder *dec = nullptr;
 
 DecoderHandle
 openDecoder()
 {
-    auto attrs = draaldecoder::IAttributes::create();
-    attrs->setString("mime", draaldecoder::MP3MIME);
-    dec = draaldecoder::StreamableDecoder::create(*attrs);
-    attrs->destroy();
+    DecoderHandleWrapper *decoder =
+        (DecoderHandleWrapper *) calloc(1, sizeof(DecoderHandleWrapper));
 
-    return dec;
+    if (decoder) {
+        auto attrs = draaldecoder::IAttributes::create();
+        attrs->setString("mime", draaldecoder::MP3MIME);
+        decoder->dec = draaldecoder::StreamableDecoder::create(*attrs);
+        attrs->destroy();
+
+        if (!decoder->dec)
+            return closeDecoder(decoder);
+    }
+
+    return decoder;
 }
 
 int
 initDecoder(DecoderHandle handle, uint8_t *buffer, int len)
 {
-    draaldecoder::StreamableDecoder *decoder = (draaldecoder::StreamableDecoder *) handle;
+    DecoderHandleWrapper *decoder = (DecoderHandleWrapper *) handle;
 
-    printf("Len is %i", len);
     auto attrs = draaldecoder::IAttributes::create();
     attrs->setInt32Data(draaldecoder::kBufferSize, len);
     attrs->setInt32Data(draaldecoder::kBufferMode, draaldecoder::kModuloBuffer);
-    auto result = decoder->init(*attrs, buffer, len);
+    auto result = decoder->dec->init(*attrs, buffer, len);
     attrs->destroy();
 
     return result;
@@ -49,38 +67,39 @@ initDecoder(DecoderHandle handle, uint8_t *buffer, int len)
 int
 decode(DecoderHandle handle)
 {
-    draaldecoder::StreamableDecoder *decoder = (draaldecoder::StreamableDecoder *) handle;
-    return decoder->decode();
+    DecoderHandleWrapper *decoder = (DecoderHandleWrapper *) handle;
+    return decoder->dec->decode();
 }
 
 int
-addInput(uint8_t *buffer, int len)
+addInput(DecoderHandle handle, uint8_t *buffer, int len)
 {
-    return dec->addInput(buffer, len);
+    DecoderHandleWrapper *decoder = (DecoderHandleWrapper *) handle;
+    return decoder->dec->addInput(buffer, len);
 }
-
-size_t audioSize;
 
 int16_t *
-getAudio()
+getAudio(DecoderHandle handle)
 {
-    return dec->getDecodedAudio(audioSize);
+    DecoderHandleWrapper *decoder = (DecoderHandleWrapper *) handle;
+    return decoder->dec->getDecodedAudio(decoder->audioSize);
 }
 
 int
-getAudioSize()
+getAudioSize(DecoderHandle handle)
 {
-    return (int) audioSize;
+    DecoderHandleWrapper *decoder = (DecoderHandleWrapper *) handle;
+    return (int) decoder->audioSize;
 }
 
 uint8_t *
-create_buffer(int len)
+createBuffer(int len)
 {
     return (uint8_t *) calloc(len, sizeof(uint8_t));
 }
 
 void
-destroy_buffer(void *data)
+destroyBuffer(void *data)
 {
     free(data);
 }
