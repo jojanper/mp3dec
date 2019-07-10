@@ -104,6 +104,16 @@ III_huffman_decode(MP_Stream *mp, int gr, int ch, int part2)
 
         x = quadtable(mp, i, part2, table_num, quant, limit);
         quant += x - i;
+
+#if 1
+        auto len = (x - i) / 2;
+        auto remaining = (x - i) - len;
+        memset(
+            mp->frame->ch_quant[ch] + gr_info->big_values + remaining,
+            0,
+            (MAX_MONO_SAMPLES - gr_info->big_values - remaining) * sizeof(int16));
+#endif
+
         i = x;
     }
 
@@ -118,4 +128,9 @@ III_huffman_decode(MP_Stream *mp, int gr, int ch, int part2)
         mp->br->skipBits(part2 - mp->br->bitsRead());
 
     gr_info->zero_part_start = (i < limit) ? (i >= 0) ? i : 0 : limit;
+
+    memset(
+        mp->frame->ch_quant[ch] + gr_info->zero_part_start,
+        0,
+        (MAX_MONO_SAMPLES - gr_info->zero_part_start) * sizeof(int16));
 }

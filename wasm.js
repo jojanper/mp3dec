@@ -22,7 +22,7 @@ const importObject = {
         '__memory_base': 1024,
         '__table_base': 0,
         'memory': memory,
-        'table': new WebAssembly.Table({ initial: 176, maximum: 176, element: 'anyfunc' }),
+        'table': new WebAssembly.Table({ initial: 172, maximum: 172, element: 'anyfunc' }),
         'STACKTOP': 0,
         'STACK_MAX': memory.buffer.byteLength,
         //abort: () => { },
@@ -121,11 +121,11 @@ const instance = new WebAssembly.Instance(wasmModule, importObject);
 
 function testExec(instance) {
     //const stream = fs.createReadStream(__dirname + '/Bryan_Adams_Xmas_Time.mp3');
-    const stream = fs.createReadStream(__dirname + '/ZZ_Top-Rough_Boy.mp3');
+    //const stream = fs.createReadStream(__dirname + '/ZZ_Top-Rough_Boy.mp3');
     //const stream = fs.createReadStream(__dirname + '/Toto-Africa.mp3');
     //const stream = fs.createReadStream(__dirname + '/Record.mp3');
     //const stream = fs.createReadStream(__dirname + '/Jon_Secada-Just_Another_Day.mp3');
-    //const stream = fs.createReadStream(__dirname + '/Natalie_Cole_Miss_You_Like_Crazy.mp3');
+    const stream = fs.createReadStream(__dirname + '/Natalie_Cole_Miss_You_Like_Crazy.mp3');
 
     const outStream = fs.createWriteStream('test.raw');
     //const outStream = fd = fs.openSync('test.raw', 'w');
