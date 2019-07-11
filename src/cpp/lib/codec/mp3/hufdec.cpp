@@ -64,11 +64,8 @@ treebased_codeword(Bit_Reservoir *br, HufNode *hNode)
 }
 #endif
 
-static int tbl_idx = -1;
-static uint32 codeword = 0;
-
 static inline int
-treebased_codeword0(BitBuffer *br, HufNode *hTree)
+treebased_codeword0(BitBuffer *br, HufNode *hTree, int &tbl_idx, uint32 &codeword)
 {
     int bits_read = 0;
     HufNode *pNode = hTree;
