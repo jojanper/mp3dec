@@ -4,11 +4,11 @@
   "description": "MP3 decoder and associated utilities",
   "main": "index.js",
   "scripts": {
-    "build": "node-gyp rebuild",
-    "cbuild": "rm -Rf build-wasm && npm run cmake-build && npm run make",
-    "cmake-build": "export EMSDK=~/bin/emsdk/fastcomp/emscripten && cmake -H. -B./build-wasm -DBUILD_WEBASSEMBLY=ON -DBUILD_APPS=OFF -DBUILD_TESTS=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${EMSDK}/cmake/Modules/Platform/Emscripten.cmake",
+    "node-build": "node-gyp rebuild",
+    "wasm-build": "rm -Rf build-wasm && npm run wasm-cmake-build && npm run wasm-make",
+    "wasm-cmake-build": "export EMSDK=~/bin/emsdk/fastcomp/emscripten && cmake -H. -B./build-wasm -DBUILD_WEBASSEMBLY=ON -DBUILD_APPS=OFF -DBUILD_TESTS=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${EMSDK}/cmake/Modules/Platform/Emscripten.cmake",
     "clean": "node-gyp clean",
-    "make": "cd build-wasm && make",
+    "wasm-make": "cd build-wasm && make -j",
     "valgrind-tests": "cd build && GTEST_COLOR=1 ctest -V -T memcheck && cat Testing/Temporary/MemoryChecker.*.log",
     "valgrind-logs": "cd build && cat Testing/Temporary/MemoryChecker.*.log"
   },
