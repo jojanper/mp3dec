@@ -121,10 +121,10 @@ const instance = new WebAssembly.Instance(wasmModule, importObject);
 
 function testExec(instance) {
     //const stream = fs.createReadStream(__dirname + '/Bryan_Adams_Xmas_Time.mp3');
-    const stream = fs.createReadStream(__dirname + '/ZZ_Top-Rough_Boy.mp3');
+    //const stream = fs.createReadStream(__dirname + '/ZZ_Top-Rough_Boy.mp3');
     //const stream = fs.createReadStream(__dirname + '/Toto-Africa.mp3');
     //const stream = fs.createReadStream(__dirname + '/Record.mp3');
-    //const stream = fs.createReadStream(__dirname + '/Jon_Secada-Just_Another_Day.mp3');
+    const stream = fs.createReadStream(__dirname + '/Jon_Secada-Just_Another_Day.mp3');
     //const stream = fs.createReadStream(__dirname + '/Natalie_Cole_Miss_You_Like_Crazy.mp3');
 
     const outStream = fs.createWriteStream('test.raw');
@@ -263,6 +263,39 @@ function testExec(instance) {
 
         while (null !== (chunk = stream.read())) {
             console.log(`Received ${chunk.length} bytes of data`);
+
+            wasmInput.set(chunk);
+
+            const ret1 = exports._addInput(decoder, wasmInputPtr, jsInput.length);
+
+            while (1) {
+                const result = exports._decode(decoder);
+                if (result) {
+                    const decPtr = exports._getAudio(decoder);
+                    const nDecSamples = exports._getAudioSize(decoder) * 2;
+
+                    const jsData = new Int16Array(memory.buffer, decPtr, nDecSamples);
+
+                    const slicedData = jsData.slice(0, nDecSamples);
+
+                    //const response = fs.writeSync(outStream, slicedData, 0, nDecSamples);
+
+                    //const buffer = Buffer.from(slicedData);
+                    outStream.write(Buffer.from(slicedData.buffer, 0, nDecSamples));
+                    //console.log(jsData.length, buffer.length);
+                    //const buffer = Buffer.from(jsData.buffer.slice(0, nDecSamples));
+                    //outStream.write(buffer);
+
+                    console.log('Decoding result', ret1, result, frames, nDecSamples);
+                }
+
+                if (result === 0) {
+                    break;
+                }
+
+                frames++;
+            }
+
             outStream.end();
             //fs.close(outStream, () => { });
             exports._destroyBuffer(wasmInputPtr);
