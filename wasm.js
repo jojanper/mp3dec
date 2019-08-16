@@ -120,11 +120,11 @@ const wasmModule = new WebAssembly.Module(fs.readFileSync(__dirname + WASMLIB));
 const instance = new WebAssembly.Instance(wasmModule, importObject);
 
 function testExec(instance) {
-    //const stream = fs.createReadStream(__dirname + '/Bryan_Adams_Xmas_Time.mp3');
+    const stream = fs.createReadStream(__dirname + '/Bryan_Adams_Xmas_Time.mp3');
     //const stream = fs.createReadStream(__dirname + '/ZZ_Top-Rough_Boy.mp3');
     //const stream = fs.createReadStream(__dirname + '/Toto-Africa.mp3');
     //const stream = fs.createReadStream(__dirname + '/Record.mp3');
-    const stream = fs.createReadStream(__dirname + '/Jon_Secada-Just_Another_Day.mp3');
+    //const stream = fs.createReadStream(__dirname + '/Jon_Secada-Just_Another_Day.mp3');
     //const stream = fs.createReadStream(__dirname + '/Natalie_Cole_Miss_You_Like_Crazy.mp3');
 
     const outStream = fs.createWriteStream('test.raw');
@@ -176,10 +176,10 @@ function testExec(instance) {
                     const result = exports._decode(decoder);
                     if (result) {
                         const decPtr = exports._getAudio(decoder);
-                        const nDecSamples = exports._getAudioSize(decoder) * 2;
+                        const nDecSamples = exports._getAudioSize(decoder);
                         console.log('Decoding result', result, frames, nDecSamples);
 
-                        const jsData = new Int16Array(memory.buffer, decPtr, nDecSamples);
+                        const jsData = new Uint8Array(memory.buffer, decPtr, nDecSamples);
 
                         //const buffer = Buffer.from(jsData.buffer, 0, jsData.length);
                         const slicedData = jsData.slice(0, nDecSamples);
@@ -229,9 +229,9 @@ function testExec(instance) {
                     const result = exports._decode(decoder);
                     if (result) {
                         const decPtr = exports._getAudio(decoder);
-                        const nDecSamples = exports._getAudioSize(decoder) * 2;
+                        const nDecSamples = exports._getAudioSize(decoder);
 
-                        const jsData = new Int16Array(memory.buffer, decPtr, nDecSamples);
+                        const jsData = new Uint8Array(memory.buffer, decPtr, nDecSamples);
 
                         const slicedData = jsData.slice(0, nDecSamples);
 
@@ -266,15 +266,15 @@ function testExec(instance) {
 
             wasmInput.set(chunk);
 
-            const ret1 = exports._addInput(decoder, wasmInputPtr, jsInput.length);
+            const ret1 = exports._addInput(decoder, wasmInputPtr, chunk.length);
 
             while (1) {
                 const result = exports._decode(decoder);
                 if (result) {
                     const decPtr = exports._getAudio(decoder);
-                    const nDecSamples = exports._getAudioSize(decoder) * 2;
+                    const nDecSamples = exports._getAudioSize(decoder);
 
-                    const jsData = new Int16Array(memory.buffer, decPtr, nDecSamples);
+                    const jsData = new Uint8Array(memory.buffer, decPtr, nDecSamples);
 
                     const slicedData = jsData.slice(0, nDecSamples);
 

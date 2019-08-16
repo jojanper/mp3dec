@@ -89,7 +89,7 @@ int
 getAudioSize(DecoderHandle handle)
 {
     DecoderHandleWrapper *decoder = (DecoderHandleWrapper *) handle;
-    return (int) decoder->audioSize;
+    return (int) decoder->audioSize * 2; // In bytes
 }
 
 uint8_t *
