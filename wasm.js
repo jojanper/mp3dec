@@ -22,7 +22,7 @@ const importObject = {
         '__memory_base': 1024,
         '__table_base': 0,
         'memory': memory,
-        'table': new WebAssembly.Table({ initial: 176, maximum: 176, element: 'anyfunc' }),
+        'table': new WebAssembly.Table({ initial: 400, maximum: 400, element: 'anyfunc' }),
         'STACKTOP': 0,
         'STACK_MAX': memory.buffer.byteLength,
         //abort: () => { },
@@ -68,6 +68,9 @@ const importObject = {
         },
         ___cxa_uncaught_exception: function () {
             console.log('___cxa_uncaught_exception');
+        },
+        ___cxa_uncaught_exceptions: function () {
+            console.log('___cxa_uncaught_exceptions');
         },
 
         setTempRet0: function () {

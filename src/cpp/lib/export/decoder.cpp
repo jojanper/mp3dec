@@ -89,7 +89,9 @@ int
 getAudioSize(DecoderHandle handle)
 {
     DecoderHandleWrapper *decoder = (DecoderHandleWrapper *) handle;
-    return (int) decoder->audioSize * 2; // In bytes
+
+    // In bytes, currently decoded audio is 16-bit per sample
+    return (int) decoder->audioSize * 2;
 }
 
 uint8_t *
