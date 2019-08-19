@@ -36,4 +36,4 @@ script:
   - make coverage
   - cd ..
   - sh ./runbuild.sh Release build-release
-  - npm run build
+  - npm run node-build
