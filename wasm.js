@@ -119,6 +119,82 @@ const importObject = {
     }
 };
 
+class DraalDecoder {
+    constructor(api, memory) {
+        this.api = api;
+        this.memory = memory;
+
+        this.decoder = null;
+        this.initialized = false;
+
+        this.frames = 0;
+        this.jsInput = null;
+        this.wasmInputPtr = null;
+        this.wasmInput = null;
+    }
+
+    open() {
+        this.decoder = this.api._openDecoder();
+    }
+
+    close() {
+        this.api._destroyBuffer(this.wasmInputPtr);
+        this.api._closeDecoder(this.decoder);
+
+        this.decoder = null;
+        this.wasmInputPtr = null;
+        this.initialized = false;
+    }
+
+    decode(dataChunk, outStream) {
+        if (!this.initialized) {
+            console.log('Initialize decoder');
+
+            this.jsInput = new Uint8Array(dataChunk.length);
+            this.wasmInputPtr = this.api._createBuffer(this.jsInput.length);
+            this.wasmInput = new Uint8Array(this.memory.buffer, this.wasmInputPtr, this.jsInput.length);
+
+            this.wasmInput.set(dataChunk);
+
+            if (!this.decoder) {
+                this.open();
+            }
+
+            const init = this.api._initDecoder(this.decoder, this.wasmInputPtr, this.jsInput.length);
+            console.log('Decoder init result is', init);
+            this.initialized = true;
+        } else {
+            this.wasmInput.set(dataChunk);
+            this.api._addInput(this.decoder, this.wasmInputPtr, dataChunk.length);
+        }
+
+        return this._decodeFrame(outStream);
+    }
+
+    _decodeFrame(outStream) {
+        while (1) {
+            const result = this.api._decode(this.decoder);
+            if (result) {
+                const decPtr = this.api._getAudio(this.decoder);
+                const nDecSamples = this.api._getAudioSize(this.decoder);
+                console.log('Decoding result', result, this.frames, nDecSamples);
+
+                const jsData = new Uint8Array(this.memory.buffer, decPtr, nDecSamples);
+                const slicedData = jsData.slice(0, nDecSamples);
+                outStream.write(Buffer.from(slicedData.buffer, 0, nDecSamples));
+            }
+
+            if (result === 0) {
+                return false;
+            }
+
+            this.frames++;
+        }
+
+        return true;
+    }
+}
+
 const wasmModule = new WebAssembly.Module(fs.readFileSync(__dirname + WASMLIB));
 const instance = new WebAssembly.Instance(wasmModule, importObject);
 
@@ -131,227 +207,32 @@ function testExec(instance) {
     //const stream = fs.createReadStream(__dirname + '/Natalie_Cole_Miss_You_Like_Crazy.mp3');
 
     const outStream = fs.createWriteStream('test.raw');
-    //const outStream = fd = fs.openSync('test.raw', 'w');
 
     const chunkSize = 32 * 1024;
 
     const { exports } = instance;
     console.log(exports);
 
-    let initialized = false;
-    const decoder = exports._openDecoder();
-
-    let frames = 0;
-
-    let jsInput;
-    let wasmInputPtr;
-    let wasmInput;
+    const decoder = new DraalDecoder(exports, memory);
+    decoder.open();
 
     stream.on('readable', () => {
-        console.log('FOOFOO');
-
         let chunk;
+
+        // Read fixed size data
         while ((chunk = stream.read(chunkSize))) {
-            console.log(`First received ${chunk.length} bytes of data`);
-
-            if (!initialized) {
-                console.log('Initialize decoder');
-
-                jsInput = new Uint8Array(chunk.length);
-                wasmInputPtr = exports._createBuffer(jsInput.length);
-                wasmInput = new Uint8Array(memory.buffer, wasmInputPtr, jsInput.length);
-
-                wasmInput.set(chunk);
-
-                /*
-                console.log(chunk);
-                for (let i = 0; i < 10; i++)
-                    console.log(chunk[i]);
-                    */
-
-                const init = exports._initDecoder(decoder, wasmInputPtr, jsInput.length);
-
-                console.log('Decoder init result is', init);
-
-                initialized = true;
-
-                while (1) {
-                    const result = exports._decode(decoder);
-                    if (result) {
-                        const decPtr = exports._getAudio(decoder);
-                        const nDecSamples = exports._getAudioSize(decoder);
-                        console.log('Decoding result', result, frames, nDecSamples);
-
-                        const jsData = new Uint8Array(memory.buffer, decPtr, nDecSamples);
-
-                        //const buffer = Buffer.from(jsData.buffer, 0, jsData.length);
-                        const slicedData = jsData.slice(0, nDecSamples);
-                        //const buffer = Buffer.from(slicedData);
-                        //const response = outStream.write(buffer);
-                        //const response = fs.writeSync(outStream, slicedData, 0, nDecSamples);
-                        outStream.write(Buffer.from(slicedData.buffer, 0, nDecSamples));
-                        //console.log(jsData.length, buffer.length, response);
-                        //as
-                        //outStream.write(jsData.buffer.slice(0, nDecSamples));
-
-                        /*
-                        for (let i = 0; i < nDecSamples; i++)
-                            console.log(jsData[i], slicedData[i], buffer[i]);
-                        */
-
-                        //for (let i = 0; i < 10; i++)
-                        //console.log(chunk[i]);
-                        //const d = buffer.map(item => item);
-
-                        //const od = d.join('\n');
-                        //console.log(od);
-                        //outStream.write(od);
-                        //console.log('done');
-
-                        //const decOutput = new Int16Array(2304);
-                        //const wasmDecOutputPtr = exports._create_buffer(decOutput.length);
-                        //const wasmDecOutput = new Int16Array(memory.buffer, wasmDecOutputPtr, decOutput.length);
-                    }
-
-                    if (result === 0) {
-                        //outStream.end();
-                        //fs.close(outStream, () => { });
-                        //as
-                        //process.exit(1);
-                        break;
-                    }
-
-                    frames++;
-                }
-            } else {
-                wasmInput.set(chunk);
-
-                const ret1 = exports._addInput(decoder, wasmInputPtr, jsInput.length);
-
-                while (1) {
-                    const result = exports._decode(decoder);
-                    if (result) {
-                        const decPtr = exports._getAudio(decoder);
-                        const nDecSamples = exports._getAudioSize(decoder);
-
-                        const jsData = new Uint8Array(memory.buffer, decPtr, nDecSamples);
-
-                        const slicedData = jsData.slice(0, nDecSamples);
-
-                        //const response = fs.writeSync(outStream, slicedData, 0, nDecSamples);
-
-                        //const buffer = Buffer.from(slicedData);
-                        outStream.write(Buffer.from(slicedData.buffer, 0, nDecSamples));
-                        //console.log(jsData.length, buffer.length);
-                        //const buffer = Buffer.from(jsData.buffer.slice(0, nDecSamples));
-                        //outStream.write(buffer);
-
-                        console.log('Decoding result', ret1, result, frames, nDecSamples);
-                    }
-
-                    if (result === 0) {
-                        break;
-                    }
-
-                    frames++;
-                }
-
-                //const ret2 = exports._decode();
-
-                //console.log(ret1, ret2);
+            if (!decoder.decode(chunk, outStream)) {
+                continue;
             }
-
-            //exports._destroy_buffer(wasmInputPtr);
         }
 
+        // Read remaining data
         while (null !== (chunk = stream.read())) {
-            console.log(`Received ${chunk.length} bytes of data`);
-
-            wasmInput.set(chunk);
-
-            const ret1 = exports._addInput(decoder, wasmInputPtr, chunk.length);
-
-            while (1) {
-                const result = exports._decode(decoder);
-                if (result) {
-                    const decPtr = exports._getAudio(decoder);
-                    const nDecSamples = exports._getAudioSize(decoder);
-
-                    const jsData = new Uint8Array(memory.buffer, decPtr, nDecSamples);
-
-                    const slicedData = jsData.slice(0, nDecSamples);
-
-                    //const response = fs.writeSync(outStream, slicedData, 0, nDecSamples);
-
-                    //const buffer = Buffer.from(slicedData);
-                    outStream.write(Buffer.from(slicedData.buffer, 0, nDecSamples));
-                    //console.log(jsData.length, buffer.length);
-                    //const buffer = Buffer.from(jsData.buffer.slice(0, nDecSamples));
-                    //outStream.write(buffer);
-
-                    console.log('Decoding result', ret1, result, frames, nDecSamples);
-                }
-
-                if (result === 0) {
-                    break;
-                }
-
-                frames++;
-            }
-
+            decoder.decode(chunk, outStream);
             outStream.end();
-            //fs.close(outStream, () => { });
-            exports._destroyBuffer(wasmInputPtr);
-            exports._closeDecoder(decoder);
+            decoder.close();
         }
     });
-
-    /*
-    //outStream.end();
-
-    // JavaScript sends data to WebAssembly, WebAssembly accesses the data via pointer
-    const jsInput = new Uint8Array(3);
-    const wasmInputPtr = exports._create_buffer(jsInput.length);
-    const wasmInput = new Uint8Array(memory.buffer, wasmInputPtr, jsInput.length);
-
-    // Copy data in to be used by WebAssembly
-    wasmInput.set(jsInput);
-
-    // Process
-    exports._inc_array(wasmInputPtr, jsInput.length);
-
-    // Copy data out to JavaScript
-    jsInput.set(wasmInput);
-
-    exports._destroy_buffer(wasmInputPtr);
-
-    console.log(jsInput);
-
-    // WebAssembly owns the data, JavaScript uses the data
-    const staticDataPtr = exports._get_data();
-    const jsData = new Uint8Array(memory.buffer, staticDataPtr, 3);
-
-    console.log(jsData);
-
-    // Copy WebAssembly owned data to JavaScript array
-    const jsLocalData = new Uint8Array(3);
-    jsLocalData.set(jsData);
-
-    console.log(jsLocalData);
-
-    let input = 21;
-
-    // Call doubler API
-    for (let i = 0; i < 10; i++) {
-        const result = exports._doubler(input);
-        console.log(input + ' doubled is ' + result);
-        input = result;
-    };
-
-    //exports._closeDecoder();
-    */
 }
 
 testExec(instance);
-
-//console.log('HEP');
