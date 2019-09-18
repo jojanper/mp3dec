@@ -73,6 +73,10 @@ const importObject = {
             console.log('___cxa_uncaught_exceptions');
         },
 
+        ___wasi_fd_write: function () {
+            console.log('___wasi_fd_write');
+        },
+
         setTempRet0: function () {
             return 0;
         },
@@ -199,12 +203,12 @@ const wasmModule = new WebAssembly.Module(fs.readFileSync(__dirname + WASMLIB));
 const instance = new WebAssembly.Instance(wasmModule, importObject);
 
 function testExec(instance) {
-    const stream = fs.createReadStream(__dirname + '/Bryan_Adams_Xmas_Time.mp3');
+    //const stream = fs.createReadStream(__dirname + '/Bryan_Adams_Xmas_Time.mp3');
     //const stream = fs.createReadStream(__dirname + '/ZZ_Top-Rough_Boy.mp3');
     //const stream = fs.createReadStream(__dirname + '/Toto-Africa.mp3');
     //const stream = fs.createReadStream(__dirname + '/Record.mp3');
     //const stream = fs.createReadStream(__dirname + '/Jon_Secada-Just_Another_Day.mp3');
-    //const stream = fs.createReadStream(__dirname + '/Natalie_Cole_Miss_You_Like_Crazy.mp3');
+    const stream = fs.createReadStream(__dirname + '/Natalie_Cole_Miss_You_Like_Crazy.mp3');
 
     const outStream = fs.createWriteStream('test.raw');
 

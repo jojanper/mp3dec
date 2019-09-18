@@ -5,13 +5,18 @@ MP3 decoder for various build targets. Build targets include at the moment x64 L
 
 ### Prerequisites
 
+- [Node.js](https://nodejs.org/en/)
+  - Consider installing via [nvm](https://github.com/nvm-sh/nvm)
 - [CMake](https://cmake.org/)
+- [GCC](https://gcc.gnu.org/)
+  - For Linux building
 - [Emscripten](https://emscripten.org/index.html)
+  - For WebAssembly building, tested with version 1.38.45
 
 ### Install dependencies
 ```
 pip install gcovr
-npm install
+npm i
 ```
 
 ### Decode MP3 file using Node + WebAssembly
