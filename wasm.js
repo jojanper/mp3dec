@@ -2,6 +2,82 @@ const fs = require('fs');
 
 // play --type raw --rate 44100 --endian little --encoding signed-integer --bits 16 --channels 2 test.raw
 
+class DraalDecoder {
+    constructor(api, memory) {
+        this.api = api;
+        this.memory = memory;
+
+        this.decoder = null;
+        this.initialized = false;
+
+        this.frames = 0;
+        this.jsInput = null;
+        this.wasmInputPtr = null;
+        this.wasmInput = null;
+    }
+
+    open() {
+        this.decoder = this.api._openDecoder();
+    }
+
+    close() {
+        this.api._destroyBuffer(this.wasmInputPtr);
+        this.api._closeDecoder(this.decoder);
+
+        this.decoder = null;
+        this.wasmInputPtr = null;
+        this.initialized = false;
+    }
+
+    decode(dataChunk, outStream) {
+        if (!this.initialized) {
+            console.log('Initialize decoder');
+
+            this.jsInput = new Uint8Array(dataChunk.length);
+            this.wasmInputPtr = this.api._createBuffer(this.jsInput.length);
+            this.wasmInput = new Uint8Array(this.memory.buffer, this.wasmInputPtr, this.jsInput.length);
+
+            this.wasmInput.set(dataChunk);
+
+            if (!this.decoder) {
+                this.open();
+            }
+
+            const init = this.api._initDecoder(this.decoder, this.wasmInputPtr, this.jsInput.length);
+            console.log('Decoder init result is', init);
+            this.initialized = true;
+        } else {
+            this.wasmInput.set(dataChunk);
+            this.api._addInput(this.decoder, this.wasmInputPtr, dataChunk.length);
+        }
+
+        return this._decodeFrame(outStream);
+    }
+
+    _decodeFrame(outStream) {
+        while (1) {
+            const result = this.api._decode(this.decoder);
+            if (result) {
+                const decPtr = this.api._getAudio(this.decoder);
+                const nDecSamples = this.api._getAudioSize(this.decoder);
+                console.log('Decoding result', result, this.frames, nDecSamples);
+
+                const jsData = new Uint8Array(this.memory.buffer, decPtr, nDecSamples);
+                const slicedData = jsData.slice(0, nDecSamples);
+                outStream.write(Buffer.from(slicedData.buffer, 0, nDecSamples));
+            }
+
+            if (result === 0) {
+                return false;
+            }
+
+            this.frames++;
+        }
+
+        return true;
+    }
+}
+
 
 const WASMLIB = '/build-wasm/bin/mp3dec_static.wasm';
 
@@ -123,92 +199,16 @@ const importObject = {
     }
 };
 
-class DraalDecoder {
-    constructor(api, memory) {
-        this.api = api;
-        this.memory = memory;
-
-        this.decoder = null;
-        this.initialized = false;
-
-        this.frames = 0;
-        this.jsInput = null;
-        this.wasmInputPtr = null;
-        this.wasmInput = null;
-    }
-
-    open() {
-        this.decoder = this.api._openDecoder();
-    }
-
-    close() {
-        this.api._destroyBuffer(this.wasmInputPtr);
-        this.api._closeDecoder(this.decoder);
-
-        this.decoder = null;
-        this.wasmInputPtr = null;
-        this.initialized = false;
-    }
-
-    decode(dataChunk, outStream) {
-        if (!this.initialized) {
-            console.log('Initialize decoder');
-
-            this.jsInput = new Uint8Array(dataChunk.length);
-            this.wasmInputPtr = this.api._createBuffer(this.jsInput.length);
-            this.wasmInput = new Uint8Array(this.memory.buffer, this.wasmInputPtr, this.jsInput.length);
-
-            this.wasmInput.set(dataChunk);
-
-            if (!this.decoder) {
-                this.open();
-            }
-
-            const init = this.api._initDecoder(this.decoder, this.wasmInputPtr, this.jsInput.length);
-            console.log('Decoder init result is', init);
-            this.initialized = true;
-        } else {
-            this.wasmInput.set(dataChunk);
-            this.api._addInput(this.decoder, this.wasmInputPtr, dataChunk.length);
-        }
-
-        return this._decodeFrame(outStream);
-    }
-
-    _decodeFrame(outStream) {
-        while (1) {
-            const result = this.api._decode(this.decoder);
-            if (result) {
-                const decPtr = this.api._getAudio(this.decoder);
-                const nDecSamples = this.api._getAudioSize(this.decoder);
-                console.log('Decoding result', result, this.frames, nDecSamples);
-
-                const jsData = new Uint8Array(this.memory.buffer, decPtr, nDecSamples);
-                const slicedData = jsData.slice(0, nDecSamples);
-                outStream.write(Buffer.from(slicedData.buffer, 0, nDecSamples));
-            }
-
-            if (result === 0) {
-                return false;
-            }
-
-            this.frames++;
-        }
-
-        return true;
-    }
-}
-
 const wasmModule = new WebAssembly.Module(fs.readFileSync(__dirname + WASMLIB));
 const instance = new WebAssembly.Instance(wasmModule, importObject);
 
 function testExec(instance) {
-    //const stream = fs.createReadStream(__dirname + '/Bryan_Adams_Xmas_Time.mp3');
+    const stream = fs.createReadStream(__dirname + '/Bryan_Adams_Xmas_Time.mp3');
     //const stream = fs.createReadStream(__dirname + '/ZZ_Top-Rough_Boy.mp3');
     //const stream = fs.createReadStream(__dirname + '/Toto-Africa.mp3');
     //const stream = fs.createReadStream(__dirname + '/Record.mp3');
     //const stream = fs.createReadStream(__dirname + '/Jon_Secada-Just_Another_Day.mp3');
-    const stream = fs.createReadStream(__dirname + '/Natalie_Cole_Miss_You_Like_Crazy.mp3');
+    //const stream = fs.createReadStream(__dirname + '/Natalie_Cole_Miss_You_Like_Crazy.mp3');
 
     const outStream = fs.createWriteStream('test.raw');
 
