@@ -1,61 +1,50 @@
 const fs = require('fs');
 const { Worker } = require('worker_threads');
+const argv = require('minimist')(process.argv.slice(2));
 
-const stream = fs.createReadStream(__dirname + '/Bryan_Adams_Xmas_Time.mp3');
-const outStream = fs.createWriteStream('test.raw');
-const chunkSize = 32 * 1024;
+const { input, output } = argv;
+const WASMLIB = '/build-wasm/bin/mp3dec_static.wasm';
 
-const worker = new Worker('./worker.js');
-
-worker.on('error', err => { throw err; });
-worker.on('message', (message) => {
-    //console.log('message received from worker');
-    //console.log(message);
-
-    if (message.ready) {
-        startDecoding();
-    } else if (message.eos) {
-        console.log('CLOSING');
-        worker.postMessage({ type: 'close' });
-        outStream.end();
-        worker.unref();
-        //decoder.close();
-        console.log('end');
-    } else if (message.decoded) {
-        console.log(`Received decoded data: ${message.decoded.length}`);
-        outStream.write(message.decoded);
-    }
-});
-
-console.log(worker);
-
-function startDecoding() {
+function startDecoding(worker, stream, chunkSize) {
     stream.on('readable', () => {
         let chunk;
 
-        //console.log('HEPO');
-
-        // Read fixed size data
+        // Read fixed size data and pass for decoding
         while ((chunk = stream.read(chunkSize))) {
-            //console.log(chunk.length);
             worker.postMessage({ type: 'data', data: chunk });
-            //if (!decoder.decode(chunk, outStream)) {
-            //    continue;
-            //}
         }
 
-        // Read remaining data
+        // Read remaining data and pass for decoding + signal EOS
         while (null !== (chunk = stream.read())) {
-            //console.log(chunk.length);
-            //decoder.decode(chunk, outStream);
             worker.postMessage({ type: 'data', data: chunk });
             worker.postMessage({ type: 'eos' });
-            //outStream.end();
-            //worker.unref();
-            //decoder.close();
-            //console.log('end');
         }
-
-        //console.log('done');
     });
 }
+
+if (!input) {
+    throw new Error('No input file specified (use --input=<mp3-file>)');
+}
+
+if (!output) {
+    throw new Error('No output file specified (use --output=<decoded-file>)');
+}
+
+const stream = fs.createReadStream(input);
+const outStream = fs.createWriteStream(output);
+const chunkSize = 32 * 1024;
+
+const worker = new Worker('./worker.js', { workerData: { workerLib: __dirname + WASMLIB } });
+
+worker.on('error', err => { throw err; });
+worker.on('message', (message) => {
+    if (message.ready) {
+        startDecoding(worker, stream, chunkSize);
+    } else if (message.eos) {
+        worker.postMessage({ type: 'close' });
+        outStream.end();
+        worker.unref();
+    } else if (message.decoded) {
+        outStream.write(message.decoded);
+    }
+});

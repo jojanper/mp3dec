@@ -1,50 +1,37 @@
 const fs = require('fs');
-
-const { parentPort } = require('worker_threads');
+const { parentPort, workerData } = require('worker_threads');
 
 const { DraalDecoder, getImportObject, getMemory } = require('./decoder');
 
+const { workerLib } = workerData;
 
-const WASMLIB = '/build-wasm/bin/mp3dec_static.wasm';
-
+// Initialize WASM module
 const { memory, heap } = getMemory();
-
-const wasmModule = new WebAssembly.Module(fs.readFileSync(__dirname + WASMLIB));
+const wasmModule = new WebAssembly.Module(fs.readFileSync(workerLib));
 const instance = new WebAssembly.Instance(wasmModule, getImportObject(memory, heap));
 
-//const { exports } = instance;
-console.log(instance.exports);
-
+// Create decoder instance
 const decoder = new DraalDecoder(instance.exports, memory);
 decoder.open();
 
-console.log('HEP');
-
+// Decoder is ready to receive data
 parentPort.postMessage({ ready: true });
 
+// Handle messages to/from worker
 parentPort.on('message', (msg) => {
-    let eos = false;
-
     if (msg.type === 'data') {
-        //console.log(`data received: ${msg.data.length}`);
-
-        const status = decoder.decode(msg.data, {
+        // Input data for decoding received
+        decoder.decode(msg.data, {
             write: (data) => {
                 parentPort.postMessage({ decoded: data });
             }
         });
-
-        //console.log('status', status);
-        if (eos) {
-            parentPort.postMessage({ eos: true });
-        }
     } else if (msg.type === 'close') {
-        console.log(`close received`);
+        // Close decoder instance
         decoder.close();
     } else if (msg.type === 'eos') {
-        console.log(`eos received`);
-        //decoder.close();
-        eos = true;
+        // End of stream signal received
+        parentPort.postMessage({ eos: true });
     } else {
         throw new Error(`Unknown message type: ${msg.type}`);
     }

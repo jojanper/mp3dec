@@ -27,7 +27,7 @@ class DraalDecoder {
 
     decode(dataChunk, outStream) {
         if (!this.initialized) {
-            console.log('Initialize decoder');
+            //console.log('Initialize decoder');
 
             this.jsInput = new Uint8Array(dataChunk.length);
             this.wasmInputPtr = this.api._createBuffer(this.jsInput.length);
@@ -88,7 +88,6 @@ function getImportObject(memory, heap) {
             'table': new WebAssembly.Table({ initial: 400, maximum: 400, element: 'anyfunc' }),
             'STACKTOP': 0,
             'STACK_MAX': memory.buffer.byteLength,
-            //abort: () => { },
             ___syscall146: () => { },
             ___setErrNo: () => { },
             _abort: () => { throw new Error('abort'); },
@@ -98,16 +97,9 @@ function getImportObject(memory, heap) {
             ___syscall6: () => { },
             ___syscall140: () => { },
             abortOnCannotGrowMemory: err => { throw new Error(err); },
-            //_emscripten_resize_heap: () => { },
-            //_emscripten_memcpy_big: () => { },
-            //_emscripten_get_heap_size: () => { },
             _llvm_trap: () => { console.log('llvm_trap'); },
             _llvm_exp2_f64: (val) => {
-                //console.log('llvm_exp2_f64', val);
                 return Math.pow(2, val);
-                //const result = Math.pow(2, val);
-                //console.log('llvm_exp2_f64', val, result);
-                //return result;
             },
             ___cxa_pure_virtual: () => {
                 console.log('___cxa_pure_virtual');
@@ -144,11 +136,6 @@ function getImportObject(memory, heap) {
                 return 0;
             },
 
-            /*
-            ___setErrNo: function (err) {
-                throw new Error('ErrNo ' + err);
-            },
-            */
             _emscripten_get_heap_size: function () {
                 //console.log('_emscripten_get_heap_size');
                 return heap.length;
@@ -162,8 +149,6 @@ function getImportObject(memory, heap) {
                 heap.set(heap.subarray(src, src + count), dest);
             },
             __table_base: 0,
-
-            //DYNAMICTOP_PTR: 0,
 
             nullFunc_ii: () => console.log('nullFunc_ii'),
             nullFunc_iii: () => console.log('nullFunc_iii'),
