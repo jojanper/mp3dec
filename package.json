@@ -4,7 +4,8 @@
   "description": "MP3 decoder and associated utilities",
   "main": "index.js",
   "scripts": {
-    "lint": "eslint *.js",
+    "commands": "node src/commands",
+    "lint": "eslint *.js src/commands/**",
     "node-build": "node-gyp rebuild",
     "wasm-build": "rm -Rf build-wasm && npm run wasm-cmake-build && npm run wasm-make",
     "wasm-cmake-build": "export EMSDK=~/bin/emsdk/fastcomp/emscripten && cmake -H. -B./build-wasm -DBUILD_WEBASSEMBLY=ON -DBUILD_APPS=OFF -DBUILD_TESTS=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${EMSDK}/cmake/Modules/Platform/Emscripten.cmake",
@@ -20,11 +21,13 @@
   "author": "Juha Ojanperä <juha.ojanpera@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "commander": "3.0.1",
     "eslint": "^6.4.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.18.2",
     "minimist": "latest",
     "node-gyp": "^3.8.0",
+    "shelljs": "^0.8.3",
     "tar": ">=4.4.2"
   },
   "dependencies": {
