@@ -200,10 +200,12 @@ MP3Decoder::fillTrackInfo()
 const char *
 MP3Decoder::getTrackProperties(char *buf)
 {
+    strcpy(buf, "");
+
+#ifndef HAVE_WEBASSEMBLY
     char tmpTxtBuf[64];
 
     /*-- Collect the info from the structure to the message buffer. --*/
-    strcpy(buf, "");
     sprintf(tmpTxtBuf, "\nVersion : %s", m_trackInfo->Version);
     strcat(buf, tmpTxtBuf);
 
@@ -243,6 +245,7 @@ MP3Decoder::getTrackProperties(char *buf)
 
     strcat(buf, "\nDe-emphasis : ");
     strcat(buf, m_trackInfo->De_emphasis);
+#endif
 
     return buf;
 }

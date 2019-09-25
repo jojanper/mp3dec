@@ -24,10 +24,6 @@ set(SRCS
 
 set(DEFINES)
 
-if (BUILD_WEBASSEMBLY)
-  set(DEFINES "-DHAVE_WEBASSEMBLY")
-endif(BUILD_WEBASSEMBLY)
-
 # Create object library (as intermediate target)
 set(OBJECT_SRCS ${HDRS} ${SRCS})
 build_object_library("${LIBNAME}" "${OBJECT_SRCS}" "${DEFINES}")
