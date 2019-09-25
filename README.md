@@ -39,7 +39,7 @@ node main.js --input=<input.mp3>  --output=<output.pcm>
 
 Build target
 ```
-sh ./runbuild.sh Release
+npm run x64-build
 ```
 
 Decode using command line binary

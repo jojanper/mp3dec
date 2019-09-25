@@ -12,7 +12,9 @@
     "clean": "node-gyp clean",
     "wasm-make": "cd build-wasm && make -j",
     "valgrind-tests": "cd build && GTEST_COLOR=1 ctest -V -T memcheck && cat Testing/Temporary/MemoryChecker.*.log",
-    "valgrind-logs": "cd build && cat Testing/Temporary/MemoryChecker.*.log"
+    "valgrind-logs": "cd build && cat Testing/Temporary/MemoryChecker.*.log",
+    "x64-build": "npm run commands -- x64-build",
+    "x64-tests": "npm run commands -- x64-tests"
   },
   "keywords": [
     "MP3",

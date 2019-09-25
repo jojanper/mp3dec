@@ -1,40 +1,50 @@
 const shelljs = require('shelljs');
-
-/*
-const fs = require('fs');
-const path = require('path');
-const util = require('util');
-const shelljs = require('shelljs');
 const childProcess = require('child_process');
-const rimraf = require("rimraf");
-*/
 
-function runBuild(options) {
-    console.log(options);
+function execute(cmd) {
+    return new Promise((resolve, reject) => {
+        const child = childProcess.exec(cmd);
 
+        child.stdout.on('data', function (data) {
+            console.log(data.trim());
+        });
+
+        child.on('exit', function (code) {
+            if (code != 0) {
+                return reject(code);
+            }
+
+            resolve(code);
+        });
+    });
+}
+
+async function runBuild(options) {
     shelljs.rm('-rf', options.folder);
     shelljs.mkdir('-p', options.folder);
 
-    /*
-    const promise = util.promisify(childProcess.exec);
+    let cmd = [
+        'cmake',
+        '-H.',
+        `-B./${options.folder}`,
+        '-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON',
+        `-DCMAKE_BUILD_TYPE=${options.type}`
+    ];
+    await execute(cmd.join(' '));
 
-    const manifestCache = manifestToCachePath(cacheprefix);
-    const cachePath = path.join(sourceFolder, manifestCache);
-    createCacheFolder(cachePath);
+    cmd = [
+        `cd ${options.folder} &&`,
+        `cmake --build . --config ${options.type}`
+    ];
+    await execute(cmd.join(' '));
+}
 
-    const zipFile = `${manifestCache}/${output}`;
-
-    // Create zip command
-    let cmd = util.format('cd %s && cmake -E tar cfv %s --format=zip -- %s', sourceFolder, zipFile, inputs.join(' '));
-    console.log('Zip command: ', cmd);
-
-    // Execute the zip command, wait for the response
-    let response = await promiseExec(promise(cmd));
-    if (response[0]) {
-        const msg = util.format('Failed to create upload package %s:\n', output, response[0]);
-        utils.misc.logError(msg);
-    }
-    */
+async function runTests(options) {
+    cmd = [
+        `cd ${options.folder} &&`,
+        'GTEST_COLOR=1 ctest --verbose'
+    ];
+    await execute(cmd.join(' '));
 }
 
 module.exports = program => {
@@ -44,4 +54,10 @@ module.exports = program => {
         .option('--folder <folder>', 'Build folder', 'build')
         .option('--type <type>', 'Build type', 'Release')
         .action(runBuild);
+
+    program
+        .command('x64-tests')
+        .description('Execute Linux/x64 tests')
+        .option('--folder <folder>', 'Build folder', 'build')
+        .action(runTests);
 };

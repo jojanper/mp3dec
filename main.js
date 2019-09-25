@@ -39,19 +39,25 @@ const stream = fs.createReadStream(input);
 const outStream = fs.createWriteStream(output);
 const chunkSize = 32 * 1024;
 
-const worker = new Worker('./worker.js', { workerData: { workerLib: WASMLIB } });
+// Start Web Worker and pass the library name as input
+const worker = new Worker('./src/js/worker.js', { workerData: { workerLib: WASMLIB } });
 
 worker.on('error', err => { throw err; });
+
+// Handle messages from worker
 worker.on('message', message => {
     if (message.ready) {
+        // Decoder is ready to receive data
         console.log('Start decoding');
         startDecoding(worker, stream, chunkSize);
     } else if (message.eos) {
+        // Worker signalled that end-of-stream has been encountered
         console.log('Decoding finished');
         worker.postMessage({ type: 'close' });
         outStream.end();
         worker.unref();
     } else if (message.decoded) {
+        // Decoded audio samples
         outStream.write(message.decoded);
     }
 });

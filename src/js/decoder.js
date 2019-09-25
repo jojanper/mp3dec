@@ -1,8 +1,18 @@
+/**
+ * JavaScript interface for accessing MP3 decoder operating in WebAssembly context.
+ * This interface wraps the underlying WebAssembly decoder API into easy-to-use JS class.
+ */
 class DraalDecoder {
     static create(api, memory) {
         return new DraalDecoder(api, memory).open();
     }
 
+    /**
+     * Constructor.
+     *
+     * @param {*} api Exported WebAssembly API for the MP3 decoder.
+     * @param {*} memory Memory object to be used for data between JS and WebAssembly.
+     */
     constructor(api, memory) {
         this.api = api;
         this.memory = memory;
@@ -16,11 +26,17 @@ class DraalDecoder {
         this.wasmInput = null;
     }
 
+    /**
+     * Open decoder.
+     */
     open() {
         this.decoder = this.api._openDecoder();
         return this;
     }
 
+    /**
+     * Close decoder and related resource.
+     */
     close() {
         this.api._destroyBuffer(this.wasmInputPtr);
         this.api._closeDecoder(this.decoder);
@@ -30,7 +46,13 @@ class DraalDecoder {
         this.initialized = false;
     }
 
-    decode(dataChunk, outStream) {
+    /**
+     * Decode input stream into audio samples.
+     *
+     * @param {*} dataChunk MP3 bitstream data.
+     * @param {*} outStreamApi Callback for decoded output samples.
+     */
+    decode(dataChunk, outStreamApi) {
         if (!this.initialized) {
             this.jsInput = new Uint8Array(dataChunk.length);
             this.wasmInputPtr = this.api._createBuffer(this.jsInput.length);
@@ -53,10 +75,16 @@ class DraalDecoder {
             this.api._addInput(this.decoder, this.wasmInputPtr, dataChunk.length);
         }
 
-        return this._decodeFrame(outStream);
+        return this._decodeFrame(outStreamApi);
     }
 
-    _decodeFrame(outStream) {
+    /**
+     * Decode audio frames currently available for the decoder. This is internal
+     * API and should not be called from outside.
+     *
+     * @param {*} outStreamApi Callback API for output samples.
+     */
+    _decodeFrame(outStreamApi) {
         let status = true;
         while (status) {
             const result = this.api._decode(this.decoder);
@@ -67,7 +95,7 @@ class DraalDecoder {
 
                 const jsData = new Uint8Array(this.memory.buffer, decPtr, nDecSamples);
                 const slicedData = jsData.slice(0, nDecSamples);
-                outStream.write(Buffer.from(slicedData.buffer, 0, nDecSamples));
+                outStreamApi.write(Buffer.from(slicedData.buffer, 0, nDecSamples));
             }
 
             if (result === 0) {
@@ -81,6 +109,29 @@ class DraalDecoder {
     }
 }
 
+/**
+ * Return memory and heap objects for WebAssembly instance.
+ */
+function getMemory() {
+    const memory = new WebAssembly.Memory({
+        initial: 256,
+        maximum: 256
+    });
+
+    const heap = new Uint8Array(memory.buffer);
+
+    return {
+        memory,
+        heap
+    };
+}
+
+/**
+ * Return object to be imported for WebAssembly instance.
+ *
+ * @param {*} memory WebAssembly memory object.
+ * @param {*} heap Heap object.
+ */
 function getImportObject(memory, heap) {
     return {
         'global.Math': Math,
@@ -159,23 +210,14 @@ function getImportObject(memory, heap) {
     };
 }
 
-module.exports = {
-    DraalDecoder,
-    getImportObject,
-    getMemory: () => {
-        const memory = new WebAssembly.Memory({
-            initial: 256,
-            maximum: 256
-        });
-
-        const heap = new Uint8Array(memory.buffer);
-
-        return {
-            memory,
-            heap
-        };
-    },
-    eventHandler: (decoder, callback) => msg => {
+/**
+ * Handler events from/to decoding worker.
+ *
+ * @param {*} decoder WebAssembly decoder instance.
+ * @param {*} callback Callback handler.
+ */
+function eventHandler(decoder, callback) {
+    return function handler(msg) {
         if (msg.type === 'data') {
             // Input data for decoding received
             if (msg.data) {
@@ -192,5 +234,12 @@ module.exports = {
         } else {
             throw new Error(`Unknown message type: ${msg.type}`);
         }
-    }
+    };
+}
+
+module.exports = {
+    DraalDecoder,
+    getImportObject,
+    getMemory,
+    eventHandler
 };
