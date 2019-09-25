@@ -10,6 +10,9 @@ const rimraf = require("rimraf");
 function runBuild(options) {
     console.log(options);
 
+    //shelljs.rm('-rf', 'out/Release');
+    //shelljs.cp('-R', 'stuff/', 'out/Release');
+
     /*
     const promise = util.promisify(childProcess.exec);
 
