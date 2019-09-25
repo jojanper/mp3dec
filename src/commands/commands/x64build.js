@@ -1,3 +1,5 @@
+const shelljs = require('shelljs');
+
 /*
 const fs = require('fs');
 const path = require('path');
@@ -10,8 +12,8 @@ const rimraf = require("rimraf");
 function runBuild(options) {
     console.log(options);
 
-    //shelljs.rm('-rf', 'out/Release');
-    //shelljs.cp('-R', 'stuff/', 'out/Release');
+    shelljs.rm('-rf', options.folder);
+    shelljs.mkdir('-p', options.folder);
 
     /*
     const promise = util.promisify(childProcess.exec);
