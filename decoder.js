@@ -1,4 +1,8 @@
 class DraalDecoder {
+    static create(api, memory) {
+        return new DraalDecoder(api, memory).open();
+    }
+
     constructor(api, memory) {
         this.api = api;
         this.memory = memory;
@@ -14,6 +18,7 @@ class DraalDecoder {
 
     open() {
         this.decoder = this.api._openDecoder();
+        return this;
     }
 
     close() {
@@ -27,8 +32,6 @@ class DraalDecoder {
 
     decode(dataChunk, outStream) {
         if (!this.initialized) {
-            //console.log('Initialize decoder');
-
             this.jsInput = new Uint8Array(dataChunk.length);
             this.wasmInputPtr = this.api._createBuffer(this.jsInput.length);
             this.wasmInput = new Uint8Array(this.memory.buffer, this.wasmInputPtr, this.jsInput.length);
@@ -40,7 +43,10 @@ class DraalDecoder {
             }
 
             const init = this.api._initDecoder(this.decoder, this.wasmInputPtr, this.jsInput.length);
-            //console.log('Decoder init result is', init);
+            if (!init) {
+                return false;
+            }
+
             this.initialized = true;
         } else {
             this.wasmInput.set(dataChunk);
@@ -51,12 +57,13 @@ class DraalDecoder {
     }
 
     _decodeFrame(outStream) {
-        while (1) {
+        let status = true;
+        while (status) {
             const result = this.api._decode(this.decoder);
             if (result) {
                 const decPtr = this.api._getAudio(this.decoder);
                 const nDecSamples = this.api._getAudioSize(this.decoder);
-                //console.log('Decoding result', result, this.frames, nDecSamples);
+                // console.log('Decoding result', result, this.frames, nDecSamples);
 
                 const jsData = new Uint8Array(this.memory.buffer, decPtr, nDecSamples);
                 const slicedData = jsData.slice(0, nDecSamples);
@@ -64,13 +71,13 @@ class DraalDecoder {
             }
 
             if (result === 0) {
-                return false;
+                status = false;
             }
 
             this.frames++;
         }
 
-        return true;
+        return status;
     }
 }
 
@@ -78,16 +85,16 @@ function getImportObject(memory, heap) {
     return {
         'global.Math': Math,
         global: {
-            Infinity: Math.pow(10, 1000)
+            Infinity: 10 ** 1000
         },
         env: {
-            'abortStackOverflow': _ => { throw new Error('overflow'); },
-            '__memory_base': 1024,
-            '__table_base': 0,
-            'memory': memory,
-            'table': new WebAssembly.Table({ initial: 400, maximum: 400, element: 'anyfunc' }),
-            'STACKTOP': 0,
-            'STACK_MAX': memory.buffer.byteLength,
+            abortStackOverflow: () => { throw new Error('overflow'); },
+            __memory_base: 1024,
+            __table_base: 0,
+            memory,
+            table: new WebAssembly.Table({ initial: 400, maximum: 400, element: 'anyfunc' }),
+            STACKTOP: 0,
+            STACK_MAX: memory.buffer.byteLength,
             ___syscall146: () => { },
             ___setErrNo: () => { },
             _abort: () => { throw new Error('abort'); },
@@ -98,57 +105,37 @@ function getImportObject(memory, heap) {
             ___syscall140: () => { },
             abortOnCannotGrowMemory: err => { throw new Error(err); },
             _llvm_trap: () => { console.log('llvm_trap'); },
-            _llvm_exp2_f64: (val) => {
-                return Math.pow(2, val);
-            },
+            _llvm_exp2_f64: val => 2 ** val,
             ___cxa_pure_virtual: () => {
-                console.log('___cxa_pure_virtual');
+                throw new Error('___cxa_pure_virtual');
             },
 
-            memory: memory,
             DYNAMICTOP_PTR: 8192,
-            abort: function (err) {
-                console.log(err);
+            abort: err => {
                 throw new Error('abort ', err);
             },
-            abortOnCannotGrowMemory: function (err) {
-                throw new Error('abortOnCannotGrowMemory ' + err);
+            ___cxa_throw: (/* ptr, type, destructor */) => {
+                throw new Error('___cxa_throw');
             },
-            ___cxa_throw: function (ptr, type, destructor) {
-                console.error('cxa_throw: throwing an exception, ' + [ptr, type, destructor]);
+            ___cxa_allocate_exception: (/* size */) => false, // always fail
+            ___cxa_uncaught_exception: () => {
+                throw new Error('___cxa_uncaught_exception');
             },
-            ___cxa_allocate_exception: function (size) {
-                console.error('cxa_allocate_exception' + size);
-                return false; // always fail
-            },
-            ___cxa_uncaught_exception: function () {
-                console.log('___cxa_uncaught_exception');
-            },
-            ___cxa_uncaught_exceptions: function () {
-                console.log('___cxa_uncaught_exceptions');
+            ___cxa_uncaught_exceptions: () => {
+                throw new Error('___cxa_uncaught_exceptions');
             },
 
-            ___wasi_fd_write: function () {
-                console.log('___wasi_fd_write');
+            ___wasi_fd_write: () => {
+                throw new Error('___wasi_fd_write');
             },
 
-            setTempRet0: function () {
-                return 0;
-            },
+            setTempRet0: () => 0,
 
-            _emscripten_get_heap_size: function () {
-                //console.log('_emscripten_get_heap_size');
-                return heap.length;
-            },
-            _emscripten_resize_heap: function (size) {
-                //console.log('_emscripten_resize_heap');
-                return false; // always fail
-            },
-            _emscripten_memcpy_big: function (dest, src, count) {
-                //console.log('_emscripten_memcpy_big', count);
+            _emscripten_get_heap_size: () => heap.length,
+            _emscripten_resize_heap: (/* size */) => false, // always fail
+            _emscripten_memcpy_big: (dest, src, count) => {
                 heap.set(heap.subarray(src, src + count), dest);
             },
-            __table_base: 0,
 
             nullFunc_ii: () => console.log('nullFunc_ii'),
             nullFunc_iii: () => console.log('nullFunc_iii'),
@@ -175,7 +162,7 @@ function getImportObject(memory, heap) {
 module.exports = {
     DraalDecoder,
     getImportObject,
-    getMemory: function () {
+    getMemory: () => {
         const memory = new WebAssembly.Memory({
             initial: 256,
             maximum: 256
@@ -187,5 +174,23 @@ module.exports = {
             memory,
             heap
         };
+    },
+    eventHandler: (decoder, callback) => msg => {
+        if (msg.type === 'data') {
+            // Input data for decoding received
+            if (msg.data) {
+                decoder.decode(msg.data, {
+                    write: data => callback({ decoded: data })
+                });
+            }
+        } else if (msg.type === 'close') {
+            // Close decoder instance
+            decoder.close();
+        } else if (msg.type === 'eos') {
+            // End of stream signal received
+            callback({ eos: true });
+        } else {
+            throw new Error(`Unknown message type: ${msg.type}`);
+        }
     }
 };
