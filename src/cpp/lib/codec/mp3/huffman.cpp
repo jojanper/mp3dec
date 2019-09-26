@@ -9,6 +9,8 @@
   External Objects Needed
   *************************************************************************/
 
+#include <stdio.h>
+
 /*-- Project Headers. --*/
 #include "layer.h"
 #include "mstream.h"
@@ -104,6 +106,17 @@ III_huffman_decode(MP_Stream *mp, int gr, int ch, int part2)
 
         x = quadtable(mp, i, part2, table_num, quant, limit);
         quant += x - i;
+
+        // TODO: This should not be needed for WebAssembly
+#ifdef HAVE_WEBASSEMBLY
+        auto len = (x - i) / 2;
+        auto remaining = (x - i) - len;
+        memset(
+            mp->frame->ch_quant[ch] + gr_info->big_values + remaining,
+            0,
+            (MAX_MONO_SAMPLES - gr_info->big_values - remaining) * sizeof(int16));
+#endif
+
         i = x;
     }
 

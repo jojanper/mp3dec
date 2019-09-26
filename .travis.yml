@@ -4,7 +4,7 @@ sudo: required
 language: cpp
 dist: trusty
 env:
-  - TRAVIS_NODE_VERSION="10.15.0"
+  - TRAVIS_NODE_VERSION="12.3.1"
 addons:
   apt:
     sources:
@@ -30,10 +30,16 @@ install:
   - sudo pip install --upgrade pip
   - sudo pip install gcovr
 script:
-  - sh ./runbuild.sh Debug build-debug
-  - cd build-debug
-  - ctest -V -T memcheck && cat Testing/Temporary/MemoryChecker.*.log
-  - make coverage
-  - cd ..
-  - sh ./runbuild.sh Release build-release
-  - npm run build
+  # Code styling
+  - npm run lint
+
+  # Debug build + unit tests + code coverage
+  - npm run x64-build -- --type=Debug --folder=build-debug
+  - npm run x64-tests -- --folder=build-debug --memcheck
+  - npm run x64-coverage -- --folder=build-debug
+
+  # Release build
+  - npm run x64-build -- --type=Release --folder=build-release
+
+  # Node N-API integration build
+  - npm run node-build

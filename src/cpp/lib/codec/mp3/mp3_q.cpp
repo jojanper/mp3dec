@@ -446,7 +446,7 @@ dequantize_cpe(MP_Stream *mp, int gr)
                                     shift[0],
                                     *width,
                                     dbS);
-                                memcpy(q[1], q[0], *width << 2);
+                                memcpy(q[1], q[0], *width * sizeof(FLOAT));
                             }
                             break;
 
@@ -626,7 +626,7 @@ dequantize_cpe(MP_Stream *mp, int gr)
                             FLOAT *q[2] = { dqs[0], dqs[1] };
                             LONG_QUANT_IS_LEFT0(
                                 g_gain[0], *sf[0], *pre_tbl[0], shift[0], *width, dbS);
-                            memcpy(q[1], q[0], *width << 2);
+                            memcpy(q[1], q[0], *width * sizeof(FLOAT));
                         }
                         break;
 
@@ -646,13 +646,13 @@ dequantize_cpe(MP_Stream *mp, int gr)
 exit:
     if (sfbData->sbHybrid < sfbData->bandLimit) {
         int diff = sfbData->bandLimit - sfbData->sbHybrid;
-        memset(&mp->buffer->ch_reconstructed[0][sfbData->sbHybrid], 0, diff << 2);
-        memset(&mp->buffer->ch_reconstructed[1][sfbData->sbHybrid], 0, diff << 2);
+        memset(&mp->buffer->ch_reconstructed[0][sfbData->sbHybrid], 0, diff * sizeof(FLOAT));
+        memset(&mp->buffer->ch_reconstructed[1][sfbData->sbHybrid], 0, diff * sizeof(FLOAT));
     }
 
     auto len = MAX_MONO_SAMPLES - sfbData->bandLimit;
-    memset(&mp->buffer->ch_reconstructed[0][sfbData->bandLimit], 0, len << 2);
-    memset(&mp->buffer->ch_reconstructed[1][sfbData->bandLimit], 0, len << 2);
+    memset(&mp->buffer->ch_reconstructed[0][sfbData->bandLimit], 0, len * sizeof(FLOAT));
+    memset(&mp->buffer->ch_reconstructed[1][sfbData->bandLimit], 0, len * sizeof(FLOAT));
 }
 
 /**************************************************************************
@@ -754,11 +754,14 @@ dequantize_sce(MP_Stream *mp, III_SfbData *sfbData, int gr, int ch)
 
     if (gr_info->zero_part_start < sfbData->bandLimit) {
         int diff = sfbData->bandLimit - gr_info->zero_part_start;
-        memset(&mp->buffer->ch_reconstructed[ch][gr_info->zero_part_start], 0, diff << 2);
+        memset(
+            &mp->buffer->ch_reconstructed[ch][gr_info->zero_part_start],
+            0,
+            diff * sizeof(FLOAT));
     }
 
     auto len = MAX_MONO_SAMPLES - sfbData->bandLimit;
-    memset(&mp->buffer->ch_reconstructed[ch][sfbData->bandLimit], 0, len << 2);
+    memset(&mp->buffer->ch_reconstructed[ch][sfbData->bandLimit], 0, len * sizeof(FLOAT));
 }
 
 /**************************************************************************

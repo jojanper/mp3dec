@@ -1,5 +1,4 @@
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -7,74 +6,102 @@
 #include "interface/attributes.h"
 #include "interface/decoder.h"
 #include "interface/defs.h"
-#include "mcu/decoders/mp3dec.h"
 
-draaldecoder::StreamableDecoder *dec = nullptr;
-// static draaldecoder::MP3Decoder *dec = nullptr;
-
-void
-closeDecoder()
+typedef struct DecoderHandleWrapperStr
 {
-    if (dec)
-        dec->destroy();
-    dec = nullptr;
+    draaldecoder::StreamableDecoder *dec;
+    size_t audioSize;
+
+} DecoderHandleWrapper;
+
+
+DecoderHandle
+closeDecoder(DecoderHandle handle)
+{
+    DecoderHandleWrapper *decoder = (DecoderHandleWrapper *) handle;
+
+    if (decoder) {
+        if (decoder->dec)
+            decoder->dec->destroy();
+        decoder->dec = nullptr;
+
+        free(decoder);
+    }
+
+    return NULL;
 }
 
-void
+DecoderHandle
 openDecoder()
 {
-    auto attrs = draaldecoder::IAttributes::create();
-    attrs->setString("mime", draaldecoder::MP3MIME);
-    dec = draaldecoder::StreamableDecoder::create(*attrs);
-    attrs->destroy();
+    DecoderHandleWrapper *decoder =
+        (DecoderHandleWrapper *) calloc(1, sizeof(DecoderHandleWrapper));
+
+    if (decoder) {
+        auto attrs = draaldecoder::IAttributes::create();
+        attrs->setString("mime", draaldecoder::MP3MIME);
+        decoder->dec = draaldecoder::StreamableDecoder::create(*attrs);
+        attrs->destroy();
+
+        if (!decoder->dec)
+            return closeDecoder(decoder);
+    }
+
+    return decoder;
 }
 
 int
-initDecoder(uint8_t *buffer, int len)
+initDecoder(DecoderHandle handle, uint8_t *buffer, int len)
 {
-    printf("Len is %i", len);
+    DecoderHandleWrapper *decoder = (DecoderHandleWrapper *) handle;
+
     auto attrs = draaldecoder::IAttributes::create();
     attrs->setInt32Data(draaldecoder::kBufferSize, len);
     attrs->setInt32Data(draaldecoder::kBufferMode, draaldecoder::kModuloBuffer);
-    auto result = dec->init(*attrs, buffer, len);
+    auto result = decoder->dec->init(*attrs, buffer, len);
     attrs->destroy();
 
     return result;
 }
 
+int
+decode(DecoderHandle handle)
+{
+    DecoderHandleWrapper *decoder = (DecoderHandleWrapper *) handle;
+    return decoder->dec->decode();
+}
 
 int
-doubler(int x)
+addInput(DecoderHandle handle, uint8_t *buffer, int len)
 {
-    if (dec == nullptr)
-        return 123;
+    DecoderHandleWrapper *decoder = (DecoderHandleWrapper *) handle;
+    return decoder->dec->addInput(buffer, len);
+}
 
-    return 2 * x;
+int16_t *
+getAudio(DecoderHandle handle)
+{
+    DecoderHandleWrapper *decoder = (DecoderHandleWrapper *) handle;
+    return decoder->dec->getDecodedAudio(decoder->audioSize);
+}
+
+int
+getAudioSize(DecoderHandle handle)
+{
+    DecoderHandleWrapper *decoder = (DecoderHandleWrapper *) handle;
+
+    // In bytes, currently decoded audio is 16-bit per sample
+    return (int) decoder->audioSize * 2;
+}
+
+uint8_t *
+createBuffer(int len)
+{
+    return (uint8_t *) calloc(len, sizeof(uint8_t));
 }
 
 void
-inc_array(uint8_t *arr, int len)
-{
-    for (int i = 0; i < len; i++)
-        arr[i] = 100;
-}
-
-static uint8_t staticData[] = { 3, 2, 1 };
-
-uint8_t *
-get_data()
-{
-    return staticData;
-}
-
-uint8_t *
-create_buffer(int len)
-{
-    return (uint8_t *) calloc(sizeof(uint8_t), len);
-}
-
-void
-destroy_buffer(void *data)
+destroyBuffer(void *data)
 {
     free(data);
 }

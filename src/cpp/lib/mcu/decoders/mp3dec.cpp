@@ -8,6 +8,7 @@
 #include "codec/mp3/param.h"
 #include "core/bits.h"
 #include "core/meta.h"
+#include "interface/defs.h"
 #include "mp3dec.h"
 
 #define MAX_SLOTS ((MAX_FRAME_SLOTS << 1) + 1)
@@ -117,6 +118,17 @@ MP3Decoder::close()
     return true;
 }
 
+UniqueIAttributesPtr
+MP3Decoder::getAttributes(uint64_t keys)
+{
+    auto attrs = UniqueIAttributesPtr(IAttributes::create());
+
+    if (keys & kBufferSize)
+        attrs->setInt32Data(kBufferSize, MAX_SLOTS);
+
+    return attrs;
+}
+
 void
 MP3Decoder::setQuality(CodecInitParam *param)
 {
@@ -188,10 +200,12 @@ MP3Decoder::fillTrackInfo()
 const char *
 MP3Decoder::getTrackProperties(char *buf)
 {
+    strcpy(buf, "");
+
+#ifndef HAVE_WEBASSEMBLY
     char tmpTxtBuf[64];
 
     /*-- Collect the info from the structure to the message buffer. --*/
-    strcpy(buf, "");
     sprintf(tmpTxtBuf, "\nVersion : %s", m_trackInfo->Version);
     strcat(buf, tmpTxtBuf);
 
@@ -231,6 +245,7 @@ MP3Decoder::getTrackProperties(char *buf)
 
     strcat(buf, "\nDe-emphasis : ");
     strcat(buf, m_trackInfo->De_emphasis);
+#endif
 
     return buf;
 }

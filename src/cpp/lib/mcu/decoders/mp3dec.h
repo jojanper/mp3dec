@@ -23,6 +23,7 @@ public:
 
     virtual bool decode() override;
     virtual bool close() override;
+    virtual UniqueIAttributesPtr getAttributes(uint64_t keys) override;
 
     virtual const char *getTrackProperties(char *buf) override;
 

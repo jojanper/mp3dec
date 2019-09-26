@@ -1,0 +1,22 @@
+const fs = require('fs');
+const { parentPort, workerData } = require('worker_threads');
+
+const {
+    DraalDecoder, getImportObject, getMemory, eventHandler
+} = require('./decoder');
+
+const { workerLib } = workerData;
+
+// Initialize WASM module
+const { memory, heap } = getMemory();
+const wasmModule = new WebAssembly.Module(fs.readFileSync(workerLib));
+const instance = new WebAssembly.Instance(wasmModule, getImportObject(memory, heap));
+
+// Create decoder instance
+const decoder = DraalDecoder.create(instance.exports, memory);
+
+// Decoder is ready to receive data
+parentPort.postMessage({ ready: true });
+
+// Handle messages to/from worker
+parentPort.on('message', eventHandler(decoder, data => parentPort.postMessage(data)));

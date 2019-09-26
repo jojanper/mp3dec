@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "./decoders/mp3dec.h"
@@ -42,9 +43,11 @@ public:
     StreamableDecoderImpl(int mime) :
         m_initialized(false),
         m_bufferInitialized(false),
+        m_eos(false),
         m_dec(nullptr),
         m_decData(nullptr),
-        m_decSize(0)
+        m_decSize(0),
+        m_decBufSize(0)
     {
         if (mime == kMimeMP3)
             m_dec = new MP3Decoder();
@@ -71,6 +74,13 @@ public:
         // Buffer mode if not specified via API
         if (!attrs.getInt32Data(kBufferMode, mode))
             mode = kModuloBuffer;
+
+        // Query decoder buffer size to get correct input buffer size
+        auto decAttrs = this->m_dec->getAttributes(kBufferSize);
+        decAttrs->getInt32Data(kBufferSize, this->m_decBufSize);
+        this->m_decBufSize *= 2;
+        if (mode == kModuloBuffer)
+            bufsize += this->m_decBufSize;
 
         // Initialize input buffer
         auto result = this->m_buffer.init(bufsize, mode);
@@ -99,6 +109,8 @@ public:
 
         return this->m_buffer.setBuffer(buffer, size);
     }
+
+    virtual void setEndOfStream() override { this->m_eos = true; }
 
     virtual int16_t *getDecodedAudio(size_t &size) override
     {
@@ -131,6 +143,10 @@ public:
 
         this->resetReceivedAudio();
 
+        // Make sure there is enough data available for decoding
+        if (!this->m_eos && this->m_buffer.dataLeft() < (size_t)(this->m_decBufSize))
+            return false;
+
         // Decode frame
         if (this->m_initialized) {
             result = this->m_dec->decode();
@@ -148,11 +164,14 @@ protected:
 
     bool m_initialized;
     bool m_bufferInitialized;
+    bool m_eos;
+
     BaseDecoder *m_dec;
     MemoryBuffer m_buffer;
 
     int16_t *m_decData;
     uint32_t m_decSize;
+    int32_t m_decBufSize;
 };
 
 StreamableDecoder *

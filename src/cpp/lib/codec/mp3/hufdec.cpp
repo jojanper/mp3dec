@@ -64,11 +64,8 @@ treebased_codeword(Bit_Reservoir *br, HufNode *hNode)
 }
 #endif
 
-static int tbl_idx = -1;
-static uint32 codeword = 0;
-
 static inline int
-treebased_codeword0(BitBuffer *br, HufNode *hTree)
+treebased_codeword0(BitBuffer *br, HufNode *hTree, int &tbl_idx, uint32 &codeword)
 {
     int bits_read = 0;
     HufNode *pNode = hTree;
@@ -101,7 +98,7 @@ treebased_codeword0(BitBuffer *br, HufNode *hTree)
 }
 #else
 #define HUFFMAN_TBL_OPTIMIZED
-#ifdef HUFFAN_TBL_OPTIMIZED
+#ifdef HUFFMAN_TBL_OPTIMIZED
 /*
    Purpose:     Matrix to turn substraction into table fetch.
    Explanation: (see below). */
@@ -161,7 +158,7 @@ decode_codeword(BitBuffer *br, MP3_Huffman *h)
 
 #ifdef HUFFMAN_TBL_OPTIMIZED
     // Read the maximum codeword.
-    cand_codeword = br->look_ahead(N);
+    cand_codeword = br->lookAhead(N);
 
     /*
      * Codeword length of the codeword that has the

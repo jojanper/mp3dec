@@ -30,6 +30,9 @@ public:
     // Query the data size
     size_t dataSize() const { return this->m_dataSize; };
 
+    // Number of unprocessed data bytes
+    size_t dataLeft() const { return this->m_dataSize - this->m_readPos; }
+
     virtual const char *GetStreamName() const override { return m_deviceName; }
     virtual uint32_t GetStreamSize() const override { return m_bufSize; }
     virtual int32_t SeekBuffer(FilePos fpos, int32_t offset) override;

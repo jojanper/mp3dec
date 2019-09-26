@@ -33,16 +33,19 @@ pairtable(MP_Stream *mp, int section_length, int table_num, int16 *quant)
     MP3_Huffman *h = &mp->huffman[table_num];
 
     if (h->tree_len == 0)
-        memset(quant, 0, section_length << 1);
+        memset(quant, 0, section_length * sizeof(int16));
     else {
-        tbl_idx = -1;
+        int tbl_idx = -1;
+        uint32 codeword = 0;
         int16 *q = quant;
+
         if (h->linbits) {
             for (int i = 0; i < section_length; i += 2, q += 2) {
 #ifndef HUFFMAN_TREE_DECODER
                 uint32 qSamples = decode_codeword(mp->br, h);
 #else
-                uint32 qSamples = treebased_codeword0(mp->br, mp->huftree[table_num]);
+                uint32 qSamples =
+                    treebased_codeword0(mp->br, mp->huftree[table_num], tbl_idx, codeword);
 #endif /* not HUFFMAN_TREE_DECODER */
 
                 // Unpack coefficients.
@@ -87,7 +90,8 @@ pairtable(MP_Stream *mp, int section_length, int table_num, int16 *quant)
 #ifndef HUFFMAN_TREE_DECODER
                 uint32 qSamples = decode_codeword(mp->br, h);
 #else
-                uint32 qSamples = treebased_codeword0(mp->br, mp->huftree[table_num]);
+                uint32 qSamples =
+                    treebased_codeword0(mp->br, mp->huftree[table_num], tbl_idx, codeword);
 #endif /* not HUFFMAN_TREE_DECODER */
 
                 // Unpack coefficients.
@@ -137,7 +141,8 @@ quadtable(MP_Stream *mp, int start, int part2, int table_num, int16 *quant, int 
     MP3_Huffman *h = &mp->huffman[table_num];
 #endif
 
-    tbl_idx = -1;
+    int tbl_idx = -1;
+    uint32 codeword = 0;
     for (i = start; (mp->br->bitsRead() < (uint32) part2 && i < max_sfb_bins);
          i += 4, q += 4) {
         uint32 qSamples;
@@ -150,7 +155,7 @@ quadtable(MP_Stream *mp, int start, int part2, int table_num, int16 *quant, int 
 #ifndef HUFFMAN_TREE_DECODER
             qSamples = decode_codeword(mp->br, h);
 #else
-            qSamples = treebased_codeword0(mp->br, mp->huftree[table_num]);
+            qSamples = treebased_codeword0(mp->br, mp->huftree[table_num], tbl_idx, codeword);
 #endif /* not HUFFMAN_TREE_DECODER */
 
         // Unpack coefficients.

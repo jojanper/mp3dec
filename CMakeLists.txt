@@ -32,7 +32,7 @@ if(BUILD_TESTS AND NOT BUILD_WEBASSEMBLY)
 
   include(CTest)
   enable_testing()
-endif(BUILD_TESTS)
+endif(BUILD_TESTS AND NOT BUILD_WEBASSEMBLY)
 
 # Include source codes
 add_subdirectory(src)

@@ -101,7 +101,7 @@ MemoryBuffer::setBuffer(const uint8_t *buffer, size_t size)
         this->m_dataSize += size;
     }
     else if (this->m_mode == draaldecoder::kModuloBuffer) {
-        auto len = this->m_dataSize - this->m_readPos;
+        auto len = this->dataLeft();
         memcpy(this->m_buf, this->m_buf + this->m_readPos, len);
         memcpy(this->m_buf + len, buffer, size);
         this->m_dataSize = len + size;
