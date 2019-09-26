@@ -66,18 +66,18 @@ module.exports = program => {
         .description('Create Linux/x64 build')
         .option('--folder <folder>', 'Build folder', 'build')
         .option('--type <type>', 'Build type', 'Release')
-        .action(options => runBuild(options).catch(err => { throw new Error(err); }));
+        .action(options => runBuild(options).catch(code => process.exit(code)));
 
     program
         .command('x64-tests')
         .description('Execute Linux/x64 tests')
         .option('--folder <folder>', 'Build folder', 'build')
         .option('--memcheck', 'Enable memory checker', false)
-        .action(options => runTests(options).catch(err => { throw new Error(err); }));
+        .action(options => runTests(options).catch(code => process.exit(code)));
 
     program
         .command('x64-coverage')
         .description('Build code coverage report')
         .option('--folder <folder>', 'Build folder', 'build')
-        .action(options => runCoverage(options).catch(err => { throw new Error(err); }));
+        .action(options => runCoverage(options).catch(code => process.exit(code)));
 };
