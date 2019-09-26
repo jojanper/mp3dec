@@ -46,3 +46,10 @@ Decode using command line binary
 ```
 build/bin/mp3streamapp -stream <input.mp3> -out <output.wav> -wave-out
 ```
+
+Run unit tests with memory checking enabled and generate code coverage report
+```
+npm run x64-build -- --type=Debug --folder=build-debug
+npm run x64-tests -- --folder=build-debug --memcheck
+npm run x64-coverage -- --folder=build-debug
+```
