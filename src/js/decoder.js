@@ -30,6 +30,7 @@ class DraalDecoder {
      * Open decoder.
      */
     open() {
+        console.log('open decoder');
         this.decoder = this.api._openDecoder();
         return this;
     }
@@ -61,7 +62,10 @@ class DraalDecoder {
             this.wasmInput.set(dataChunk);
 
             if (!this.decoder) {
+                console.log('open');
                 this.open();
+                console.log('done');
+                return;
             }
 
             const init = this.api._initDecoder(this.decoder, this.wasmInputPtr, this.jsInput.length);
@@ -133,6 +137,18 @@ function getMemory() {
  * @param {*} heap Heap object.
  */
 function getImportObject(memory, heap) {
+    var tempRet0 = 0;
+
+    var setTempRet0 = function(value) {
+    tempRet0 = value;
+    };
+
+    var getTempRet0 = function() {
+    return tempRet0;
+    };
+
+    const length = heap.length;
+
     return {
         'global.Math': Math,
         global: {
@@ -144,7 +160,7 @@ function getImportObject(memory, heap) {
             __table_base: 0,
             memory,
             table: new WebAssembly.Table({ initial: 400, maximum: 400, element: 'anyfunc' }),
-            STACKTOP: 0,
+            STACKTOP: 0, //96304,
             STACK_MAX: memory.buffer.byteLength,
             ___syscall146: () => { },
             ___setErrNo: () => { },
@@ -162,6 +178,7 @@ function getImportObject(memory, heap) {
             },
 
             DYNAMICTOP_PTR: 8192,
+            //DYNAMICTOP_PTR: 96096, //8192,
             abort: err => {
                 throw new Error('abort ', err);
             },
@@ -180,9 +197,19 @@ function getImportObject(memory, heap) {
                 throw new Error('___wasi_fd_write');
             },
 
-            setTempRet0: () => 0,
+            ___wasi_fd_close: () => {
+                throw new Error('___wasi_fd_close');
+            },
 
-            _emscripten_get_heap_size: () => heap.length,
+            ___wasi_fd_seek: () => {
+                throw new Error('___wasi_fd_seek');
+            },
+
+            //setTempRet0: () => 0,
+            setTempRet0,
+            getTempRet0,
+
+            _emscripten_get_heap_size: () => length,
             _emscripten_resize_heap: (/* size */) => false, // always fail
             _emscripten_memcpy_big: (dest, src, count) => {
                 heap.set(heap.subarray(src, src + count), dest);
@@ -199,6 +226,14 @@ function getImportObject(memory, heap) {
             nullFunc_viiii: () => console.log('nullFunc_viiii'),
             nullFunc_viiiii: () => console.log('nullFunc_viiiii'),
             nullFunc_viiiiii: () => console.log('nullFunc_viiiiii'),
+
+            nullFunc_jiji: () => console.log('nullFunc_jiji'),
+            nullFunc_viij: () => console.log('nullFunc_viij'),
+            nullFunc_iidiiii: () => console.log('nullFunc_iidiiii'),
+
+            segfault: () => console.log('segfault'),
+            alignfault: () => console.log('alignfault'),
+
             ___cxa_begin_catch: () => console.log('___cxa_begin_catch'),
             ___lock: () => console.log('___lock'),
             ___unlock: () => console.log('___unlock'),
@@ -206,6 +241,7 @@ function getImportObject(memory, heap) {
             _llvm_cos_f64: () => 0,
             _llvm_sin_f64: () => 0,
             tempDoublePtr: 0,
+            //tempDoublePtr: 96288,
         }
     };
 }
