@@ -31,7 +31,14 @@ class DraalDecoder {
      */
     open() {
         console.log('open decoder');
+        console.log(this.api);
+        //this.api.__GLOBAL__sub_I_synfilt_cpp();
+
+        console.log('HEP');
+        console.log(this.api._sbrk());
         this.decoder = this.api._openDecoder();
+        console.log(this.decoder);
+
         return this;
     }
 
@@ -117,16 +124,18 @@ class DraalDecoder {
  * Return memory and heap objects for WebAssembly instance.
  */
 function getMemory() {
+    /*
     const memory = new WebAssembly.Memory({
         initial: 256,
         maximum: 256
     });
 
     const heap = new Uint8Array(memory.buffer);
+    */
 
     return {
-        memory,
-        heap
+        memory: null,
+        heap: null
     };
 }
 
@@ -136,113 +145,128 @@ function getMemory() {
  * @param {*} memory WebAssembly memory object.
  * @param {*} heap Heap object.
  */
-function getImportObject(memory, heap) {
+function getImportObject(/*memory, heap*/) {
+    const memory = new WebAssembly.Memory({
+        initial: 256,
+        maximum: 256
+    });
+
+    const heap = new Uint8Array(memory.buffer);
+
     var tempRet0 = 0;
 
-    var setTempRet0 = function(value) {
-    tempRet0 = value;
+    var setTempRet0 = function (value) {
+        tempRet0 = value;
+        console.log('setTempRet0');
     };
 
-    var getTempRet0 = function() {
-    return tempRet0;
+    var getTempRet0 = function () {
+        return tempRet0;
     };
 
-    const length = heap.length;
+    const heapLength = heap.length;
+
+    const table = new WebAssembly.Table({
+        initial: 400,
+        maximum: 400,
+        element: 'anyfunc'
+    });
+
+    const Math_cos = Math.cos;
+    const Math_sin = Math.sin;
+
+    const DYNAMICTOP_PTR = 1 * 8192;//94528;//96272;
+
+    const env = {
+        "___cxa_allocate_exception": () => console.log('___cxa_allocate_exception'),
+        "___cxa_uncaught_exceptions": () => console.log('___cxa_uncaught_exceptions'),
+        "___cxa_begin_catch": () => console.log('___cxa_begin_catch'),
+        "___cxa_throw": () => console.log('___cxa_throw'),
+        "___cxa_pure_virtual": () => console.log('___cxa_pure_virtual'),
+        //"___exception_addRef": () => { },
+        //"___exception_deAdjust": () => { },
+        //"___gxx_personality_v0": () => { },
+
+        "___syscall140": () => console.log('___syscall140'),
+        "___syscall6": () => console.log('___syscall6'),
+
+        "___lock": () => console.log('___lock'),
+        "___setErrNo": () => console.log('___setErrNo'),
+        "___unlock": () => console.log('___unlock'),
+        "___wasi_fd_close": () => console.log('___wasi_fd_close'),
+        "___wasi_fd_seek": () => console.log('___wasi_fd_seek'),
+        "___wasi_fd_write": () => console.log('___wasi_fd_write'),
+        "__memory_base": 1024,
+        "__table_base": 0,
+        "_abort": (err) => { throw new Error(err); },
+        "_emscripten_get_heap_size": () => {
+            console.log('HEAP size', heap.length);
+            return heap.length;
+        },
+        "_emscripten_memcpy_big": (dest, src, count) => {
+            console.log('emscripten_memcpy_big');
+            heap.set(heap.subarray(src, src + count), dest);
+        },
+        //"_malloc": () => console.log('malloc called'),
+        "_emscripten_resize_heap": () => { throw new Error('heap resize'); },
+        //"_fd_close": () => { },
+        //"_fd_seek": () => { },
+        //"_fd_write": () => { },
+
+        "_llvm_cos_f64": Math_cos,
+        "_llvm_sin_f64": Math_sin,
+        _llvm_exp2_f64: val => 2 ** val,
+
+        "_llvm_trap": () => { throw new Error('trap'); },
+        "abort": (err) => { throw new Error(err); },
+        "abortOnCannotGrowMemory": () => { throw new Error('abortOnCannotGrowMemory'); },
+        "abortStackOverflow": () => { throw new Error('abortStackOverflow'); },
+        //"demangle": (func) => func,
+        /*
+        "demangleAll": (text) => {
+            var regex =
+                /\b__Z[\w\d_]+/g;
+            return text.replace(regex,
+                function (x) {
+                    var y = x;
+                    return x === y ? x : (y + ' [' + x + ']');
+                });
+        },
+        */
+        //"getTempRet0": getTempRet0,
+        //"jsStackTrace": jsStackTrace,
+        memory,
+        "nullFunc_ii": () => console.log('nullFunc_ii'),
+        "nullFunc_iidiiii": () => console.log('nullFunc_iidiiii'),
+        "nullFunc_iii": () => console.log('nullFunc_iii'),
+        "nullFunc_iiii": () => console.log('nullFunc_iiii'),
+        "nullFunc_iiiii": () => console.log('nullFunc_iiiii'),
+        "nullFunc_jiji": () => console.log('nullFunc_jiji'),
+        "nullFunc_v": () => console.log('nullFunc_v'),
+        "nullFunc_vi": () => console.log('nullFunc_vi'),
+        "nullFunc_vii": () => console.log('nullFunc_vii'),
+        "nullFunc_viii": () => console.log('nullFunc_viii'),
+        "nullFunc_viiii": () => console.log('nullFunc_viiii'),
+        "nullFunc_viiiii": () => console.log('nullFunc_viiiii'),
+        "nullFunc_viiiiii": () => console.log('nullFunc_viiiii'),
+        "nullFunc_viij": () => console.log('nullFunc_viij'),
+        "setTempRet0": setTempRet0,
+        //"stackTrace": stackTrace,
+        //"table": new WebAssembly.Table({ initial: 5184, maximum: 5184, element: 'anyfunc' }),
+        table,
+        "tempDoublePtr": 94544,//96304,
+        DYNAMICTOP_PTR
+    };
+
 
     return {
         'global.Math': Math,
         global: {
-            Infinity: 10 ** 1000
+            //Infinity: 10 ** 1000
+            'NaN': NaN,
+            'Infinity': Infinity
         },
-        env: {
-            abortStackOverflow: () => { throw new Error('overflow'); },
-            __memory_base: 1024,
-            __table_base: 0,
-            memory,
-            table: new WebAssembly.Table({ initial: 400, maximum: 400, element: 'anyfunc' }),
-            STACKTOP: 0, //96304,
-            STACK_MAX: memory.buffer.byteLength,
-            ___syscall146: () => { },
-            ___setErrNo: () => { },
-            _abort: () => { throw new Error('abort'); },
-            __emval_take_value: () => { },
-            __emval_incref: () => { },
-            __emval_decref: () => { },
-            ___syscall6: () => { },
-            ___syscall140: () => { },
-            abortOnCannotGrowMemory: err => { throw new Error(err); },
-            _llvm_trap: () => { console.log('llvm_trap'); },
-            _llvm_exp2_f64: val => 2 ** val,
-            ___cxa_pure_virtual: () => {
-                throw new Error('___cxa_pure_virtual');
-            },
-
-            DYNAMICTOP_PTR: 8192,
-            //DYNAMICTOP_PTR: 96096, //8192,
-            abort: err => {
-                throw new Error('abort ', err);
-            },
-            ___cxa_throw: (/* ptr, type, destructor */) => {
-                throw new Error('___cxa_throw');
-            },
-            ___cxa_allocate_exception: (/* size */) => false, // always fail
-            ___cxa_uncaught_exception: () => {
-                throw new Error('___cxa_uncaught_exception');
-            },
-            ___cxa_uncaught_exceptions: () => {
-                throw new Error('___cxa_uncaught_exceptions');
-            },
-
-            ___wasi_fd_write: () => {
-                throw new Error('___wasi_fd_write');
-            },
-
-            ___wasi_fd_close: () => {
-                throw new Error('___wasi_fd_close');
-            },
-
-            ___wasi_fd_seek: () => {
-                throw new Error('___wasi_fd_seek');
-            },
-
-            //setTempRet0: () => 0,
-            setTempRet0,
-            getTempRet0,
-
-            _emscripten_get_heap_size: () => length,
-            _emscripten_resize_heap: (/* size */) => false, // always fail
-            _emscripten_memcpy_big: (dest, src, count) => {
-                heap.set(heap.subarray(src, src + count), dest);
-            },
-
-            nullFunc_ii: () => console.log('nullFunc_ii'),
-            nullFunc_iii: () => console.log('nullFunc_iii'),
-            nullFunc_iiii: () => console.log('nullFunc_iiii'),
-            nullFunc_iiiii: () => console.log('nullFunc_iiiii'),
-            nullFunc_v: () => console.log('nullFunc_v'),
-            nullFunc_vi: () => console.log('nullFunc_vi'),
-            nullFunc_vii: () => console.log('nullFunc_vii'),
-            nullFunc_viii: () => console.log('nullFunc_viii'),
-            nullFunc_viiii: () => console.log('nullFunc_viiii'),
-            nullFunc_viiiii: () => console.log('nullFunc_viiiii'),
-            nullFunc_viiiiii: () => console.log('nullFunc_viiiiii'),
-
-            nullFunc_jiji: () => console.log('nullFunc_jiji'),
-            nullFunc_viij: () => console.log('nullFunc_viij'),
-            nullFunc_iidiiii: () => console.log('nullFunc_iidiiii'),
-
-            segfault: () => console.log('segfault'),
-            alignfault: () => console.log('alignfault'),
-
-            ___cxa_begin_catch: () => console.log('___cxa_begin_catch'),
-            ___lock: () => console.log('___lock'),
-            ___unlock: () => console.log('___unlock'),
-            ___syscall54: () => { },
-            _llvm_cos_f64: () => 0,
-            _llvm_sin_f64: () => 0,
-            tempDoublePtr: 0,
-            //tempDoublePtr: 96288,
-        }
+        env
     };
 }
 

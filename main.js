@@ -6,6 +6,16 @@ const argv = require('minimist')(process.argv.slice(2));
 const { input, output } = argv;
 const WASMLIB = path.join(__dirname, 'build-wasm/bin/mp3dec_static.wasm');
 
+/*
+const {
+    DraalDecoder, getImportObject, getMemory, eventHandler
+} = require('./src/js/decoder');
+
+const importObj = require('./src/js/import');
+console.log(importObj);
+//as
+*/
+
 function startDecoding(worker, stream, chunkSize) {
     stream.on('readable', () => {
         let chunk;
@@ -38,6 +48,15 @@ if (!output) {
 const stream = fs.createReadStream(input);
 const outStream = fs.createWriteStream(output);
 const chunkSize = 32 * 1024;
+
+// Initialize WASM module
+//const { memory, heap } = getMemory();
+//const wasmModule = new WebAssembly.Module(fs.readFileSync(WASMLIB));
+//const instance = new WebAssembly.Instance(wasmModule, getImportObject(memory, heap));
+//const instance = new WebAssembly.Instance(wasmModule, importObj.asm);
+
+// Create decoder instance
+//const decoder = DraalDecoder.create(instance.exports, importObj.asm.env.memory);
 
 // Start Web Worker and pass the library name as input
 const worker = new Worker('./src/js/worker.js', { workerData: { workerLib: WASMLIB } });
