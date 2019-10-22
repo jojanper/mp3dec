@@ -556,12 +556,14 @@ function writeAsciiToMemory(str, buffer, dontAddNull) {
 }
 */
 
-var WASM_PAGE_SIZE = 65536;
+//var WASM_PAGE_SIZE = 65536;
 
-var buffer, HEAP8, HEAPU8, HEAP16, HEAPU16, HEAP32, HEAPU32, HEAPF32, HEAPF64;
+var buffer, HEAP8, HEAPU8, HEAP32; //, HEAP16, HEAPU16, HEAP32, HEAPU32, HEAPF32, HEAPF64;
+
+var STACK_BASE = 94576, DYNAMIC_BASE = 5337456, DYNAMICTOP_PTR = 94384;
 
 function updateGlobalBufferAndViews(buf) {
-    buffer = buf;
+    //buffer = buf;
     Module["HEAP8"] = HEAP8 = new Int8Array(buf);
     //Module["HEAP16"] = HEAP16 = new Int16Array(buf);
     Module["HEAP32"] = HEAP32 = new Int32Array(buf);
@@ -570,11 +572,10 @@ function updateGlobalBufferAndViews(buf) {
     //Module["HEAPU32"] = HEAPU32 = new Uint32Array(buf);
     //Module["HEAPF32"] = HEAPF32 = new Float32Array(buf);
     //Module["HEAPF64"] = HEAPF64 = new Float64Array(buf);
+    HEAP32[DYNAMICTOP_PTR >> 2] = DYNAMIC_BASE;
 }
 
-var STACK_BASE = 94576, DYNAMIC_BASE = 5337456, DYNAMICTOP_PTR = 94384;
-
-var INITIAL_TOTAL_MEMORY = Module["TOTAL_MEMORY"] || 16777216;
+//var INITIAL_TOTAL_MEMORY = Module["TOTAL_MEMORY"] || 16777216;
 
 /*
 if (Module["wasmMemory"]) {
@@ -582,8 +583,8 @@ if (Module["wasmMemory"]) {
 } else {
     */
 wasmMemory = new WebAssembly.Memory({
-    "initial": INITIAL_TOTAL_MEMORY / WASM_PAGE_SIZE,
-    "maximum": INITIAL_TOTAL_MEMORY / WASM_PAGE_SIZE
+    "initial": 256, // INITIAL_TOTAL_MEMORY / WASM_PAGE_SIZE,
+    "maximum": 256 // INITIAL_TOTAL_MEMORY / WASM_PAGE_SIZE
 });
 /*
 }
@@ -600,7 +601,7 @@ buffer = wasmMemory.buffer;
 
 updateGlobalBufferAndViews(buffer);
 
-HEAP32[DYNAMICTOP_PTR >> 2] = DYNAMIC_BASE;
+//HEAP32[DYNAMICTOP_PTR >> 2] = DYNAMIC_BASE;
 
 /*
 function callRuntimeCallbacks(callbacks) {
