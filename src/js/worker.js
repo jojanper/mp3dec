@@ -6,7 +6,7 @@ const {
 } = require('./decoder');
 
 const importObj = require('./import');
-console.log(importObj);
+//console.log(importObj);
 
 const { workerLib } = workerData;
 

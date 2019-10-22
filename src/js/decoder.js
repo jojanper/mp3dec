@@ -30,14 +30,14 @@ class DraalDecoder {
      * Open decoder.
      */
     open() {
-        console.log('open decoder');
-        console.log(this.api);
+        //console.log('open decoder');
+        //console.log(this.api);
         //this.api.__GLOBAL__sub_I_synfilt_cpp();
 
-        console.log('HEP');
-        console.log(this.api._sbrk());
+        //console.log('HEP');
+        //console.log(this.api._sbrk());
         this.decoder = this.api._openDecoder();
-        console.log(this.decoder);
+        //console.log(this.decoder);
 
         return this;
     }
@@ -69,10 +69,10 @@ class DraalDecoder {
             this.wasmInput.set(dataChunk);
 
             if (!this.decoder) {
-                console.log('open');
+                //console.log('open');
                 this.open();
-                console.log('done');
-                return;
+                //console.log('done');
+                //return;
             }
 
             const init = this.api._initDecoder(this.decoder, this.wasmInputPtr, this.jsInput.length);
