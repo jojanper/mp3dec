@@ -6,7 +6,7 @@ const {
 } = require('./decoder');
 
 const importObj = require('./import');
-//console.log(importObj);
+console.log(importObj);
 
 const { workerLib } = workerData;
 
@@ -14,11 +14,11 @@ const { workerLib } = workerData;
 //const { memory, heap } = getMemory();
 const wasmModule = new WebAssembly.Module(fs.readFileSync(workerLib));
 //const instance = new WebAssembly.Instance(wasmModule, getImportObject(memory, heap));
-const instance = new WebAssembly.Instance(wasmModule, importObj.asm);
+const instance = new WebAssembly.Instance(wasmModule, importObj);
 
 // Create decoder instance
 //const decoder = DraalDecoder.create(instance.exports, memory);
-const decoder = DraalDecoder.create(instance.exports, importObj.asm.env.memory);
+const decoder = DraalDecoder.create(instance.exports, importObj.env.memory);
 
 // Decoder is ready to receive data
 parentPort.postMessage({ ready: true });

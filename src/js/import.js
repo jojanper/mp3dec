@@ -173,7 +173,7 @@ Module["inspect"] = function () {
 */
 
 var Module = {};
-module["exports"] = Module;
+//module["exports"] = Module;
 
 //var out = Module["print"] || console.log.bind(console);
 
@@ -560,14 +560,16 @@ function writeAsciiToMemory(str, buffer, dontAddNull) {
 
 var buffer, HEAP8, HEAPU8, HEAP32; //, HEAP16, HEAPU16, HEAP32, HEAPU32, HEAPF32, HEAPF64;
 
-var STACK_BASE = 94576, DYNAMIC_BASE = 5337456, DYNAMICTOP_PTR = 94384;
+// var STACK_BASE = 94576,
+
+var DYNAMIC_BASE = 5337456, DYNAMICTOP_PTR = 94384;
 
 function updateGlobalBufferAndViews(buf) {
     //buffer = buf;
-    Module["HEAP8"] = HEAP8 = new Int8Array(buf);
+    /*Module["HEAP8"] = */HEAP8 = new Int8Array(buf);
     //Module["HEAP16"] = HEAP16 = new Int16Array(buf);
-    Module["HEAP32"] = HEAP32 = new Int32Array(buf);
-    Module["HEAPU8"] = HEAPU8 = new Uint8Array(buf);
+    /*Module["HEAP32"] =*/ HEAP32 = new Int32Array(buf);
+    /*Module["HEAPU8"] =*/ HEAPU8 = new Uint8Array(buf);
     //Module["HEAPU16"] = HEAPU16 = new Uint16Array(buf);
     //Module["HEAPU32"] = HEAPU32 = new Uint32Array(buf);
     //Module["HEAPF32"] = HEAPF32 = new Float32Array(buf);
@@ -728,15 +730,17 @@ Module["preloadedAudios"] = {};
 */
 
 function abort(what) {
+    /*
     if (Module["onAbort"]) {
         Module["onAbort"](what);
     }
-    what += "";
-    out(what);
-    err(what);
-    ABORT = true;
-    EXITSTATUS = 1;
-    throw "abort(" + what + "). Build with -s ASSERTIONS=1 for more info.";
+    */
+    //what += "";
+    //out(what);
+    //err(what);
+    //ABORT = true;
+    //EXITSTATUS = 1;
+    throw new Error("abort(" + what + "). Build with -s ASSERTIONS=1 for more info");
 }
 
 /*
@@ -792,15 +796,16 @@ function getBinaryPromise() {
 
 function createWasm() {
     var info = {
-        "env": asmLibraryArg,
-        "wasi_unstable": asmLibraryArg,
-        "global": {
-            "NaN": NaN,
+        env: asmLibraryArg,
+        //"wasi_unstable": asmLibraryArg,
+        global: {
+            NaN: NaN,
             Infinity: Infinity
         },
-        "global.Math": Math,
+        'global.Math': Math,
         //"asm2wasm": asm2wasmImports
     };
+
     return info;
     /*
     function receiveInstance(instance, module) {
@@ -852,9 +857,9 @@ function createWasm() {
 
 Module["asm"] = createWasm;
 
-var tempDouble;
+//var tempDouble;
 
-var tempI64;
+//var tempI64;
 
 var tempDoublePtr = 94560;
 
@@ -893,17 +898,20 @@ function stackTrace() {
 }
 */
 
-var ___exception_infos = {};
+//var ___exception_infos = {};
 
-var ___exception_caught = [];
+//var ___exception_caught = [];
 
 function ___exception_addRef(ptr) {
+    /*
     if (!ptr) return;
     var info = ___exception_infos[ptr];
     info.refcount++;
+    */
 }
 
 function ___exception_deAdjust(adjusted) {
+    /*
     if (!adjusted || ___exception_infos[adjusted]) return adjusted;
     for (var key in ___exception_infos) {
         var ptr = +key;
@@ -915,10 +923,12 @@ function ___exception_deAdjust(adjusted) {
             }
         }
     }
+    */
     return adjusted;
 }
 
 function ___cxa_begin_catch(ptr) {
+    /*
     var info = ___exception_infos[ptr];
     if (info && !info.caught) {
         info.caught = true;
@@ -927,6 +937,7 @@ function ___cxa_begin_catch(ptr) {
     if (info) info.rethrown = false;
     ___exception_caught.push(ptr);
     ___exception_addRef(___exception_deAdjust(ptr));
+    */
     return ptr;
 }
 
@@ -1135,43 +1146,39 @@ function _emscripten_memcpy_big(dest, src, num) {
 var asmGlobalArg = {};
 
 var asmLibraryArg = {
-    "___cxa_begin_catch": ___cxa_begin_catch,
-    "___exception_addRef": ___exception_addRef,
-    "___exception_deAdjust": ___exception_deAdjust,
-    "___gxx_personality_v0": ___gxx_personality_v0,
-    "___wasi_fd_close": ___wasi_fd_close,
-    "___wasi_fd_seek": ___wasi_fd_seek,
-    "___wasi_fd_write": ___wasi_fd_write,
-    "__memory_base": 1024,
-    "__table_base": 0,
-    "_abort": _abort,
-    "_emscripten_get_heap_size": _emscripten_get_heap_size,
-    "_emscripten_memcpy_big": _emscripten_memcpy_big,
-    "_emscripten_resize_heap": _emscripten_resize_heap,
-    "_fd_close": _fd_close,
-    "_fd_seek": _fd_seek,
-    "_fd_write": _fd_write,
-    "_llvm_exp2_f32": _llvm_exp2_f32,
-    "_llvm_exp2_f64": _llvm_exp2_f64,
-    "_llvm_trap": _llvm_trap,
-    "abort": abort,
-    "abortOnCannotGrowMemory": abortOnCannotGrowMemory,
-    //"demangle": demangle,
-    //"demangleAll": demangleAll,
-    //"flush_NO_FILESYSTEM": flush_NO_FILESYSTEM,
-    "getTempRet0": getTempRet0,
-    //"jsStackTrace": jsStackTrace,
-    "memory": wasmMemory,
-    "setTempRet0": setTempRet0,
-    //"stackTrace": stackTrace,
-    "table": wasmTable,
-    "tempDoublePtr": tempDoublePtr
+    ___cxa_begin_catch,
+    ___exception_addRef,
+    ___exception_deAdjust,
+    ___gxx_personality_v0,
+    ___wasi_fd_close,
+    ___wasi_fd_seek,
+    ___wasi_fd_write,
+    __memory_base: 1024,
+    __table_base: 0,
+    _abort,
+    _emscripten_get_heap_size,
+    _emscripten_memcpy_big,
+    _emscripten_resize_heap,
+    _fd_close,
+    _fd_seek,
+    _fd_write,
+    _llvm_exp2_f32,
+    _llvm_exp2_f64,
+    _llvm_trap,
+    abort,
+    abortOnCannotGrowMemory,
+    getTempRet0,
+    memory: wasmMemory,
+    setTempRet0,
+    table: wasmTable,
+    tempDoublePtr
 };
 
-const asm = Module["asm"](asmGlobalArg, asmLibraryArg, buffer);
+//const asm = Module["asm"](asmGlobalArg, asmLibraryArg, buffer);
 //module.export = asm;
 
-Module["asm"] = asm;
+Module["asm"] = Module["asm"](asmGlobalArg, asmLibraryArg, buffer);;
+module.exports = Module["asm"];
 
 /*
 var __ZSt18uncaught_exceptionv = Module["__ZSt18uncaught_exceptionv"] = function () {
@@ -1382,4 +1389,4 @@ noExitRuntime = true;
 */
 
 //run();
-module.export = Module["asm"];
+//module.export = Module["asm"];

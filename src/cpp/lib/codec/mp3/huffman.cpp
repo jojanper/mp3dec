@@ -108,7 +108,7 @@ III_huffman_decode(MP_Stream *mp, int gr, int ch, int part2)
         quant += x - i;
 
         // TODO: This should not be needed for WebAssembly
-#ifdef HAVE_WEBASSEMBLY
+#ifdef HAVE_WEBASSEMBLY9
         auto len = (x - i) / 2;
         auto remaining = (x - i) - len;
         memset(
