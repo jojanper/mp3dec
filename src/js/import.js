@@ -1146,6 +1146,11 @@ function _emscripten_memcpy_big(dest, src, num) {
 var asmGlobalArg = {};
 
 var asmLibraryArg = {
+    __cxa_pure_virtual: () => {},
+    __cxa_allocate_exception: () => {},
+    __cxa_throw: () => {},
+    __cxa_uncaught_exceptions: () => {},
+    sbrk: () => {},
     ___cxa_begin_catch,
     ___exception_addRef,
     ___exception_deAdjust,
@@ -1158,6 +1163,7 @@ var asmLibraryArg = {
     _abort,
     _emscripten_get_heap_size,
     _emscripten_memcpy_big,
+    emscripten_memcpy_big: _emscripten_memcpy_big,
     _emscripten_resize_heap,
     _fd_close,
     _fd_seek,

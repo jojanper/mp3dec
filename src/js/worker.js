@@ -15,6 +15,7 @@ const { workerLib } = workerData;
 const wasmModule = new WebAssembly.Module(fs.readFileSync(workerLib));
 //const instance = new WebAssembly.Instance(wasmModule, getImportObject(memory, heap));
 const instance = new WebAssembly.Instance(wasmModule, importObj);
+console.log(instance.exports);
 
 // Create decoder instance
 //const decoder = DraalDecoder.create(instance.exports, memory);
