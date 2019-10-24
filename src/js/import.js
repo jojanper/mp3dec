@@ -797,7 +797,7 @@ function getBinaryPromise() {
 function createWasm() {
     var info = {
         env: asmLibraryArg,
-        //"wasi_unstable": asmLibraryArg,
+        wasi_unstable: asmLibraryArg,
         global: {
             NaN: NaN,
             Infinity: Infinity
@@ -1164,10 +1164,13 @@ var asmLibraryArg = {
     _emscripten_get_heap_size,
     _emscripten_memcpy_big,
     emscripten_memcpy_big: _emscripten_memcpy_big,
-    _emscripten_resize_heap,
+    emscripten_resize_heap: _emscripten_resize_heap,
     _fd_close,
+    fd_close: _fd_close,
     _fd_seek,
+    fd_seek: _fd_seek,
     _fd_write,
+    fd_write: _fd_write,
     _llvm_exp2_f32,
     _llvm_exp2_f64,
     _llvm_trap,
