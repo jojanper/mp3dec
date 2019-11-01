@@ -1,5 +1,5 @@
 /**
- * JavaScript interface for accessing MP3 decoder operating in WebAssembly context.
+ * JavaScript interface for accessing audio (e.g., MP3) decoder operating in WebAssembly context.
  * This interface wraps the underlying WebAssembly decoder API into easy-to-use JS class.
  */
 class DraalDecoder {
@@ -30,7 +30,7 @@ class DraalDecoder {
      * Open decoder.
      */
     open() {
-        this.decoder = this.api._openDecoder();
+        this.decoder = this.api.openDecoder();
         return this;
     }
 
@@ -38,8 +38,8 @@ class DraalDecoder {
      * Close decoder and related resource.
      */
     close() {
-        this.api._destroyBuffer(this.wasmInputPtr);
-        this.api._closeDecoder(this.decoder);
+        this.api.destroyBuffer(this.wasmInputPtr);
+        this.api.closeDecoder(this.decoder);
 
         this.decoder = null;
         this.wasmInputPtr = null;
@@ -55,7 +55,7 @@ class DraalDecoder {
     decode(dataChunk, outStreamApi) {
         if (!this.initialized) {
             this.jsInput = new Uint8Array(dataChunk.length);
-            this.wasmInputPtr = this.api._createBuffer(this.jsInput.length);
+            this.wasmInputPtr = this.api.createBuffer(this.jsInput.length);
             this.wasmInput = new Uint8Array(this.memory.buffer, this.wasmInputPtr, this.jsInput.length);
 
             this.wasmInput.set(dataChunk);
@@ -64,7 +64,7 @@ class DraalDecoder {
                 this.open();
             }
 
-            const init = this.api._initDecoder(this.decoder, this.wasmInputPtr, this.jsInput.length);
+            const init = this.api.initDecoder(this.decoder, this.wasmInputPtr, this.jsInput.length);
             if (!init) {
                 return false;
             }
@@ -72,7 +72,7 @@ class DraalDecoder {
             this.initialized = true;
         } else {
             this.wasmInput.set(dataChunk);
-            this.api._addInput(this.decoder, this.wasmInputPtr, dataChunk.length);
+            this.api.addInput(this.decoder, this.wasmInputPtr, dataChunk.length);
         }
 
         return this._decodeFrame(outStreamApi);
@@ -87,10 +87,10 @@ class DraalDecoder {
     _decodeFrame(outStreamApi) {
         let status = true;
         while (status) {
-            const result = this.api._decode(this.decoder);
+            const result = this.api.decode(this.decoder);
             if (result) {
-                const decPtr = this.api._getAudio(this.decoder);
-                const nDecSamples = this.api._getAudioSize(this.decoder);
+                const decPtr = this.api.getAudio(this.decoder);
+                const nDecSamples = this.api.getAudioSize(this.decoder);
                 // console.log('Decoding result', result, this.frames, nDecSamples);
 
                 const jsData = new Uint8Array(this.memory.buffer, decPtr, nDecSamples);
@@ -109,8 +109,8 @@ class DraalDecoder {
     }
 }
 
-const DYNAMIC_BASE = 5337456;
-const DYNAMICTOP_PTR = 94384;
+const DYNAMIC_BASE = 5333200;
+const DYNAMICTOP_PTR = 90160;
 
 /**
  * Return memory and heap objects for WebAssembly instance.
@@ -139,7 +139,7 @@ function abort(what) {
 }
 
 /**
- * Return object to be imported for WebAssembly instance.
+ * Return minimal object data to be imported for WebAssembly instance.
  *
  * @param {*} memObject WebAssembly memory object.
  */
@@ -155,45 +155,28 @@ function getImportObject(memObject) {
     }
 
     const table = new WebAssembly.Table({
-        initial: 400,
-        maximum: 400,
+        initial: 127,
+        maximum: 127,
         element: 'anyfunc'
     });
 
     const env = {
-        ___cxa_begin_catch: () => { },
-        ___exception_addRef: () => { },
-        ___exception_deAdjust: () => { },
-        ___gxx_personality_v0: () => { },
+        __cxa_allocate_exception: () => abort('cxa_allocate_exception'),
+        __cxa_throw: () => abort('cxa_throw'),
 
-        __memory_base: 1024,
-        __table_base: 0,
-        memory: memObject.memory,
-        table,
-        tempDoublePtr: 94560,
-
-        _emscripten_get_heap_size: () => memObject.HEAPU8.length,
-        _emscripten_memcpy_big:
-            (dest, src, num) => memObject.HEAPU8.set(memObject.HEAPU8.subarray(src, src + num), dest),
-        _emscripten_resize_heap: () => abort('emscripten_resize_heap'),
-
-        _fd_close: () => { },
         fd_close: () => { },
-        _fd_seek: () => { },
         fd_seek: () => { },
-        _fd_write: () => { },
         fd_write: () => { },
 
-        ___wasi_fd_close: () => { },
-        ___wasi_fd_seek: () => { },
-        ___wasi_fd_write: () => { },
+        emscripten_get_sbrk_ptr: () => 90160,
+        emscripten_memcpy_big:
+            (dest, src, num) => memObject.HEAPU8.set(memObject.HEAPU8.subarray(src, src + num), dest),
+        emscripten_resize_heap: () => abort('emscripten_resize_heap'),
 
-        _llvm_exp2_f32: val => 2 ** val,
-        _llvm_exp2_f64: val => 2 ** val,
-        _llvm_trap: () => abort('trap'),
+        memory: memObject.memory,
+        table,
 
         abort,
-        _abort: abort,
         getTempRet0,
         setTempRet0
     };
@@ -205,7 +188,8 @@ function getImportObject(memObject) {
             Infinity
         },
         'global.Math': Math,
-        env
+        env,
+        wasi_unstable: env
     };
 }
 
