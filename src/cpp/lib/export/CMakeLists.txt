@@ -7,7 +7,7 @@ set(EXTRA_LINK_LIBRARIES
 set(OBJECT_SRCS decoder.h decoder.cpp)
 build_object_library("capi" "${OBJECT_SRCS}" "${DEFINES}")
 
-# Final library will consits of these object libraries
+# Final library will consists of these object libraries
 set(LIB_SRCS
   $<TARGET_OBJECTS:commoncodec>
   $<TARGET_OBJECTS:mp3codec>
