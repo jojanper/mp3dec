@@ -21,7 +21,10 @@
   },
   "keywords": [
     "MP3",
-    "N-API"
+    "N-API",
+    "WASM",
+    "WebAssembly",
+    "emscripten"
   ],
   "author": "Juha Ojanperä <juha.ojanpera@gmail.com>",
   "license": "MIT",
