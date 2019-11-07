@@ -1,5 +1,5 @@
 /**
- * JavaScript interface for accessing MP3 decoder operating in WebAssembly context.
+ * JavaScript interface for accessing audio (e.g., MP3) decoder operating in WebAssembly context.
  * This interface wraps the underlying WebAssembly decoder API into easy-to-use JS class.
  */
 class DraalDecoder {
@@ -30,7 +30,7 @@ class DraalDecoder {
      * Open decoder.
      */
     open() {
-        this.decoder = this.api._openDecoder();
+        this.decoder = this.api.openDecoder();
         return this;
     }
 
@@ -38,8 +38,8 @@ class DraalDecoder {
      * Close decoder and related resource.
      */
     close() {
-        this.api._destroyBuffer(this.wasmInputPtr);
-        this.api._closeDecoder(this.decoder);
+        this.api.destroyBuffer(this.wasmInputPtr);
+        this.api.closeDecoder(this.decoder);
 
         this.decoder = null;
         this.wasmInputPtr = null;
@@ -55,7 +55,7 @@ class DraalDecoder {
     decode(dataChunk, outStreamApi) {
         if (!this.initialized) {
             this.jsInput = new Uint8Array(dataChunk.length);
-            this.wasmInputPtr = this.api._createBuffer(this.jsInput.length);
+            this.wasmInputPtr = this.api.createBuffer(this.jsInput.length);
             this.wasmInput = new Uint8Array(this.memory.buffer, this.wasmInputPtr, this.jsInput.length);
 
             this.wasmInput.set(dataChunk);
@@ -64,7 +64,7 @@ class DraalDecoder {
                 this.open();
             }
 
-            const init = this.api._initDecoder(this.decoder, this.wasmInputPtr, this.jsInput.length);
+            const init = this.api.initDecoder(this.decoder, this.wasmInputPtr, this.jsInput.length);
             if (!init) {
                 return false;
             }
@@ -72,7 +72,7 @@ class DraalDecoder {
             this.initialized = true;
         } else {
             this.wasmInput.set(dataChunk);
-            this.api._addInput(this.decoder, this.wasmInputPtr, dataChunk.length);
+            this.api.addInput(this.decoder, this.wasmInputPtr, dataChunk.length);
         }
 
         return this._decodeFrame(outStreamApi);
@@ -87,10 +87,10 @@ class DraalDecoder {
     _decodeFrame(outStreamApi) {
         let status = true;
         while (status) {
-            const result = this.api._decode(this.decoder);
+            const result = this.api.decode(this.decoder);
             if (result) {
-                const decPtr = this.api._getAudio(this.decoder);
-                const nDecSamples = this.api._getAudioSize(this.decoder);
+                const decPtr = this.api.getAudio(this.decoder);
+                const nDecSamples = this.api.getAudioSize(this.decoder);
                 // console.log('Decoding result', result, this.frames, nDecSamples);
 
                 const jsData = new Uint8Array(this.memory.buffer, decPtr, nDecSamples);
@@ -109,6 +109,9 @@ class DraalDecoder {
     }
 }
 
+const DYNAMIC_BASE = 5333200;
+const DYNAMICTOP_PTR = 90160;
+
 /**
  * Return memory and heap objects for WebAssembly instance.
  */
@@ -118,95 +121,75 @@ function getMemory() {
         maximum: 256
     });
 
-    const heap = new Uint8Array(memory.buffer);
+    const heap = memory.buffer;
+
+    const HEAP32 = new Int32Array(heap);
+    const HEAPU8 = new Uint8Array(heap);
+    HEAP32[DYNAMICTOP_PTR / 4] = DYNAMIC_BASE;
 
     return {
         memory,
-        heap
+        HEAPU8,
+        HEAP32
     };
 }
 
+function abort(what) {
+    throw new Error(`abort(${what}). Build with -s ASSERTIONS=1 for more info`);
+}
+
 /**
- * Return object to be imported for WebAssembly instance.
+ * Return minimal object data to be imported for WebAssembly instance.
  *
- * @param {*} memory WebAssembly memory object.
- * @param {*} heap Heap object.
+ * @param {*} memObject WebAssembly memory object.
  */
-function getImportObject(memory, heap) {
+function getImportObject(memObject) {
+    let tempRet0 = 0;
+
+    function setTempRet0(value) {
+        tempRet0 = value;
+    }
+
+    function getTempRet0() {
+        return tempRet0;
+    }
+
+    const table = new WebAssembly.Table({
+        initial: 127,
+        maximum: 127,
+        element: 'anyfunc'
+    });
+
+    const env = {
+        __cxa_allocate_exception: () => abort('cxa_allocate_exception'),
+        __cxa_throw: () => abort('cxa_throw'),
+
+        fd_close: () => { },
+        fd_seek: () => { },
+        fd_write: () => { },
+
+        emscripten_get_sbrk_ptr: () => DYNAMICTOP_PTR,
+        emscripten_memcpy_big:
+            (dest, src, num) => memObject.HEAPU8.set(memObject.HEAPU8.subarray(src, src + num), dest),
+        emscripten_resize_heap: () => abort('emscripten_resize_heap'),
+
+        memory: memObject.memory,
+        table,
+
+        abort,
+        getTempRet0,
+        setTempRet0
+    };
+
+
     return {
-        'global.Math': Math,
         global: {
-            Infinity: 10 ** 1000
+            NaN,
+            Infinity
         },
-        env: {
-            abortStackOverflow: () => { throw new Error('overflow'); },
-            __memory_base: 1024,
-            __table_base: 0,
-            memory,
-            table: new WebAssembly.Table({ initial: 400, maximum: 400, element: 'anyfunc' }),
-            STACKTOP: 0,
-            STACK_MAX: memory.buffer.byteLength,
-            ___syscall146: () => { },
-            ___setErrNo: () => { },
-            _abort: () => { throw new Error('abort'); },
-            __emval_take_value: () => { },
-            __emval_incref: () => { },
-            __emval_decref: () => { },
-            ___syscall6: () => { },
-            ___syscall140: () => { },
-            abortOnCannotGrowMemory: err => { throw new Error(err); },
-            _llvm_trap: () => { console.log('llvm_trap'); },
-            _llvm_exp2_f64: val => 2 ** val,
-            ___cxa_pure_virtual: () => {
-                throw new Error('___cxa_pure_virtual');
-            },
-
-            DYNAMICTOP_PTR: 8192,
-            abort: err => {
-                throw new Error('abort ', err);
-            },
-            ___cxa_throw: (/* ptr, type, destructor */) => {
-                throw new Error('___cxa_throw');
-            },
-            ___cxa_allocate_exception: (/* size */) => false, // always fail
-            ___cxa_uncaught_exception: () => {
-                throw new Error('___cxa_uncaught_exception');
-            },
-            ___cxa_uncaught_exceptions: () => {
-                throw new Error('___cxa_uncaught_exceptions');
-            },
-
-            ___wasi_fd_write: () => {
-                throw new Error('___wasi_fd_write');
-            },
-
-            setTempRet0: () => 0,
-
-            _emscripten_get_heap_size: () => heap.length,
-            _emscripten_resize_heap: (/* size */) => false, // always fail
-            _emscripten_memcpy_big: (dest, src, count) => {
-                heap.set(heap.subarray(src, src + count), dest);
-            },
-
-            nullFunc_ii: () => console.log('nullFunc_ii'),
-            nullFunc_iii: () => console.log('nullFunc_iii'),
-            nullFunc_iiii: () => console.log('nullFunc_iiii'),
-            nullFunc_iiiii: () => console.log('nullFunc_iiiii'),
-            nullFunc_v: () => console.log('nullFunc_v'),
-            nullFunc_vi: () => console.log('nullFunc_vi'),
-            nullFunc_vii: () => console.log('nullFunc_vii'),
-            nullFunc_viii: () => console.log('nullFunc_viii'),
-            nullFunc_viiii: () => console.log('nullFunc_viiii'),
-            nullFunc_viiiii: () => console.log('nullFunc_viiiii'),
-            nullFunc_viiiiii: () => console.log('nullFunc_viiiiii'),
-            ___cxa_begin_catch: () => console.log('___cxa_begin_catch'),
-            ___lock: () => console.log('___lock'),
-            ___unlock: () => console.log('___unlock'),
-            ___syscall54: () => { },
-            _llvm_cos_f64: () => 0,
-            _llvm_sin_f64: () => 0,
-            tempDoublePtr: 0,
-        }
+        'global.Math': Math,
+        env,
+        wasi_unstable: env
     };
 }
 

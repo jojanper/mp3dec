@@ -11,7 +11,7 @@ MP3 decoder for various build targets. Build targets include at the moment Linux
 - [GCC](https://gcc.gnu.org/)
   - For Linux building
 - [Emscripten](https://emscripten.org/index.html)
-  - For WebAssembly building, tested with version 1.38.45
+  - For WebAssembly building, tested with version 1.39.1
 
 ### Install dependencies
 ```
@@ -53,3 +53,12 @@ npm run x64-build -- --type=Debug --folder=build-debug
 npm run x64-tests -- --folder=build-debug --memcheck
 npm run x64-coverage -- --folder=build-debug
 ```
+
+-----
+
+### Troubleshooting tips
+
+- Run in Debug mode
+- Add following line (example only) to `build-wasm/bin/mp3dec_static.html`
+    - ```Module.onRuntimeInitialized=function() {console.log(Module); console.log(Module._openDecoder());}```
+- Serve content using `npm run serve-build`
