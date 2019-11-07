@@ -168,7 +168,7 @@ function getImportObject(memObject) {
         fd_seek: () => { },
         fd_write: () => { },
 
-        emscripten_get_sbrk_ptr: () => 90160,
+        emscripten_get_sbrk_ptr: () => DYNAMICTOP_PTR,
         emscripten_memcpy_big:
             (dest, src, num) => memObject.HEAPU8.set(memObject.HEAPU8.subarray(src, src + num), dest),
         emscripten_resize_heap: () => abort('emscripten_resize_heap'),
