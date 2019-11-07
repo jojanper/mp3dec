@@ -12,7 +12,7 @@
 /*
    Purpose:     Legal bitrates for MPEG-1, MPEG-2 and MPEG-2.5 audio bitstreams.
    Explanation: - */
-static int bitrate[2][3][16] = {
+static const int bitrate[2][3][16] = {
     { // Bit rates for MPEG-2 LSF and MPEG-2.5.
       { 0, 32, 48, 56, 64, 80, 96, 112, 128, 144, 160, 176, 192, 224, 256, 0 },
       { 0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160, 0 },
@@ -78,7 +78,7 @@ MP_Header::bit_rate() const
   Author(s)    : Juha Ojanpera
   *************************************************************************/
 
-int *
+const int *
 MP_Header::GetBitRateTable() const
 {
     return (&bitrate[version()][layer_number() - 1][0]);

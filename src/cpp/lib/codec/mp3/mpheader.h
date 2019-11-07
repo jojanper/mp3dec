@@ -88,7 +88,7 @@ public:
     inline int bit_rate_idx() const { return ((header >> 12) & 0xF); }
 
     // Table holding legal bit rates for this stream.
-    int *GetBitRateTable() const;
+    const int *GetBitRateTable() const;
 
     // Sampling frequency.
     int32 frequency() const;

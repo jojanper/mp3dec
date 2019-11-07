@@ -109,8 +109,8 @@ class DraalDecoder {
     }
 }
 
-const DYNAMIC_BASE = 5332640;
-const DYNAMICTOP_PTR = 89600;
+const DYNAMIC_BASE = 5332576;
+const DYNAMICTOP_PTR = 89536;
 
 /**
  * Return memory and heap objects for WebAssembly instance.

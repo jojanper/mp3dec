@@ -98,11 +98,9 @@ MP_Stream::~MP_Stream()
 void
 MP_Stream::fillDataSlotTable()
 {
-    int *brTbl, Slots;
-
-    brTbl = header->GetBitRateTable();
+    auto brTbl = header->GetBitRateTable();
     for (int i = 1; i < 15; i++) {
-        Slots = (int) ((144 * brTbl[i]) / (header->frequency() / 1000.));
+        int Slots = (int) ((144 * brTbl[i]) / (header->frequency() / 1000.));
 
         if (header->version() != MPEG_PHASE2_LSF) {
             if (header->channels() == 1)
