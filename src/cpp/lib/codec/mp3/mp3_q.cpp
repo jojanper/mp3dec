@@ -31,22 +31,23 @@
    Purpose:     Pre-emphasis tables.
    Explanation: The first table is used when 'pre_flag' is TRUE, otherwise
                 the second table is selected. */
-static int16 pretab[22] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 3, 3, 3, 2, 0 };
-static int16 pretab0[22] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-};
+static const int16 pretab[22] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                  1, 1, 1, 1, 2, 2, 3, 3, 3, 2, 0 };
+static const int16 pretab0[22] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 /*
    Purpose:     Scaling table to obtain values for dequantization of
                 layer III spectral components.
    Explanation: powTbl[i] = i^(4/3), i = 0,..., MAX_QUANT */
-static FLOAT powTbl[MAX_QUANT + 1];
+static FLOAT _powTbl[MAX_QUANT + 1];
+static const FLOAT *powTbl = _powTbl;
 
 /*
    Purpose:     Gain table for mono and stereo streams.
    Explanation: -*/
 static FLOAT _global_gain[MAX_GAIN];
-static FLOAT *global_gain = _global_gain + 256;
+static const FLOAT *global_gain = _global_gain + 256;
 
 /**************************************************************************
   Title        : InitMP3DequantModule
@@ -64,8 +65,9 @@ InitMP3DequantModule(void)
     for (int i = -256; i < 118 + 4; ++i)
         _global_gain[i + 256] = pow((double) 2.0, -0.25 * (double) (i + 210.0));
 
+    FLOAT *_powTbl = (FLOAT *) powTbl;
     for (int i = 0; i <= MAX_QUANT; ++i)
-        powTbl[i] = pow((double) i, ((double) 4.0 / 3.0));
+        _powTbl[i] = pow((double) i, ((double) 4.0 / 3.0));
 }
 
 /**************************************************************************
@@ -127,15 +129,15 @@ scaled_sample(FLOAT gain, int16 quant)
 
 inline void
 do_long_quant(
-    FLOAT *ggain,
-    int16 *quant,
+    const FLOAT *ggain,
+    const int16 *quant,
     FLOAT *dequant,
-    BYTE *sfac,
+    const BYTE *sfac,
     int sfbs,
-    int16 *sfb_offset,
+    const int16 *sfb_offset,
     int gain_shift,
-    int16 *pretabTbl,
-    FLOAT *dbS)
+    const int16 *pretabTbl,
+    const FLOAT *dbS)
 {
     for (int i = 0, j = sfb_offset[0]; i < sfbs; i++) {
 #ifdef EQUALIZER
@@ -179,20 +181,20 @@ do_long_quant(
 
 inline void
 do_short_quant(
-    FLOAT *ggain,
-    int16 *quant,
+    const FLOAT *ggain,
+    const int16 *quant,
     FLOAT *dequant,
     BYTE *sfac[3],
-    BYTE subblock_gain[3],
+    const BYTE subblock_gain[3],
     int16 sfb_start,
     int16 sfb_end,
-    int16 *sfb_width,
+    const int16 *sfb_width,
     int max_bins,
     int gain_shift,
-    FLOAT *dbS)
+    const FLOAT *dbS)
 {
     int cum_sfb_bin = 0;
-    int16 *sfb_tbl = sfb_width;
+    const int16 *sfb_tbl = sfb_width;
     BYTE *sf[3];
     FLOAT gain1, gain2, gain3;
 
@@ -292,11 +294,16 @@ dequantize_cpe(MP_Stream *mp, int gr)
     BOOL io;
     int gain_shift;
     III_SfbData *sfbData;
-    int16 *width, *pretabTbl;
+    int16 *width;
+    const int16 *pretabTbl;
     int16 shift[MAX_CHANNELS];
     Granule_Info *gr_info[MAX_CHANNELS];
     III_Scale_Factors *scale_fac[MAX_CHANNELS];
-    FLOAT *g_gain[MAX_CHANNELS << 1] = { 0 }, *glob_gain, *dbS;
+    const FLOAT *g_gain[MAX_CHANNELS << 1] = { 0 }, *glob_gain, *dbS;
+
+    // Channels pointers (quantized and dequantized)
+    int16 *qs[2];
+    FLOAT *dqs[2];
 
     dbS = mp->dbScale;
 
@@ -352,7 +359,9 @@ dequantize_cpe(MP_Stream *mp, int gr)
                                 shift[0],
                                 shift[1],
                                 *width,
-                                dbS);
+                                dbS,
+                                qs,
+                                dqs);
                             break;
 
                         case MS_STEREO: {
@@ -369,7 +378,9 @@ dequantize_cpe(MP_Stream *mp, int gr)
                                 shift[0],
                                 shift[1],
                                 *width,
-                                dbS);
+                                dbS,
+                                qs,
+                                dqs);
                             do_ms_matrix(tmp[0], tmp[1], 0, *width);
                         } break;
 
@@ -386,7 +397,9 @@ dequantize_cpe(MP_Stream *mp, int gr)
                                 gr_info[0]->subblock_gain[j],
                                 shift[0],
                                 *width,
-                                dbS);
+                                dbS,
+                                qs,
+                                dqs);
 
                             /*-- Dequantize right channel. --*/
                             for (int k = 0; k < *width; ++k)
@@ -413,7 +426,9 @@ dequantize_cpe(MP_Stream *mp, int gr)
                                         shift[0],
                                         shift[0],
                                         *width,
-                                        dbS);
+                                        dbS,
+                                        qs,
+                                        dqs);
                                     qs[1] = q + *width;
                                 }
                                 else {
@@ -433,7 +448,9 @@ dequantize_cpe(MP_Stream *mp, int gr)
                                         shift[0],
                                         shift[0],
                                         *width,
-                                        dbS);
+                                        dbS,
+                                        qs,
+                                        dqs);
                                     qs[1] = q + *width;
                                 }
                             }
@@ -445,7 +462,9 @@ dequantize_cpe(MP_Stream *mp, int gr)
                                     gr_info[0]->subblock_gain[j],
                                     shift[0],
                                     *width,
-                                    dbS);
+                                    dbS,
+                                    qs,
+                                    dqs);
                                 memcpy(q[1], q[0], *width * sizeof(FLOAT));
                             }
                             break;
@@ -517,7 +536,7 @@ dequantize_cpe(MP_Stream *mp, int gr)
 
             width = sfbData->sfbWidthLong + ms_bands;
 
-            int16 *pre_tbl[2];
+            const int16 *pre_tbl[2];
             pre_tbl[0] = (mp->pre_flag(gr_info[0])) ? pretab : pretab0;
             pre_tbl[1] = (mp->pre_flag(gr_info[1])) ? pretab : pretab0;
             pre_tbl[0] += ms_bands;
@@ -550,7 +569,9 @@ dequantize_cpe(MP_Stream *mp, int gr)
                             shift[0],
                             shift[1],
                             *width,
-                            dbS);
+                            dbS,
+                            qs,
+                            dqs);
                         break;
 
                     case MS_STEREO: {
@@ -567,7 +588,9 @@ dequantize_cpe(MP_Stream *mp, int gr)
                             shift[0],
                             shift[1],
                             *width,
-                            dbS);
+                            dbS,
+                            qs,
+                            dqs);
                         do_ms_matrix(tmp[0], tmp[1], 0, *width);
                     } break;
 
@@ -577,7 +600,15 @@ dequantize_cpe(MP_Stream *mp, int gr)
                         FLOAT *dql = dqs[0];
                         FLOAT *dqr = dqs[1];
                         LONG_QUANT_IS_LEFT1(
-                            g_gain[0], gainl, *sf[0], *pre_tbl[0], shift[0], *width, dbS);
+                            g_gain[0],
+                            gainl,
+                            *sf[0],
+                            *pre_tbl[0],
+                            shift[0],
+                            *width,
+                            dbS,
+                            qs,
+                            dqs);
                         /*-- Dequantize right channel. --*/
                         for (int k = 0; k < *width; ++k)
                             *dqr++ = *dql++ * gainr;
@@ -600,7 +631,9 @@ dequantize_cpe(MP_Stream *mp, int gr)
                                     shift[0],
                                     shift[0],
                                     *width,
-                                    dbS);
+                                    dbS,
+                                    qs,
+                                    dqs);
                                 qs[1] = q + *width;
                             }
                             else {
@@ -618,14 +651,23 @@ dequantize_cpe(MP_Stream *mp, int gr)
                                     shift[0],
                                     shift[0],
                                     *width,
-                                    dbS);
+                                    dbS,
+                                    qs,
+                                    dqs);
                                 qs[1] = q + *width;
                             }
                         }
                         else {
                             FLOAT *q[2] = { dqs[0], dqs[1] };
                             LONG_QUANT_IS_LEFT0(
-                                g_gain[0], *sf[0], *pre_tbl[0], shift[0], *width, dbS);
+                                g_gain[0],
+                                *sf[0],
+                                *pre_tbl[0],
+                                shift[0],
+                                *width,
+                                dbS,
+                                qs,
+                                dqs);
                             memcpy(q[1], q[0], *width * sizeof(FLOAT));
                         }
                         break;
@@ -678,8 +720,10 @@ dequantize_sce(MP_Stream *mp, III_SfbData *sfbData, int gr, int ch)
     int gain_shift;
     Granule_Info *gr_info;
     III_Scale_Factors *scale_fac;
-    FLOAT *dequant, *glob_gain, *dbS;
-    int16 *quant, *pretabTbl;
+    FLOAT *dequant;
+    const FLOAT *glob_gain, *dbS;
+    int16 *quant;
+    const int16 *pretabTbl;
 
     dbS = mp->dbScale;
 

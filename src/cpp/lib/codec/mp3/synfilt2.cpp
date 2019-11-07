@@ -5,8 +5,6 @@
   Copyright (c) 1999 Juha Ojanpera.
   *************************************************************************/
 
-static FLOAT tmp[SBLIMIT], rec_samples[SBLIMIT];
-
 /**************************************************************************
   Title        : DctChen_32
 
@@ -358,6 +356,8 @@ DctChen_32(FLOAT *x, FLOAT *y)
 #ifdef DCT_CHEN
 static void inline DctChen_32(FLOAT *x, FLOAT *y)
 {
+    FLOAT tmp[SBLIMIT], rec_samples[SBLIMIT];
+
     // Stage 1.
     {
         FLOAT *a0, *a1, *a2;
@@ -731,8 +731,8 @@ static void inline DctChen_32(FLOAT *x, FLOAT *y)
 static void
 Window_Full(FLOAT *synthesis_buffer, int16 *out_samples, int16 *buf_idx, Out_Param *out_param)
 {
-    static FLOAT r[SBLIMIT];
-    int16 *buf_idx0;
+    FLOAT r[SBLIMIT];
+    const int16 *buf_idx0;
 
     /*
      * Perform windowing. Truncate the synthesis window length.
