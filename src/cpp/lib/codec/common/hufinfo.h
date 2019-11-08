@@ -51,10 +51,10 @@ typedef struct HuffmanStr
                 the size of the codebook. */
 typedef struct Huffman_Str
 {
-    int tree_len;          /* Size of the Huffman tree.                      */
-    int linbits;           /* Number of extra bits.                          */
-    int16 *codeword;       /* Huffman codewords.                             */
-    int16 *packed_symbols; /* x, y and length of the corresponding codeword. */
+    int tree_len;                /* Size of the Huffman tree.                      */
+    int linbits;                 /* Number of extra bits.                          */
+    const int16 *codeword;       /* Huffman codewords.                             */
+    const int16 *packed_symbols; /* x, y and length of the corresponding codeword. */
 
 } MP3_Huffman;
 

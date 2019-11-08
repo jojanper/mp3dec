@@ -11,6 +11,7 @@
 #ifdef DCT_CHEN
 static void inline DctChen_32_sub4(FLOAT *x, FLOAT *y)
 {
+    FLOAT tmp[SBLIMIT], rec_samples[SBLIMIT];
     FLOAT x0, x1, x2, x3, x4, x5, x6, x7;
     FLOAT *a0, *a1, *a2;
 
@@ -114,8 +115,8 @@ static void inline DctChen_32_sub4(FLOAT *x, FLOAT *y)
 static void
 Window_Quad(FLOAT *synthesis_buffer, int16 *out_samples, int *buf_idx, Out_Param *out_param)
 {
-    static FLOAT r[SBLIMIT >> 2];
-    int16 *buf_idx0;
+    FLOAT r[SBLIMIT >> 2];
+    const int16 *buf_idx0;
 
     /*
      * Perform windowing. Truncate the synthesis window length.

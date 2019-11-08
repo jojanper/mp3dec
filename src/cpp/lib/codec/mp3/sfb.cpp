@@ -15,29 +15,78 @@
   *************************************************************************/
 
 /*
-   Purpose:     Scalefactor band boundaries.
-   Explanation: Defined in 'common.cpp'. */
-extern SFBAND_DATA sfBandIndex[9];
-extern int16 nsfb_mixed[9];
+   Purpose:     Width of scalefactor bands of short blocks.
+   Explanation: - */
+static int16 sfb_width_table_[9][13] = {
+    // MPEG-2
+    { 4, 4, 4, 6, 6, 8, 10, 14, 18, 26, 32, 42, 18 },
+    { 4, 4, 4, 6, 8, 10, 12, 14, 18, 24, 32, 44, 12 },
+    { 4, 4, 4, 6, 8, 10, 12, 14, 18, 24, 30, 40, 18 },
+    // MPEG-1
+    { 4, 4, 4, 4, 6, 8, 10, 12, 14, 18, 22, 30, 56 },
+    { 4, 4, 4, 4, 6, 6, 10, 12, 14, 16, 20, 26, 66 },
+    { 4, 4, 4, 4, 6, 8, 12, 16, 20, 26, 34, 42, 12 },
+    // MPEG-2.5
+    { 4, 4, 4, 6, 8, 10, 12, 14, 18, 24, 30, 40, 18 },
+    { 4, 4, 4, 6, 8, 10, 12, 14, 18, 24, 30, 40, 18 },
+    { 8, 8, 8, 12, 16, 20, 24, 28, 36, 2, 2, 2, 26 }
+};
 
 /*
-   Purpose:     Width of scalefactor bands of short blocks.
-   Explanation: Defined in 'common.cpp'. */
-extern int16 sfb_width_table_[9][13];
+   Purpose:     Scalefactor band boundaries.
+   Explanation: - */
+static SFBAND_DATA sfBandIndex[9] = {
+    { // MPEG-2
+      { 0,   6,   12,  18,  24,  30,  36,  44,  54,  66,  80, 96,
+        116, 140, 168, 200, 238, 284, 336, 396, 464, 522, 576 },
+      { 0, 4, 8, 12, 18, 24, 32, 42, 56, 74, 100, 132, 174, 192 } }, // 22050 Hz
+    { { 0,   6,   12,  18,  24,  30,  36,  44,  54,  66,  80, 96,
+        114, 136, 162, 194, 232, 278, 330, 394, 464, 540, 576 },
+      { 0, 4, 8, 12, 18, 26, 36, 48, 62, 80, 104, 136, 180, 192 } }, // 24000 Hz
+    { { 0,   6,   12,  18,  24,  30,  36,  44,  54,  66,  80, 96,
+        116, 140, 168, 200, 238, 284, 336, 396, 464, 522, 576 },
+      { 0, 4, 8, 12, 18, 26, 36, 48, 62, 80, 104, 134, 174, 192 } }, // 16000 Hz
+    {                                                                // MPEG-1
+      { 0,  4,  8,   12,  16,  20,  24,  30,  36,  44,  52, 62,
+        74, 90, 110, 134, 162, 196, 238, 288, 342, 418, 576 },
+      { 0, 4, 8, 12, 16, 22, 30, 40, 52, 66, 84, 106, 136, 192 } }, // 44100 Hz
+    { { 0,  4,  8,   12,  16,  20,  24,  30,  36,  42,  50, 60,
+        72, 88, 106, 128, 156, 190, 230, 276, 330, 384, 576 },
+      { 0, 4, 8, 12, 16, 22, 28, 38, 50, 64, 80, 100, 126, 192 } }, // 48000 Hz
+    { { 0,  4,   8,   12,  16,  20,  24,  30,  36,  44,  54, 66,
+        82, 102, 126, 156, 194, 240, 296, 364, 448, 550, 576 },
+      { 0, 4, 8, 12, 16, 22, 30, 42, 58, 78, 104, 138, 180, 192 } }, // 32000 Hz
+    {                                                                // MPEG-2.5
+      { 0,   6,   12,  18,  24,  30,  36,  44,  54,  66,  80, 96,
+        116, 140, 168, 200, 238, 284, 336, 396, 464, 522, 576 },
+      { 0, 4, 8, 12, 18, 26, 36, 48, 62, 80, 104, 134, 174, 192 } }, // 11025 Hz
+    { { 0,   6,   12,  18,  24,  30,  36,  44,  54,  66,  80, 96,
+        116, 140, 168, 200, 238, 284, 336, 396, 464, 522, 576 },
+      { 0, 4, 8, 12, 18, 26, 36, 48, 62, 80, 104, 134, 174, 192 } }, // 12000 Hz
+    { { 0,   12,  24,  36,  48,  60,  72,  88,  108, 132, 160, 192,
+        232, 280, 336, 400, 476, 566, 568, 570, 572, 574, 576 },
+      { 0, 8, 16, 24, 36, 52, 72, 96, 124, 160, 162, 164, 166, 192 } }
+}; // 8000 Hz
+
+/*
+   Purpose:     Number of scalefactor bands for mixed blocks.
+   Explanation: - */
+static const int16 nsfb_mixed[9] = { 6, 6, 6, 8, 8, 8, 6, 6, 3 };
 
 /**************************************************************************
   Internal Objects
   *************************************************************************/
 
-static int16 *III_sfbOffsetLong(MP_Header *header);
+static const int16 *III_sfbOffsetLong(MP_Header *header);
 
-static int16 *III_sfbOffsetLongLimit(int16 *sfb_offset, int16 *max_sfb, int16 sfb_lines);
+static const int16 *III_sfbOffsetLongLimit(int16 *sfb_offset, int16 *max_sfb, int16 sfb_lines);
 
-static int16 *III_sfbWidthShortTblLimit(int16 *sfb_width, int16 *max_sfb, int16 sfb_lines);
+static const int16 *
+III_sfbWidthShortTblLimit(int16 *sfb_width, int16 *max_sfb, int16 sfb_lines);
 
-static int16 *III_sfbOffsetShort(MP_Header *header);
+static const int16 *III_sfbOffsetShort(MP_Header *header);
 
-static int16 *III_sfbWidthTblShort(MP_Header *header);
+static const int16 *III_sfbWidthTblShort(MP_Header *header);
 
 
 /**************************************************************************
@@ -172,7 +221,7 @@ III_BandLimit(III_SfbData *sfbData, int decim_factor)
   Author(s)    : Juha Ojanpera
   *************************************************************************/
 
-int16 *
+const int16 *
 III_sfbOffsetLong(MP_Header *header)
 {
     int mp25idx = 6 * header->mp25version();
@@ -199,7 +248,7 @@ III_sfbOffsetLong(MP_Header *header)
   Author(s)    : Juha Ojanpera
   *************************************************************************/
 
-int16 *
+const int16 *
 III_sfbOffsetLongLimit(int16 *sfb_offset, int16 *max_sfb, int16 sfb_lines)
 {
     for (int i = 0; i < *max_sfb; i++)
@@ -234,7 +283,7 @@ exit:
   Author(s)    : Juha Ojanpera
   *************************************************************************/
 
-int16 *
+const int16 *
 III_sfbWidthShortTblLimit(int16 *sfb_width, int16 *max_sfb, int16 sfb_lines)
 {
     for (int c = 0, i = 0, sf = 0; i < *max_sfb; i++) {
@@ -270,7 +319,7 @@ exit:
   Author(s)    : Juha Ojanpera
   *************************************************************************/
 
-int16 *
+const int16 *
 III_sfbOffsetShort(MP_Header *header)
 {
     int mp25idx = 6 * header->mp25version();
@@ -293,7 +342,7 @@ III_sfbOffsetShort(MP_Header *header)
   Author(s)    : Juha Ojanpera
   *************************************************************************/
 
-int16 *
+const int16 *
 III_sfbWidthTblShort(MP_Header *header)
 {
     int mp25idx = 6 * header->mp25version();

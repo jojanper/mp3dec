@@ -31,9 +31,9 @@ static BOOL PutCodeword(HufNode *Root, int32 codeword, int16 symbol, int len);
    Purpose:     Table for detecting whether bit in a certain location
                 is one or zero.
    Explanation: - */
-static int32 bit_detect[] = { 1,     2,     4,     8,      16,     32,    64,
-                              128,   256,   512,   1024,   2048,   4096,  8192,
-                              16384, 32768, 65536, 131072, 262144, 524288 };
+static const int32 bit_detect[] = { 1,     2,     4,     8,      16,     32,    64,
+                                    128,   256,   512,   1024,   2048,   4096,  8192,
+                                    16384, 32768, 65536, 131072, 262144, 524288 };
 
 
 /**************************************************************************
@@ -64,8 +64,9 @@ CreateMP3HuffmanTree(MP3_Huffman *huf_codes)
         code_len += huf_codes->packed_symbols[i] & 31;
 
         // Put the codeword into the tree.
-        if (PutCodeword(pNode, huf_codes->codeword[i], huf_codes->packed_symbols[i],
-                        code_len) == FALSE) {
+        if (PutCodeword(
+                pNode, huf_codes->codeword[i], huf_codes->packed_symbols[i], code_len) ==
+            FALSE) {
             DeleteTree(pNode);
             return (NULL);
         }

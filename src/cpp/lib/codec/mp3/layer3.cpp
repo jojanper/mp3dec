@@ -194,11 +194,6 @@ III_get_side_info(MP_Stream *mp)
 }
 
 /*
-   Purpose:     Buffer to hold the scalefactors.
-   Explanation: This is only used for MPEG-2 LSF bit streams. */
-static BYTE scalefac_buffer[54];
-
-/*
    Purpose:     Some of the LSF scalefactors are obtained from table.
    Explanation: Modulo and division operations can be avoided when enabled. */
 #define USE_LSF_TBL
@@ -228,7 +223,7 @@ InitLSFScaleTable(void)
 /*
    Purpose:     Number of scalefactor bands for MPEG-2 LSF bit streams.
    Explanation: - */
-static BYTE nr_of_sfb_block[6][3][4] = {
+static const BYTE nr_of_sfb_block[6][3][4] = {
     { { 6, 5, 5, 5 }, { 9, 9, 9, 9 }, { 6, 9, 9, 9 } },
     { { 6, 5, 7, 3 }, { 9, 9, 12, 6 }, { 6, 9, 12, 6 } },
     { { 11, 10, 0, 0 }, { 18, 18, 0, 0 }, { 15, 18, 0, 0 } },
@@ -254,7 +249,7 @@ static BYTE nr_of_sfb_block[6][3][4] = {
   *************************************************************************/
 
 static void
-III_get_LSF_scale_data(MP_Stream *mp, int gr, int ch)
+III_get_LSF_scale_data(MP_Stream *mp, int gr, int ch, BYTE *scalefac_buffer)
 {
     int i, j, k, m;
     int blocktypenumber, blocknumber;
@@ -411,8 +406,8 @@ struct
 /*
    Purpose:     Number of bits used for the scalefactors.
    Explanation: - */
-static int slen[2][16] = { { 0, 0, 0, 0, 3, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4 },
-                           { 0, 1, 2, 3, 0, 1, 2, 3, 1, 2, 3, 1, 2, 3, 2, 3 } };
+static const int slen[2][16] = { { 0, 0, 0, 0, 3, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4 },
+                                 { 0, 1, 2, 3, 0, 1, 2, 3, 1, 2, 3, 1, 2, 3, 2, 3 } };
 
 /**************************************************************************
   Title        : III_get_scale_factors
@@ -545,13 +540,14 @@ III_get_scale_factorsLSF(MP_Stream *mp, int gr, int ch)
     BYTE *sf[3];
     int sfb, idx;
     Granule_Info *gr_info;
+    BYTE scalefac_buffer[54];
     III_Scale_Factors *scale_fac;
 
     idx = 0;
     gr_info = mp->side_info->ch_info[ch]->gr_info[gr];
     scale_fac = mp->side_info->ch_info[ch]->scale_fac;
 
-    III_get_LSF_scale_data(mp, gr, ch);
+    III_get_LSF_scale_data(mp, gr, ch, scalefac_buffer);
 
     switch (gr_info->block_mode) {
         case MIXED_BLOCK_MODE:

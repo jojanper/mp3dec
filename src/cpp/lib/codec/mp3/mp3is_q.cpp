@@ -9,25 +9,22 @@
 /*-- Project Headers. --*/
 #include "core/defines.h"
 
-/*
-   Purpose:     Channels pointers for IS stereo decoding.
-   Explanation: - */
-int16 *qs[2];
-FLOAT *dqs[2];
-
 inline void
-LONG_QUANT_IS(FLOAT *globl,
-              FLOAT *globr,
-              FLOAT gainl,
-              FLOAT gainr,
-              int16 sfl,
-              int16 sfr,
-              int16 pre_tbll,
-              int16 pre_tblr,
-              int16 shfl,
-              int16 shfr,
-              int16 width,
-              FLOAT *dbS)
+LONG_QUANT_IS(
+    const FLOAT *globl,
+    const FLOAT *globr,
+    FLOAT gainl,
+    FLOAT gainr,
+    int16 sfl,
+    int16 sfr,
+    int16 pre_tbll,
+    int16 pre_tblr,
+    int16 shfl,
+    int16 shfr,
+    int16 width,
+    const FLOAT *dbS,
+    int16 *qs[2],
+    FLOAT *dqs[2])
 {
 #ifdef EQUALIZER
     gainl *= globl[(sfl + pre_tbll) << shfl] * *dbS;
@@ -47,18 +44,21 @@ LONG_QUANT_IS(FLOAT *globl,
 
 
 inline void
-LONG_QUANT_IS_LEFT(FLOAT *globl,
-                   FLOAT *globr,
-                   FLOAT gainl,
-                   FLOAT gainr,
-                   int16 sfl,
-                   int16 sfr,
-                   int16 pre_tbll,
-                   int16 pre_tblr,
-                   int16 shfl,
-                   int16 shfr,
-                   int16 width,
-                   FLOAT *dbS)
+LONG_QUANT_IS_LEFT(
+    const FLOAT *globl,
+    const FLOAT *globr,
+    FLOAT gainl,
+    FLOAT gainr,
+    int16 sfl,
+    int16 sfr,
+    int16 pre_tbll,
+    int16 pre_tblr,
+    int16 shfl,
+    int16 shfr,
+    int16 width,
+    const FLOAT *dbS,
+    int16 *qs[2],
+    FLOAT *dqs[2])
 {
 #ifdef EQUALIZER
     gainl *= globl[(sfl + pre_tbll) << shfl] * *dbS;
@@ -77,18 +77,21 @@ LONG_QUANT_IS_LEFT(FLOAT *globl,
 }
 
 inline void
-LONG_QUANT_IS_RIGHT(FLOAT *globl,
-                    FLOAT *globr,
-                    FLOAT gainl,
-                    FLOAT gainr,
-                    int16 sfl,
-                    int16 sfr,
-                    int16 pre_tbll,
-                    int16 pre_tblr,
-                    int16 shfl,
-                    int16 shfr,
-                    int16 width,
-                    FLOAT *dbS)
+LONG_QUANT_IS_RIGHT(
+    const FLOAT *globl,
+    const FLOAT *globr,
+    FLOAT gainl,
+    FLOAT gainr,
+    int16 sfl,
+    int16 sfr,
+    int16 pre_tbll,
+    int16 pre_tblr,
+    int16 shfl,
+    int16 shfr,
+    int16 width,
+    const FLOAT *dbS,
+    int16 *qs[2],
+    FLOAT *dqs[2])
 {
 #ifdef EQUALIZER
     gainl = globl[(sfl + pre_tbll) << shfl] * *dbS;
@@ -107,12 +110,15 @@ LONG_QUANT_IS_RIGHT(FLOAT *globl,
 }
 
 inline void
-LONG_QUANT_IS_LEFT0(FLOAT *globl,
-                    int16 sfl,
-                    int16 pre_tbll,
-                    int16 shfl,
-                    int16 width,
-                    FLOAT *dbS)
+LONG_QUANT_IS_LEFT0(
+    const FLOAT *globl,
+    int16 sfl,
+    int16 pre_tbll,
+    int16 shfl,
+    int16 width,
+    const FLOAT *dbS,
+    int16 *qs[2],
+    FLOAT *dqs[2])
 {
     FLOAT gainl;
 
@@ -132,13 +138,16 @@ LONG_QUANT_IS_LEFT0(FLOAT *globl,
 }
 
 inline void
-LONG_QUANT_IS_LEFT1(FLOAT *globl,
-                    FLOAT gainl,
-                    int16 sfl,
-                    int16 pre_tbll,
-                    int16 shfl,
-                    int16 width,
-                    FLOAT *dbS)
+LONG_QUANT_IS_LEFT1(
+    const FLOAT *globl,
+    FLOAT gainl,
+    int16 sfl,
+    int16 pre_tbll,
+    int16 shfl,
+    int16 width,
+    const FLOAT *dbS,
+    int16 *qs[2],
+    FLOAT *dqs[2])
 {
 #ifdef EQUALIZER
     gainl *= globl[(sfl + pre_tbll) << shfl] * *dbS++;
@@ -156,18 +165,21 @@ LONG_QUANT_IS_LEFT1(FLOAT *globl,
 }
 
 inline void
-SHORT_QUANT_IS(FLOAT *globl,
-               FLOAT *globr,
-               FLOAT gainl,
-               FLOAT gainr,
-               int16 sfl,
-               int16 sfr,
-               BYTE subblock_gainl,
-               BYTE subblock_gainr,
-               int16 shfl,
-               int16 shfr,
-               int16 sfb_width,
-               FLOAT *dbS)
+SHORT_QUANT_IS(
+    const FLOAT *globl,
+    const FLOAT *globr,
+    FLOAT gainl,
+    FLOAT gainr,
+    int16 sfl,
+    int16 sfr,
+    BYTE subblock_gainl,
+    BYTE subblock_gainr,
+    int16 shfl,
+    int16 shfr,
+    int16 sfb_width,
+    const FLOAT *dbS,
+    int16 *qs[2],
+    FLOAT *dqs[2])
 {
 #ifdef EQUALIZER
     gainl *= globl[subblock_gainl + (sfl << shfl)] * *dbS;
@@ -184,18 +196,21 @@ SHORT_QUANT_IS(FLOAT *globl,
 }
 
 inline void
-SHORT_QUANT_IS_LEFT(FLOAT *globl,
-                    FLOAT *globr,
-                    FLOAT gainl,
-                    FLOAT gainr,
-                    int16 sfl,
-                    int16 sfr,
-                    BYTE subblock_gainl,
-                    BYTE subblock_gainr,
-                    int16 shfl,
-                    int16 shfr,
-                    int16 sfb_width,
-                    FLOAT *dbS)
+SHORT_QUANT_IS_LEFT(
+    const FLOAT *globl,
+    const FLOAT *globr,
+    FLOAT gainl,
+    FLOAT gainr,
+    int16 sfl,
+    int16 sfr,
+    BYTE subblock_gainl,
+    BYTE subblock_gainr,
+    int16 shfl,
+    int16 shfr,
+    int16 sfb_width,
+    const FLOAT *dbS,
+    int16 *qs[2],
+    FLOAT *dqs[2])
 {
 #ifdef EQUALIZER
     gainl *= globl[subblock_gainl + (sfl << shfl)] * *dbS;
@@ -212,18 +227,21 @@ SHORT_QUANT_IS_LEFT(FLOAT *globl,
 }
 
 inline void
-SHORT_QUANT_IS_RIGHT(FLOAT *globl,
-                     FLOAT *globr,
-                     FLOAT gainl,
-                     FLOAT gainr,
-                     int16 sfl,
-                     int16 sfr,
-                     BYTE subblock_gainl,
-                     BYTE subblock_gainr,
-                     int16 shfl,
-                     int16 shfr,
-                     int16 sfb_width,
-                     FLOAT *dbS)
+SHORT_QUANT_IS_RIGHT(
+    const FLOAT *globl,
+    const FLOAT *globr,
+    FLOAT gainl,
+    FLOAT gainr,
+    int16 sfl,
+    int16 sfr,
+    BYTE subblock_gainl,
+    BYTE subblock_gainr,
+    int16 shfl,
+    int16 shfr,
+    int16 sfb_width,
+    const FLOAT *dbS,
+    int16 *qs[2],
+    FLOAT *dqs[2])
 {
 #ifdef EQUALIZER
     gainl = globl[subblock_gainl + (sfl << shfl)] * *dbS;
@@ -240,12 +258,15 @@ SHORT_QUANT_IS_RIGHT(FLOAT *globl,
 }
 
 inline void
-SHORT_QUANT_IS_LEFT0(FLOAT *globl,
-                     int16 sfl,
-                     BYTE subblock_gainl,
-                     int16 shfl,
-                     int16 sfb_width,
-                     FLOAT *dbS)
+SHORT_QUANT_IS_LEFT0(
+    const FLOAT *globl,
+    int16 sfl,
+    BYTE subblock_gainl,
+    int16 shfl,
+    int16 sfb_width,
+    const FLOAT *dbS,
+    int16 *qs[2],
+    FLOAT *dqs[2])
 {
     FLOAT gainl;
 
@@ -262,13 +283,16 @@ SHORT_QUANT_IS_LEFT0(FLOAT *globl,
 }
 
 inline void
-SHORT_QUANT_IS_LEFT1(FLOAT *globl,
-                     FLOAT gainl,
-                     int16 sfl,
-                     BYTE subblock_gainl,
-                     int16 shfl,
-                     int16 sfb_width,
-                     FLOAT *dbS)
+SHORT_QUANT_IS_LEFT1(
+    const FLOAT *globl,
+    FLOAT gainl,
+    int16 sfl,
+    BYTE subblock_gainl,
+    int16 shfl,
+    int16 sfb_width,
+    const FLOAT *dbS,
+    int16 *qs[2],
+    FLOAT *dqs[2])
 {
 #ifdef EQUALIZER
     gainl *= globl[subblock_gainl + (sfl << shfl)] * *dbS;

@@ -46,7 +46,7 @@ extern FLOAT scale_factors[2 * SBLIMIT];
                 legal codeword when grouped in 5 bits, i.e. 3 quantization
                 steps per sample.
    Explanation: - */
-static FLOAT group3_samples[] = {
+static const FLOAT group3_samples[] = {
     -0.6666666667, -0.6666666667, -0.6666666667, 0.0000000000,  -0.6666666667, -0.6666666667,
     0.6666666667,  -0.6666666667, -0.6666666667, -0.6666666667, 0.0000000000,  -0.6666666667,
     0.0000000000,  0.0000000000,  -0.6666666667, 0.6666666667,  0.0000000000,  -0.6666666667,
@@ -70,7 +70,7 @@ static FLOAT group3_samples[] = {
                 legal codeword when grouped in 7 bits, i.e. 5 quantization
                 steps per sample.
    Explanation: - */
-static FLOAT group5_samples[] = {
+static const FLOAT group5_samples[] = {
     -0.8, -0.8, -0.8, -0.4, -0.8, -0.8, 0.0, -0.8, -0.8, 0.4, -0.8, -0.8, 0.8, -0.8, -0.8,
     -0.8, -0.4, -0.8, -0.4, -0.4, -0.8, 0.0, -0.4, -0.8, 0.4, -0.4, -0.8, 0.8, -0.4, -0.8,
     -0.8, 0.0,  -0.8, -0.4, 0.0,  -0.8, 0.0, 0.0,  -0.8, 0.4, 0.0,  -0.8, 0.8, 0.0,  -0.8,
@@ -104,7 +104,7 @@ static FLOAT group5_samples[] = {
                 legal codeword when grouped in 10 bits, i.e. 9 quantization
                 steps per sample.
    Explanation: - */
-static FLOAT group9_samples[] = {
+static const FLOAT group9_samples[] = {
     -0.8888888889, -0.8888888889, -0.8888888889, -0.6666666667, -0.8888888889, -0.8888888889,
     -0.4444444444, -0.8888888889, -0.8888888889, -0.2222222222, -0.8888888889, -0.8888888889,
     0.0000000000,  -0.8888888889, -0.8888888889, 0.2222222222,  -0.8888888889, -0.8888888889,
@@ -627,27 +627,27 @@ static FLOAT group9_samples[] = {
    Explanation: Only bit allocations 3...8 are tabled. */
 
 // Bit_Alloc : 3
-static FLOAT requant3[] = { -0.8571429253, -0.5714285970, -0.2857142985, 0.0000000000,
-                            0.2857142985,  0.5714285970,  0.8571429253,  1.1428571939 };
+static const FLOAT requant3[] = { -0.8571429253, -0.5714285970, -0.2857142985, 0.0000000000,
+                                  0.2857142985,  0.5714285970,  0.8571429253,  1.1428571939 };
 
 // Bit_Alloc : 4
-static FLOAT requant4[] = { -0.9333333969, -0.8000000715, -0.6666666865, -0.5333333611,
-                            -0.4000000358, -0.2666666806, -0.1333333403, 0.0000000000,
-                            0.1333333403,  0.2666666806,  0.4000000358,  0.5333333611,
-                            0.6666666865,  0.8000000715,  0.9333333969,  1.0666667223 };
+static const FLOAT requant4[] = { -0.9333333969, -0.8000000715, -0.6666666865, -0.5333333611,
+                                  -0.4000000358, -0.2666666806, -0.1333333403, 0.0000000000,
+                                  0.1333333403,  0.2666666806,  0.4000000358,  0.5333333611,
+                                  0.6666666865,  0.8000000715,  0.9333333969,  1.0666667223 };
 
 // Bit_Alloc : 5
-static FLOAT requant5[] = { -0.9677419066, -0.9032257795, -0.8387096524, -0.7741935253,
-                            -0.7096773982, -0.6451612711, -0.5806451440, -0.5161290169,
-                            -0.4516128898, -0.3870967627, -0.3225806355, -0.2580645084,
-                            -0.1935483813, -0.1290322542, -0.0645161271, 0.0000000000,
-                            0.0645161271,  0.1290322542,  0.1935483813,  0.2580645084,
-                            0.3225806355,  0.3870967627,  0.4516128898,  0.5161290169,
-                            0.5806451440,  0.6451612711,  0.7096773982,  0.7741935253,
-                            0.8387096524,  0.9032257795,  0.9677419066,  1.0322580338 };
+static const FLOAT requant5[] = { -0.9677419066, -0.9032257795, -0.8387096524, -0.7741935253,
+                                  -0.7096773982, -0.6451612711, -0.5806451440, -0.5161290169,
+                                  -0.4516128898, -0.3870967627, -0.3225806355, -0.2580645084,
+                                  -0.1935483813, -0.1290322542, -0.0645161271, 0.0000000000,
+                                  0.0645161271,  0.1290322542,  0.1935483813,  0.2580645084,
+                                  0.3225806355,  0.3870967627,  0.4516128898,  0.5161290169,
+                                  0.5806451440,  0.6451612711,  0.7096773982,  0.7741935253,
+                                  0.8387096524,  0.9032257795,  0.9677419066,  1.0322580338 };
 
 // Bit_Alloc : 6
-static FLOAT requant6[] = {
+static const FLOAT requant6[] = {
     -0.9841270447, -0.9523810148, -0.9206349850, -0.8888889551, -0.8571429253, -0.8253968954,
     -0.7936508656, -0.7619048357, -0.7301587462, -0.6984127164, -0.6666666865, -0.6349206567,
     -0.6031746268, -0.5714285970, -0.5396825671, -0.5079365373, -0.4761905074, -0.4444444776,
@@ -662,7 +662,7 @@ static FLOAT requant6[] = {
 };
 
 // Bit_Alloc : 7
-static FLOAT requant7[] = {
+static const FLOAT requant7[] = {
     -0.9921259880, -0.9763779640, -0.9606299400, -0.9448819160, -0.9291338325, -0.9133858085,
     -0.8976377845, -0.8818897605, -0.8661417365, -0.8503937125, -0.8346456885, -0.8188976049,
     -0.8031495810, -0.7874015570, -0.7716535330, -0.7559055090, -0.7401574850, -0.7244094610,
@@ -688,7 +688,7 @@ static FLOAT requant7[] = {
 };
 
 // Bit_Alloc : 8
-static FLOAT requant8[] = {
+static const FLOAT requant8[] = {
     -0.9960784912, -0.9882353544, -0.9803922176, -0.9725490808, -0.9647059441, -0.9568628073,
     -0.9490196705, -0.9411765337, -0.9333333969, -0.9254902601, -0.9176471233, -0.9098039865,
     -0.9019608498, -0.8941177130, -0.8862745762, -0.8784314394, -0.8705883026, -0.8627451658,
@@ -742,8 +742,8 @@ static FLOAT requant8[] = {
                 the first element in the array. Otherwise subband 0 is the 9th
                 element in the array. Note that the number of subbands varies
                 between different bit allocation tables. */
-static BYTE Layer_II_bit_alloc[] = { 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3,
-                                     3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2 };
+static const BYTE Layer_II_bit_alloc[] = { 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3,
+                                           3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2 };
 
 /*
    Purpose:     Corresponding row index of each subband in table
@@ -752,7 +752,7 @@ static BYTE Layer_II_bit_alloc[] = { 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3
                 For table B.2b use the indices in the second row.
                 Tables B.2c and B.2d use the last row. Subband number is
                 used when indexing columns. */
-static BYTE _idx[3][30] =
+static const BYTE _idx[3][30] =
     {
         { 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2,
           2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 0, 0, 0 },
@@ -766,7 +766,7 @@ static BYTE _idx[3][30] =
    Purpose:     Index to table 'bits_per_codeword[]'.
    Explanation: Note that table '_idx[][]' will determine the row index,
                 bit allocation determines the column. */
-static BYTE bits_per_codeword_idx[5][16] = {
+static const BYTE bits_per_codeword_idx[5][16] = {
     { 0, 1, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 },
     { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17 },
     { 0, 1, 2, 3, 4, 5, 6, 17, 0, 0, 0, 0, 0, 0, 0, 0 },
@@ -777,33 +777,33 @@ static BYTE bits_per_codeword_idx[5][16] = {
 /*
    Purpose:     Number of bits for each legal codeword (Table B.4 : 6th column).
    Explanation: - */
-static BYTE bits_per_codeword[] = { 0, 5, 7,  3,  10, 4,  5,  6,  7,
-                                    8, 9, 10, 11, 12, 13, 14, 15, 16 };
+static const BYTE bits_per_codeword[] = { 0, 5, 7,  3,  10, 4,  5,  6,  7,
+                                          8, 9, 10, 11, 12, 13, 14, 15, 16 };
 
 /*
    Purpose:     Grouping information for each legal codeword
                 (Table B.4 : 4th column).
    Explanation: - */
-static BYTE grouping[] = { 2, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+static const BYTE grouping[] = { 2, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 /*
    Purpose:     Number of levels when grouped in 3 samples per codeword.
    Explanation: - */
-static int32 nlevels[] = { 0,   3,   5,    7,    9,    15,   31,    63,    127,
-                           255, 511, 1023, 2047, 4095, 8191, 16383, 32767, 65535L };
+static const int32 nlevels[] = { 0,   3,   5,    7,    9,    15,   31,    63,    127,
+                                 255, 511, 1023, 2047, 4095, 8191, 16383, 32767, 65535L };
 
 /*
    Purpose:     Number of bits needed to locate MSB-bit of each legal codeword.
    Explanation: Obtained from Table B.4 by counting how many bits are needed
                 so that the value would be equal the value in the 1st column
                 of the table. */
-static BYTE msb_bit[] = { 0, 0, 0, 2, 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+static const BYTE msb_bit[] = { 0, 0, 0, 2, 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 
 /*
    Purpose:     Table to deinterleave left and right channel of
                 Layer II and III.
    Explanation: - */
-static BYTE deinterleave_Layer_II[2][2 * 96] = {
+static const BYTE deinterleave_Layer_II[2][2 * 96] = {
     // no deinterleaving needed for mono channel
     { 0,   32,  64,  1,   33,  65,  2,   34,  66,  3,   35,  67,  4,   36,  68,  5,   37,  69,
       6,   38,  70,  7,   39,  71,  8,   40,  72,  9,   41,  73,  10,  42,  74,  11,  43,  75,
@@ -847,25 +847,28 @@ static BYTE deinterleave_Layer_II[2][2 * 96] = {
 /*
    Purpose:     Factor C for dequantization from Table B.4 : 2nd column.
    Explanation: - */
-static FLOAT c[] = { 0.00000000000, 1.33333333333, 1.60000000000, 1.14285714286, 1.77777777777,
-                     1.06666666666, 1.03225806452, 1.01587301587, 1.00787401575, 1.00392156863,
-                     1.00195694716, 1.00097751711, 1.00048851979, 1.00024420024, 1.00012208522,
-                     1.00006103888, 1.00003051851, 1.00001525902 };
+static const FLOAT c[] = { 0.00000000000, 1.33333333333, 1.60000000000, 1.14285714286,
+                           1.77777777777, 1.06666666666, 1.03225806452, 1.01587301587,
+                           1.00787401575, 1.00392156863, 1.00195694716, 1.00097751711,
+                           1.00048851979, 1.00024420024, 1.00012208522, 1.00006103888,
+                           1.00003051851, 1.00001525902 };
 
 /*
    Purpose:     Factor D for dequantization from Table B.4 : 3rd column.
    Explanation: - */
-static FLOAT d[] = { 0.00000000000, 0.50000000000, 0.50000000000, 0.25000000000, 0.50000000000,
-                     0.12500000000, 0.06250000000, 0.03125000000, 0.01562500000, 0.00781250000,
-                     0.00390625000, 0.00195312500, 0.00097656250, 0.00048828125, 0.00024414063,
-                     0.00012207031, 0.00006103516, 0.00003051758 };
+static const FLOAT d[] = { 0.00000000000, 0.50000000000, 0.50000000000, 0.25000000000,
+                           0.50000000000, 0.12500000000, 0.06250000000, 0.03125000000,
+                           0.01562500000, 0.00781250000, 0.00390625000, 0.00195312500,
+                           0.00097656250, 0.00048828125, 0.00024414063, 0.00012207031,
+                           0.00006103516, 0.00003051758 };
 
 /*
    Purpose:     1 / 2^b, b = 0,...,15
    Explanation: - */
-static FLOAT scaleII[] = { 0,         1. / 2,    1. / 4,     1. / 8,     1. / 16,   1. / 32,
-                           1. / 64,   1. / 128,  1. / 256,   1. / 512,   1. / 1024, 1. / 2048,
-                           1. / 4096, 1. / 8192, 1. / 16384, 1. / 32768L };
+static const FLOAT scaleII[] = { 0,         1. / 2,    1. / 4,     1. / 8,
+                                 1. / 16,   1. / 32,   1. / 64,    1. / 128,
+                                 1. / 256,  1. / 512,  1. / 1024,  1. / 2048,
+                                 1. / 4096, 1. / 8192, 1. / 16384, 1. / 32768L };
 
 
 /**************************************************************************
@@ -912,7 +915,8 @@ seek_layerII(MP_Stream *mp)
 void
 II_decode_bit_alloc(MP_Stream *mp)
 {
-    BYTE *bit_alloc, *alloc_bits;
+    BYTE *bit_alloc;
+    const BYTE *alloc_bits;
     int i, temp;
 
     auto subbands = mp->header->subbands();
@@ -1070,7 +1074,8 @@ II_decode_scale(MP_Stream *mp)
 void
 II_buffer_sample(MP_Stream *mp)
 {
-    BYTE *alloc_table, grouping_idx, *bit_alloc;
+    const BYTE *alloc_table;
+    BYTE grouping_idx, *bit_alloc;
     int16 *quant, temp;
     int i, bits_per_sample;
 
@@ -1178,10 +1183,12 @@ void
 II_dequantize_sample(MP_Stream *mp, BYTE *scale_factor)
 {
     BYTE grouping_idx, mask_idx;
-    BYTE *alloc_table, *de_table, *bit_alloc;
+    const BYTE *alloc_table, *de_table;
+    BYTE *bit_alloc;
     int16 *quant;
     int i, channels, num_of_samples, mask1, mask2;
-    FLOAT *fraction, *rec, *q_table;
+    FLOAT *fraction, *rec;
+    const FLOAT *q_table;
     FLOAT sc, sf, c_factor, d_factor;
 
     channels = mp->header->channels() - 1;

@@ -660,8 +660,10 @@ typedef void (*DCT_FUNCTION)(FLOAT *x, FLOAT *y);
 /*
    Purpose:     Array to hold DCT routines.
    Explanation: - */
-static DCT_FUNCTION DCTFunc[5] = { NULL, (DCT_FUNCTION) DctChen_32,
-                                   (DCT_FUNCTION) DctChen_32_sub2, NULL,
+static DCT_FUNCTION DCTFunc[5] = { NULL,
+                                   (DCT_FUNCTION) DctChen_32,
+                                   (DCT_FUNCTION) DctChen_32_sub2,
+                                   NULL,
                                    (DCT_FUNCTION) DctChen_32_sub4 };
 
 /*
@@ -676,8 +678,10 @@ typedef void (*WINDOW_FUNCTION)(
 /*
    Purpose:     Array to hold windowing routines.
    Explanation: - */
-static WINDOW_FUNCTION WinFunc[5] = { NULL, (WINDOW_FUNCTION) Window_Full,
-                                      (WINDOW_FUNCTION) Window_Half, NULL,
+static WINDOW_FUNCTION WinFunc[5] = { NULL,
+                                      (WINDOW_FUNCTION) Window_Full,
+                                      (WINDOW_FUNCTION) Window_Half,
+                                      NULL,
                                       (WINDOW_FUNCTION) Window_Quad };
 
 /**************************************************************************
@@ -766,7 +770,7 @@ Synthesis(FLOAT *synthesis_buffer, FLOAT *sb_samples, int16 *out_samples,
            int *buf_idx, Out_Param *out_param)
 {
   int i;
-  static FLOAT r[SBLIMIT];
+  FLOAT r[SBLIMIT];
   int16 *buf_idx0;
 
   {
