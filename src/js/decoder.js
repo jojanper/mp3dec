@@ -189,7 +189,7 @@ function getImportObject(memObject) {
         },
         'global.Math': Math,
         env,
-        wasi_unstable: env
+        wasi_snapshot_preview1: env
     };
 }
 
