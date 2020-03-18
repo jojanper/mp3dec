@@ -26,7 +26,12 @@
     </span>
 </body>
 
+<script src="/src/js/decoder.js">
+    console.log(this);
+</script>
+
 <script>
+    console.log(this);
     function parseFile(file, callback) {
         var fileSize = file.size;
         var chunkSize = 64 * 1024; // bytes

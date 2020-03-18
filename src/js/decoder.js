@@ -220,9 +220,11 @@ function eventHandler(decoder, callback) {
     };
 }
 
-module.exports = {
-    DraalDecoder,
-    getImportObject,
-    getMemory,
-    eventHandler
-};
+try {
+    module.exports = exports = {
+        DraalDecoder,
+        getImportObject,
+        getMemory,
+        eventHandler
+    };
+} catch (e) { }
