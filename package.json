@@ -17,6 +17,7 @@
     "x64-coverage": "npm run commands -- x64-coverage",
     "x64-tests": "npm run commands -- x64-tests",
     "http-server": "http-server",
+    "js-beautify": "js-beautify",
     "serve-build": "npm run http-server -- build-wasm/bin --p 4200"
   },
   "keywords": [
@@ -33,6 +34,7 @@
     "eslint": "^6.4.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.18.2",
+    "js-beautify": "^1.14.0",
     "minimist": "latest",
     "node-gyp": "^3.8.0",
     "shelljs": "^0.8.3",

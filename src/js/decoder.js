@@ -10,12 +10,18 @@ class DraalDecoder {
     /**
      * Constructor.
      *
-     * @param {*} api Exported WebAssembly API for the MP3 decoder.
+     * @param {*} api Exported WebAssembly API for the audio decoder.
      * @param {*} memory Memory object to be used for data between JS and WebAssembly.
      */
     constructor(api, memory) {
         this.api = api;
-        this.memory = memory;
+        this.memory = api.memory;
+
+        const heap = api.memory.buffer;
+        this.HEAP32 = new Int32Array(heap);
+        this.HEAPU8 = new Uint8Array(heap);
+
+        memory.setHeap(this.HEAPU8);
 
         this.decoder = null;
         this.initialized = false;
@@ -49,7 +55,7 @@ class DraalDecoder {
     /**
      * Decode input stream into audio samples.
      *
-     * @param {*} dataChunk MP3 bitstream data.
+     * @param {*} dataChunk Audio bitstream data.
      * @param {*} outStreamApi Callback for decoded output samples.
      */
     decode(dataChunk, outStreamApi) {
@@ -109,29 +115,21 @@ class DraalDecoder {
     }
 }
 
-const DYNAMIC_BASE = 5332576;
-const DYNAMICTOP_PTR = 89536;
-
 /**
- * Return memory and heap objects for WebAssembly instance.
+ * Memory object mapper for WebAssembly instance.
  */
 function getMemory() {
-    const memory = new WebAssembly.Memory({
-        initial: 256,
-        maximum: 256
-    });
+    class MemObject {
+        constructor() {
+            this.HEAPU8 = null;
+        }
 
-    const heap = memory.buffer;
+        setHeap(heap) {
+            this.HEAPU8 = heap;
+        }
+    }
 
-    const HEAP32 = new Int32Array(heap);
-    const HEAPU8 = new Uint8Array(heap);
-    HEAP32[DYNAMICTOP_PTR / 4] = DYNAMIC_BASE;
-
-    return {
-        memory,
-        HEAPU8,
-        HEAP32
-    };
+    return new MemObject();
 }
 
 function abort(what) {
@@ -144,50 +142,15 @@ function abort(what) {
  * @param {*} memObject WebAssembly memory object.
  */
 function getImportObject(memObject) {
-    let tempRet0 = 0;
-
-    function setTempRet0(value) {
-        tempRet0 = value;
-    }
-
-    function getTempRet0() {
-        return tempRet0;
-    }
-
-    const table = new WebAssembly.Table({
-        initial: 127,
-        maximum: 127,
-        element: 'anyfunc'
-    });
-
     const env = {
-        __cxa_allocate_exception: () => abort('cxa_allocate_exception'),
-        __cxa_throw: () => abort('cxa_throw'),
-
-        fd_close: () => { },
-        fd_seek: () => { },
-        fd_write: () => { },
-
-        emscripten_get_sbrk_ptr: () => DYNAMICTOP_PTR,
-        emscripten_memcpy_big:
-            (dest, src, num) => memObject.HEAPU8.set(memObject.HEAPU8.subarray(src, src + num), dest),
+        emscripten_memcpy_big: (dest, src, num) => {
+            memObject.HEAPU8.copyWithin(dest, src, src + num);
+        },
         emscripten_resize_heap: () => abort('emscripten_resize_heap'),
-
-        memory: memObject.memory,
-        table,
-
-        abort,
-        getTempRet0,
-        setTempRet0
+        abort
     };
 
-
     return {
-        global: {
-            NaN,
-            Infinity
-        },
-        'global.Math': Math,
         env,
         wasi_snapshot_preview1: env
     };

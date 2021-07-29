@@ -13,7 +13,7 @@ const wasmModule = new WebAssembly.Module(fs.readFileSync(workerLib));
 const instance = new WebAssembly.Instance(wasmModule, getImportObject(memory));
 
 // Create decoder instance
-const decoder = DraalDecoder.create(instance.exports, memory.memory);
+const decoder = DraalDecoder.create(instance.exports, memory);
 
 // Decoder is ready to receive data
 parentPort.postMessage({ ready: true });
