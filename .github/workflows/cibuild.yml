@@ -38,12 +38,13 @@ jobs:
         run: npm run lint
 
       - name: Debug build + unit tests + code coverage
+        run: |
           npm run x64-build -- --type=Debug --folder=build-debug
           npm run x64-tests -- --folder=build-debug --memcheck
           npm run x64-coverage -- --folder=build-debug
 
       - name: Release build
-          npm run x64-build -- --type=Release --folder=build-release
+        run: npm run x64-build -- --type=Release --folder=build-release
 
       - name: Node N-API integration build
-          npm run node-build
+        run: npm run node-build
