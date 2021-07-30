@@ -6,16 +6,15 @@ on: [push]
 jobs:
   build:
 
-    name: ${{ matrix.config.name }}
-    runs-on: ${{ matrix.config.os }}
+    name: ${{ matrix.include.name }}
+    runs-on: ${{ matrix.include.os }}
     strategy:
       matrix:
-        config:
-          - {
-              name: "Ubuntu GCC-7",
-              os: ubuntu-18.04,
-              gcc: 7
-            }
+        include:
+          - os: ubuntu-latest
+            compiler: gcc
+            gcc: 7
+            name: "Ubuntu GCC-7"
 
     steps:
       - uses: actions/checkout@v2
