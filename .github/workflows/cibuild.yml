@@ -12,10 +12,9 @@ jobs:
       matrix:
         config:
           - {
-              name: "Ubuntu Latest GCC",
+              name: "Ubuntu GCC-7",
               os: ubuntu-latest,
-              cc: "gcc",
-              cxx: "g++"
+              gcc: 7
             }
 
     steps:
@@ -26,12 +25,10 @@ jobs:
         with:
           node-version: 12
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-
       - name: Install dependencies
+        env:
+          CC: gcc-${{ matrix.config.gcc }}
+          CXX: g++-${{ matrix.config.gcc }}
         run: npm install
 
       - name: Code styling
