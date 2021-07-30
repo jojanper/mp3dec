@@ -13,7 +13,7 @@ jobs:
         config:
           - {
               name: "Ubuntu GCC-7",
-              os: ubuntu-18.04-gcc-7,
+              os: ubuntu-18.04,
               gcc: 7
             }
 
