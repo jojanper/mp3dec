@@ -6,8 +6,8 @@ on: [push]
 jobs:
   build:
 
-    name: ${{ matrix.include.name }}
-    runs-on: ${{ matrix.include.os }}
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         include:
