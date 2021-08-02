@@ -3,10 +3,10 @@ const childProcess = require('child_process');
 
 function execute(cmd) {
     return new Promise((resolve, reject) => {
-        const child = childProcess.exec(cmd);
-
-        // Live console output
-        child.stdout.on('data', data => console.log(data.trim()));
+        const child = childProcess.spawn(cmd, {
+            shell: true,
+            stdio: 'inherit'
+        });
 
         child.on('exit', code => {
             if (code !== 0) {
