@@ -6,7 +6,6 @@ const argv = require('minimist')(process.argv.slice(2));
 const { input, output } = argv;
 const WASMLIB = path.join(__dirname, 'build-wasm/bin/mp3dec_static.wasm');
 
-
 function startDecoding(worker, stream, chunkSize) {
     stream.on('readable', () => {
         let chunk;
