@@ -34,12 +34,12 @@
     "eslint": "^7.32.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.23.4",
+    "http-server": "latest",
     "js-beautify": "^1.14.0",
     "minimist": "latest",
     "node-gyp": "^3.8.0"
   },
   "dependencies": {
-    "http-server": "latest",
     "node-addon-api": "^1.6.2"
   },
   "gypfile": true,
