@@ -38,7 +38,7 @@
     "minimist": "latest",
     "node-gyp": "^3.8.0",
     "shelljs": "^0.8.3",
-    "tar": ">=4.4.2"
+    "tar": ">=4.4.15"
   },
   "dependencies": {
     "http-server": "latest",
