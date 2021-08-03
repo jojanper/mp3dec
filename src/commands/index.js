@@ -3,13 +3,12 @@
  */
 const path = require('path');
 const program = require('commander');
-const shelljs = require('shelljs');
-
+const fs = require('fs');
 
 const POSTFIX = 'commands';
 
 // Read all modules and initialize commander
-shelljs.ls(path.join(__dirname, POSTFIX))
+fs.readdirSync(path.join(__dirname, POSTFIX))
     .forEach(file => {
         // eslint-disable-next-line global-require, import/no-dynamic-require
         require(`./${POSTFIX}/${file}`)(program);

@@ -36,9 +36,7 @@
     "eslint-plugin-import": "^2.18.2",
     "js-beautify": "^1.14.0",
     "minimist": "latest",
-    "node-gyp": "^3.8.0",
-    "shelljs": "^0.8.3",
-    "tar": ">=4.4.2"
+    "node-gyp": "^3.8.0"
   },
   "dependencies": {
     "http-server": "latest",
