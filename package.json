@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "commands": "node src/commands",
+    "decode": "npm run commands -- decode",
     "lint": "eslint *.js src/js/** src/commands/**",
     "node-build": "node-gyp rebuild",
     "wasm-build": "rm -Rf build-wasm && npm run wasm-cmake-build && npm run wasm-make",
@@ -30,13 +31,12 @@
   "author": "Juha Ojanperä <juha.ojanpera@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "commander": "3.0.1",
+    "commander": "^8.1.0",
     "eslint": "^7.32.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.23.4",
     "http-server": "latest",
     "js-beautify": "^1.14.0",
-    "minimist": "latest",
     "node-gyp": "^3.8.0"
   },
   "dependencies": {
