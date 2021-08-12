@@ -251,8 +251,8 @@ static const BYTE nr_of_sfb_block[6][3][4] = {
 static void
 III_get_LSF_scale_data(MP_Stream *mp, int gr, int ch, BYTE *scalefac_buffer)
 {
-    int i, j, k, m;
-    int blocktypenumber, blocknumber;
+    int i, j, k, m = 0;
+    int blocktypenumber, blocknumber = 0;
     int scalefac_comp, int_scalefac_comp, new_slen[4];
     Granule_Info *gr_info;
 

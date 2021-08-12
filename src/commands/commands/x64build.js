@@ -1,15 +1,17 @@
-const shelljs = require('shelljs');
+const util = require('util');
+const fs = require('fs');
 const childProcess = require('child_process');
 
 function execute(cmd) {
     return new Promise((resolve, reject) => {
-        const child = childProcess.exec(cmd);
-
-        // Live console output
-        child.stdout.on('data', data => console.log(data.trim()));
+        const child = childProcess.spawn(cmd, {
+            shell: true,
+            stdio: 'inherit'
+        });
 
         child.on('exit', code => {
             if (code !== 0) {
+                console.log(code);
                 return reject(code);
             }
 
@@ -19,8 +21,12 @@ function execute(cmd) {
 }
 
 async function runBuild(options) {
-    shelljs.rm('-rf', options.folder);
-    shelljs.mkdir('-p', options.folder);
+    let promiseFn;
+
+    promiseFn = util.promisify(fs.rmdir);
+    await promiseFn(options.folder, { recursive: true });
+    promiseFn = util.promisify(fs.mkdir);
+    await promiseFn(options.folder);
 
     let cmd = [
         'cmake',
@@ -66,18 +72,24 @@ module.exports = program => {
         .description('Create Linux/x64 build')
         .option('--folder <folder>', 'Build folder', 'build')
         .option('--type <type>', 'Build type', 'Release')
-        .action(options => runBuild(options).catch(code => process.exit(code)));
+        .action(options => runBuild(options).catch(err => {
+            console.log(err); process.exit(1);
+        }));
 
     program
         .command('x64-tests')
         .description('Execute Linux/x64 tests')
         .option('--folder <folder>', 'Build folder', 'build')
         .option('--memcheck', 'Enable memory checker', false)
-        .action(options => runTests(options).catch(code => process.exit(code)));
+        .action(options => runTests(options).catch(err => {
+            console.log(err); process.exit(1);
+        }));
 
     program
         .command('x64-coverage')
         .description('Build code coverage report')
         .option('--folder <folder>', 'Build folder', 'build')
-        .action(options => runCoverage(options).catch(code => process.exit(code)));
+        .action(options => runCoverage(options).catch(err => {
+            console.log(err); process.exit(1);
+        }));
 };

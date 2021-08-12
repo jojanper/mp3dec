@@ -1,0 +1,57 @@
+
+name: CI Build
+
+on: [push]
+
+jobs:
+  build:
+
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: "Ubuntu latest"
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Install valgrind
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            sudo apt install valgrind
+            sudo pip3 install gcovr
+          else
+            echo "$RUNNER_OS not supported"
+            exit 1
+          fi
+        shell: bash
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Code styling
+        run: npm run lint
+
+      - name: Debug build + unit tests + code coverage
+        run: |
+          npm run x64-build -- --type=Debug --folder=build-debug
+          npm run x64-tests -- --folder=build-debug --memcheck
+          npm run x64-coverage -- --folder=build-debug
+
+      - name: Release build
+        run: npm run x64-build -- --type=Release --folder=build-release
+
+      - name: Node N-API integration build
+        run: npm run node-build

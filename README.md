@@ -30,7 +30,7 @@ npm run wasm-build
 
 Execute in Node
 ```
-node main.js --input=<input.mp3>  --output=<output.pcm>
+npm run decode -- --input=<input.mp3>  --output=<output.pcm>
 ```
 
 -----

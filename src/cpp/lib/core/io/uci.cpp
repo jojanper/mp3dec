@@ -104,7 +104,7 @@ InitUCI(int argc, char **argv, BOOL show_options, size_t indent_size)
                     uci->argument_used[i] = 0;
             }
         }
-    } catch (std::bad_alloc) {
+    } catch (std::bad_alloc const &) {
         DeleteUCI(uci);
         return NULL;
     }
