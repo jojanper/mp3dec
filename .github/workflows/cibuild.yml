@@ -30,6 +30,7 @@ jobs:
       - name: Install valgrind
         run: |
           if [ "$RUNNER_OS" == "Linux" ]; then
+            sudo apt-get update
             sudo apt install valgrind
             sudo pip3 install gcovr
           else
