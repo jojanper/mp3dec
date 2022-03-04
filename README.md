@@ -11,7 +11,7 @@ MP3 decoder for various build targets. Build targets include at the moment Linux
 - [GCC](https://gcc.gnu.org/)
   - For Linux building
 - [Emscripten](https://emscripten.org/index.html)
-  - For WebAssembly building, tested with version 2.0.26
+  - For WebAssembly building, tested with version 3.1.6
 
 ### Install dependencies
 ```
