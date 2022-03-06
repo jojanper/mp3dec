@@ -31,16 +31,16 @@
   "author": "Juha Ojanperä <juha.ojanpera@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "commander": "^8.1.0",
-    "eslint": "^7.32.0",
-    "eslint-config-airbnb-base": "^14.2.1",
-    "eslint-plugin-import": "^2.23.4",
+    "commander": "^9.0.0",
+    "eslint": "^8.10.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.25.4",
     "http-server": "latest",
     "js-beautify": "^1.14.0",
-    "node-gyp": "^3.8.0"
+    "node-gyp": "^9.0.0"
   },
   "dependencies": {
-    "node-addon-api": "^1.6.2"
+    "node-addon-api": "^4.3.0"
   },
   "gypfile": true,
   "eslintConfig": {
