@@ -36,7 +36,7 @@
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.25.4",
     "http-server": "latest",
-    "js-beautify": "^1.14.0",
+    "js-beautify": "^1.14.3",
     "node-gyp": "^9.0.0"
   },
   "dependencies": {
